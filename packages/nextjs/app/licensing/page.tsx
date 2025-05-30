@@ -1,3 +1,5 @@
+"use client";
+
 import type { NextPage } from "next";
 import { CogIcon, CubeTransparentIcon, ShieldCheckIcon, ShoppingBagIcon, UsersIcon } from "@heroicons/react/24/outline";
 
@@ -65,7 +67,49 @@ const LicensingPage: NextPage = () => {
             Join the forefront of space commerce. Our licensing program is built to streamline your path to space,
             ensuring every mission is built on a foundation of trust and cutting-edge technology.
           </p>
-          <button className="btn btn-primary btn-lg hover:bg-primary-focus transition-colors">
+          <button
+            onClick={() => {
+              const subject = encodeURIComponent("Licensing Program Inquiry - Lunargistics");
+              const body = encodeURIComponent(`Dear Logan,
+
+I am interested in learning more about the Lunargistics Licensing Program.
+
+Contact Information:
+Organization: [Your Organization Name]
+Name: [Your Name]
+Email: [Your Email]
+Phone: [Your Phone Number]
+
+Current Operations:
+- [ ] Satellite Operations
+- [ ] Launch Services
+- [ ] Space Tourism
+- [ ] Research & Development
+- [ ] Manufacturing
+- [ ] Other: [Please specify]
+
+Specific Interests:
+- [ ] LunarStation Platform Access
+- [ ] Ransomware-Proof Documentation System
+- [ ] Customization SDK
+- [ ] RideShare Program
+- [ ] Vendor Network Access
+- [ ] Display Merchandising Solutions
+
+Questions/Requirements:
+[Please describe your specific needs or questions about the licensing program]
+
+Preferred follow-up method:
+- [ ] Email
+- [ ] Phone Call
+- [ ] Video Conference
+
+Best regards,
+[Your Name]`);
+              window.location.href = `mailto:logan@lunargistics.com?subject=${subject}&body=${body}`;
+            }}
+            className="btn btn-primary btn-lg hover:bg-primary-focus transition-colors"
+          >
             Contact Us to Learn More
           </button>
         </section>

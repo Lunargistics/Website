@@ -41,7 +41,7 @@ const Home: NextPage = () => {
   const programs = [
     {
       icon: DocumentTextIcon,
-      title: "Lunargistics Licensing",
+      title: "LunarLicensing",
       description:
         "Standardize your journey to space with Mission Certificates, ransomware-proof documentation, and access to our network.",
       link: "/licensing",
@@ -49,7 +49,7 @@ const Home: NextPage = () => {
     },
     {
       icon: TruckIcon,
-      title: "Lunargistics Logistics",
+      title: "Lunargistics",
       description:
         "Optimize your supply chain with advanced tracking, PNT suites, and asset management for ground and space operations.",
       link: "/logistics",
@@ -166,7 +166,34 @@ const Home: NextPage = () => {
                 Contact Sales
             </Link> */}
             <button
-              onClick={() => (window.location.href = "mailto:Partnerships@lunargistics.com")}
+              onClick={() => {
+                const subject = encodeURIComponent("Partnership Inquiry - Lunargistics Platform");
+                const body = encodeURIComponent(`Dear Logan,
+
+I am interested in exploring partnership opportunities with Lunargistics.
+
+Organization Name: [Your Organization]
+Contact Name: [Your Name]
+Role/Title: [Your Title]
+
+Areas of Interest:
+- [ ] Licensing Program Partnership
+- [ ] Logistics Program Partnership
+- [ ] Technology Integration
+- [ ] Other: [Please specify]
+
+Brief Description of Partnership Opportunity:
+[Please describe your partnership proposal or area of collaboration]
+
+Best time to schedule a call:
+[Your availability]
+
+Thank you for your time and consideration.
+
+Best regards,
+[Your Name]`);
+                window.location.href = `mailto:logan@lunargistics.com?subject=${subject}&body=${body}`;
+              }}
               className="btn btn-outline btn-lg btn-accent hover:bg-accent hover:text-accent-content transition-colors px-8 py-3"
             >
               Contact Partnerships

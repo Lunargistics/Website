@@ -1,3 +1,5 @@
+"use client";
+
 import type { NextPage } from "next";
 import {
   ClockIcon,
@@ -78,7 +80,64 @@ const LogisticsPage: NextPage = () => {
             From ground control to orbital deployment, our logistics program provides the critical infrastructure and
             tools for mission success. Discover how we can support your journey.
           </p>
-          <button className="btn btn-primary btn-lg hover:bg-primary-focus transition-colors">
+          <button
+            onClick={() => {
+              const subject = encodeURIComponent("Logistics Consultation Request - Lunargistics");
+              const body = encodeURIComponent(`Dear Logan,
+
+I would like to request a consultation regarding Lunargistics' Logistics Program.
+
+Company Information:
+Organization: [Your Organization Name]
+Contact Name: [Your Name]
+Title: [Your Title]
+Email: [Your Email]
+Phone: [Your Phone Number]
+
+Current Logistics Challenges:
+- [ ] Asset Tracking & Fleet Management
+- [ ] Supply Chain Optimization
+- [ ] PNT (Position, Navigation, Timing) Requirements
+- [ ] Documentation & Forms Management
+- [ ] Integration with Existing Systems
+- [ ] Other: [Please specify]
+
+Services of Interest:
+- [ ] Advanced Tracking & Logistics Suite
+- [ ] Full PNT Suite Integration
+- [ ] Branded Digital & Physical Forms
+- [ ] Customization SDK
+- [ ] Asset Procurement & Leasing (trucks, flats, ships, satellite capacity)
+- [ ] Display Merchandising Solutions
+
+Project Timeline:
+- [ ] Immediate (within 30 days)
+- [ ] Near-term (1-3 months)
+- [ ] Long-term planning (3+ months)
+
+Budget Range:
+- [ ] Under $50K
+- [ ] $50K - $250K
+- [ ] $250K - $1M
+- [ ] $1M+
+- [ ] To be determined
+
+Additional Details:
+[Please provide any specific requirements or questions about your logistics needs]
+
+Preferred consultation format:
+- [ ] Phone Call
+- [ ] Video Conference
+- [ ] In-person meeting
+
+Thank you for your time.
+
+Best regards,
+[Your Name]`);
+              window.location.href = `mailto:logan@lunargistics.com?subject=${subject}&body=${body}`;
+            }}
+            className="btn btn-primary btn-lg hover:bg-primary-focus transition-colors"
+          >
             Request a Logistics Consultation
           </button>
         </section>
