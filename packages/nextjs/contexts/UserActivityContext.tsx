@@ -2,11 +2,21 @@
 
 import React, { ReactNode, createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Hex } from "viem";
+import { useAccount, useWalletClient } from "wagmi";
 import {
   useScaffoldEventHistory,
   useScaffoldWatchContractEvent,
   useScaffoldWriteContract,
 } from "~~/hooks/scaffold-eth";
+import {
+  initializeEAS, // createAttestation, // To be used when robust ID retrieval is implemented
+  // ACTIVITY_LOGGED_SCHEMA_UID, // For attestActivityLogged
+  // ACTIVITY_LOGGED_SCHEMA_STRING,
+  // COMPLIANCE_DOC_ADDED_SCHEMA_UID, // For attestComplianceDocAdded
+  // COMPLIANCE_DOC_ADDED_SCHEMA_STRING,
+  // COMPLIANCE_DOC_STATUS_UPDATED_SCHEMA_UID, // For attestComplianceDocStatusUpdated
+  // COMPLIANCE_DOC_STATUS_UPDATED_SCHEMA_STRING,
+} from "~~/services/easService";
 import {
   ComplianceDocument,
   ComplianceStatus,
@@ -23,7 +33,8 @@ const dateToTimestamp = (dateStr: string | undefined): bigint => {
   return BigInt(Math.floor(new Date(dateStr).getTime() / 1000));
 };
 const activityTypeToUint = (type: UserActivityType): number => {
-  const mapping: { [key in UserActivityType]: number } = {
+  // Using Record to avoid ESLint unused variable warning for the mapped type key
+  const mapping: Record<UserActivityType, number> = {
     [UserActivityType.ROCKET_LAUNCH]: 0,
     [UserActivityType.SATELLITE_DEPLOYMENT]: 1,
     [UserActivityType.EXPLORATION_MISSION]: 2,
@@ -36,7 +47,8 @@ const activityTypeToUint = (type: UserActivityType): number => {
   return mapping[type];
 };
 const activityStatusToUint = (status: UserActivityStatus): number => {
-  const mapping: { [key in UserActivityStatus]: number } = {
+  // Using Record to avoid ESLint unused variable warning for the mapped type key
+  const mapping: Record<UserActivityStatus, number> = {
     [UserActivityStatus.PLANNED]: 0,
     [UserActivityStatus.PREPARATION]: 1,
     [UserActivityStatus.IN_PROGRESS]: 2,
@@ -49,7 +61,8 @@ const activityStatusToUint = (status: UserActivityStatus): number => {
   return mapping[status];
 };
 const complianceStatusToUint = (status: ComplianceStatus): number => {
-  const mapping: { [key in ComplianceStatus]: number } = {
+  // Using Record to avoid ESLint unused variable warning for the mapped type key
+  const mapping: Record<ComplianceStatus, number> = {
     [ComplianceStatus.PENDING_SUBMISSION]: 0,
     [ComplianceStatus.PENDING_REVIEW]: 1,
     [ComplianceStatus.APPROVED]: 2,
@@ -61,7 +74,8 @@ const complianceStatusToUint = (status: ComplianceStatus): number => {
   return mapping[status];
 };
 const mapActivityTypeFromUint = (typeInt: number): UserActivityType => {
-  const mapping: { [key: number]: UserActivityType } = {
+  // Using Record to avoid ESLint unused variable warning for the mapped type key
+  const mapping: Record<number, UserActivityType> = {
     0: UserActivityType.ROCKET_LAUNCH,
     1: UserActivityType.SATELLITE_DEPLOYMENT,
     2: UserActivityType.EXPLORATION_MISSION,
@@ -74,7 +88,8 @@ const mapActivityTypeFromUint = (typeInt: number): UserActivityType => {
   return mapping[typeInt] || UserActivityType.OTHER;
 };
 const mapActivityStatusFromUint = (statusInt: number): UserActivityStatus => {
-  const mapping: { [key: number]: UserActivityStatus } = {
+  // Using Record to avoid ESLint unused variable warning for the mapped type key
+  const mapping: Record<number, UserActivityStatus> = {
     0: UserActivityStatus.PLANNED,
     1: UserActivityStatus.PREPARATION,
     2: UserActivityStatus.IN_PROGRESS,
@@ -87,7 +102,8 @@ const mapActivityStatusFromUint = (statusInt: number): UserActivityStatus => {
   return mapping[statusInt] || UserActivityStatus.PLANNED;
 };
 const mapComplianceStatusFromUint = (statusInt: number): ComplianceStatus => {
-  const mapping: { [key: number]: ComplianceStatus } = {
+  // Using Record to avoid ESLint unused variable warning for the mapped type key
+  const mapping: Record<number, ComplianceStatus> = {
     0: ComplianceStatus.PENDING_SUBMISSION,
     1: ComplianceStatus.PENDING_REVIEW,
     2: ComplianceStatus.APPROVED,
@@ -156,8 +172,17 @@ const processActivityLoggedEvent = (log: any): UserActivity => {
 export const UserActivityProvider = ({ children }: { children: ReactNode }) => {
   const [activities, setActivities] = useState<UserActivity[]>([]);
   const [isLoadingActivities, setIsLoadingActivities] = useState(true);
+  const { address: connectedAddress, chainId: connectedChainId } = useAccount();
+  const { data: walletClient } = useWalletClient();
 
   const { writeContractAsync: writeSAMAsync } = useScaffoldWriteContract(CONTRACT_NAME_SAM);
+
+  // Initialize EAS when wallet client becomes available
+  useEffect(() => {
+    if (walletClient && connectedChainId) {
+      initializeEAS(walletClient, connectedChainId);
+    }
+  }, [walletClient, connectedChainId]);
 
   // Fetch historical ActivityLogged events
   const {
@@ -337,6 +362,11 @@ export const UserActivityProvider = ({ children }: { children: ReactNode }) => {
   const addActivity = async (
     activityData: Omit<UserActivity, "id" | "createdAt" | "updatedAt" | "complianceDocuments" | "owner">,
   ): Promise<void> => {
+    if (!connectedAddress || !connectedChainId) {
+      notification.error("Please connect your wallet to log an activity.");
+      return;
+    }
+    // let activityIdContract: Hex | undefined = undefined; // This would be assigned after tx confirmation + log parsing
     try {
       await writeSAMAsync({
         functionName: "logActivity",
@@ -358,6 +388,16 @@ export const UserActivityProvider = ({ children }: { children: ReactNode }) => {
         ],
       });
       notification.info("Activity creation transaction submitted.");
+      // We need to get the activityId from the event to make an attestation.
+      // This requires waiting for the transaction to be mined and then finding the event.
+      // For simplicity, we'll assume the ActivityLogged event watcher in this context updates the state soon enough,
+      // OR we enhance writeSAMAsync to return parsed events from the receipt.
+      // For now, we will try to make an attestation optimistically if an ID becomes available via events.
+      // A more robust solution would involve tx.wait() here and parsing logs.
+
+      // Monitor for the ActivityLogged event to get the ID for attestation
+      // This is a simplified approach. A robust solution might involve a direct tx.wait() and log parsing here.
+      // Or, use a dedicated function to await the event from the contract call.
     } catch (e: any) {
       console.error("CONTRACT ERROR: logActivity:", e);
       notification.error(
@@ -377,6 +417,10 @@ export const UserActivityProvider = ({ children }: { children: ReactNode }) => {
     updates: Partial<Omit<UserActivity, "id" | "createdAt" | "updatedAt" | "owner" | "complianceDocuments">>,
   ) => {
     const currentActivity = getActivityByIdFromState(id);
+    if (!currentActivity || !connectedAddress || !connectedChainId) {
+      notification.error("Activity not found or wallet not connected.");
+      return;
+    }
     try {
       const activityStatusForContract = activityStatusToUint(
         updates.status || currentActivity?.status || UserActivityStatus.PLANNED,
@@ -402,6 +446,9 @@ export const UserActivityProvider = ({ children }: { children: ReactNode }) => {
         ],
       });
       notification.info("Activity update transaction submitted.");
+      // Attestation for activity update (if fields relevant to a schema changed)
+      // Example: If status change is attestable
+      // await createAttestation({ schemaUID: YOUR_ACTIVITY_UPDATED_SCHEMA_UID, schemaString: YOUR_SCHEMA_STRING, values: [...] });
     } catch (e: any) {
       console.error("CONTRACT ERROR: updateActivityDetails:", e);
       notification.error(
@@ -413,6 +460,10 @@ export const UserActivityProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addComplianceDocument = async (activityId: Hex, docData: Omit<ComplianceDocument, "id">): Promise<void> => {
+    if (!connectedAddress || !connectedChainId) {
+      notification.error("Please connect your wallet to add a document.");
+      return;
+    }
     try {
       await writeSAMAsync({
         functionName: "addComplianceDocumentToActivity",
@@ -429,6 +480,17 @@ export const UserActivityProvider = ({ children }: { children: ReactNode }) => {
         ],
       });
       notification.info("Add document transaction submitted.");
+
+      // Attestation for adding a document
+      // We need the documentId from the event. Similar to addActivity, this is simplified.
+      // const docIdFromEvent = ... (obtain from event or transaction receipt)
+      // if (docIdFromEvent) {
+      //   await createAttestation({
+      //     schemaUID: COMPLIANCE_DOC_ADDED_SCHEMA_UID,
+      //     schemaString: COMPLIANCE_DOC_ADDED_SCHEMA_STRING,
+      //     values: [activityId, docIdFromEvent, docData.documentName, docData.documentType, docData.documentHashOrLink, Math.floor(Date.now() / 1000)],
+      //   });
+      // }
     } catch (e: any) {
       console.error("CONTRACT ERROR: addComplianceDocumentToActivity:", e);
       notification.error(
@@ -445,12 +507,23 @@ export const UserActivityProvider = ({ children }: { children: ReactNode }) => {
     newStatus: ComplianceStatus,
     reviewDate?: string,
   ) => {
+    if (!connectedAddress || !connectedChainId) {
+      notification.error("Please connect your wallet to update document status.");
+      return;
+    }
     try {
       await writeSAMAsync({
         functionName: "updateComplianceDocumentStatusInActivity",
         args: [activityId, docId, complianceStatusToUint(newStatus), dateToTimestamp(reviewDate)],
       });
       notification.info("Update document status transaction submitted.");
+
+      // Attestation for document status update
+      // await createAttestation({
+      //   schemaUID: COMPLIANCE_DOC_STATUS_UPDATED_SCHEMA_UID,
+      //   schemaString: COMPLIANCE_DOC_STATUS_UPDATED_SCHEMA_STRING,
+      //   values: [activityId, docId, complianceStatusToUint(newStatus), Math.floor(Date.now() / 1000)],
+      // });
     } catch (e: any) {
       console.error("CONTRACT ERROR: updateComplianceDocumentStatusInActivity:", e);
       notification.error(

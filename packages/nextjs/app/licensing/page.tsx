@@ -14,7 +14,7 @@ const LicensingPage: NextPage = () => {
     {
       name: "Ransomware-Proof Documentation",
       description:
-        "Utilize our cutting-edge, blockchain-secured (conceptual) system for document storage and verification, ensuring integrity and resistance to tampering.",
+        "Utilize our cutting-edge, blockchain-secured system for document storage and verification, ensuring integrity and resistance to tampering.",
       icon: ShieldCheckIcon,
     },
     {

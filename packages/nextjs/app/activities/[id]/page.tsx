@@ -6,9 +6,25 @@ import { useParams, useRouter } from "next/navigation";
 import type { NextPage } from "next";
 import toast from "react-hot-toast";
 import { Hex, isHex } from "viem";
-import { ArrowLeftIcon, DocumentPlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { useAccount } from "wagmi";
+import {
+  ArrowLeftIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  DocumentPlusIcon,
+  ExclamationCircleIcon,
+  PencilIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 import { useUserActivity } from "~~/contexts/UserActivityContext";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
+import {
+  ACTIVITY_LOGGED_SCHEMA_UID,
+  type AttestationResult,
+  COMPLIANCE_DOC_ADDED_SCHEMA_UID,
+  EAS_GRAPHQL_ENDPOINT_BASE,
+  fetchAttestationsBySchemaAndAttester,
+} from "~~/services/easService";
 import {
   ComplianceDocument,
   ComplianceStatus,
@@ -57,6 +73,11 @@ const mapComplianceStatusFromUint = (statusInt: number): ComplianceStatus => {
   return mapping[statusInt] || ComplianceStatus.NOT_APPLICABLE;
 };
 
+// Helper to get the correct EASScan URL based on chain ID (assuming Base mainnet for now)
+const getEASScanUrl = (attestationUID: Hex) => {
+  return `${EAS_GRAPHQL_ENDPOINT_BASE.replace("/graphql", "")}/attestation/view/${attestationUID}`;
+};
+
 const ActivityDetailPage: NextPage = () => {
   const router = useRouter();
   const params = useParams();
@@ -66,8 +87,14 @@ const ActivityDetailPage: NextPage = () => {
 
   const { updateActivity, addComplianceDocument, updateComplianceDocumentStatus, refetchActivities } =
     useUserActivity();
+  const { address: connectedAddress, chainId } = useAccount();
 
   const [activity, setActivity] = useState<UserActivity | null>(null);
+
+  // EAS Attestation States
+  const [activityAttestation, setActivityAttestation] = useState<AttestationResult | null | undefined>(undefined);
+  const [docAttestations, setDocAttestations] = useState<Record<Hex, AttestationResult | null | undefined>>({});
+  const [isLoadingAttestations, setIsLoadingAttestations] = useState(false);
 
   const readContractArgs: readonly [Hex] | undefined = activityIdFromRoute ? [activityIdFromRoute] : undefined;
 
@@ -168,6 +195,73 @@ const ActivityDetailPage: NextPage = () => {
     }
   }, [rawActivityFromContract, isLoadingActivity, activityIdFromRoute, router, params.id]);
 
+  useEffect(() => {
+    if (activity && activity.id && activity.owner && connectedAddress) {
+      const fetchAllAttestations = async () => {
+        setIsLoadingAttestations(true);
+        setActivityAttestation(undefined);
+        setDocAttestations({});
+
+        try {
+          const activityAtts = await fetchAttestationsBySchemaAndAttester(
+            ACTIVITY_LOGGED_SCHEMA_UID as Hex,
+            activity.owner as Hex,
+            chainId,
+          );
+          const foundActivityAtt = activityAtts.find(att => {
+            try {
+              const decoded = JSON.parse(att.decodedDataJson);
+              const activityIdField = decoded.find(
+                (field: { name: string; value: any }) => field.name === "activityId",
+              );
+              return activityIdField?.value === activity.id;
+            } catch (e) {
+              return false;
+            }
+          });
+          setActivityAttestation(foundActivityAtt || null);
+
+          if (activity.complianceDocuments && activity.complianceDocuments.length > 0) {
+            const docAttsPromises = activity.complianceDocuments.map(async doc => {
+              const compDocAtts = await fetchAttestationsBySchemaAndAttester(
+                COMPLIANCE_DOC_ADDED_SCHEMA_UID as Hex,
+                activity.owner as Hex,
+                chainId,
+              );
+              const foundDocAtt = compDocAtts.find(att => {
+                try {
+                  const decoded = JSON.parse(att.decodedDataJson);
+                  const activityIdField = decoded.find(
+                    (field: { name: string; value: any }) => field.name === "activityId",
+                  );
+                  const documentIdField = decoded.find(
+                    (field: { name: string; value: any }) => field.name === "documentId",
+                  );
+                  return activityIdField?.value === activity.id && documentIdField?.value === doc.id;
+                } catch (e) {
+                  return false;
+                }
+              });
+              return { docId: doc.id, attestation: foundDocAtt || null };
+            });
+            const resolvedDocAtts = await Promise.all(docAttsPromises);
+            const newDocAttsState: Record<Hex, AttestationResult | null | undefined> = {};
+            resolvedDocAtts.forEach(res => {
+              newDocAttsState[res.docId as Hex] = res.attestation;
+            });
+            setDocAttestations(newDocAttsState);
+          }
+        } catch (error) {
+          console.error("Failed to fetch attestations:", error);
+          toast.error("Could not load attestation data.");
+          setActivityAttestation(null);
+        }
+        setIsLoadingAttestations(false);
+      };
+      fetchAllAttestations();
+    }
+  }, [activity, connectedAddress, chainId, refetchActivities]);
+
   const [showDocModal, setShowDocModal] = useState(false);
   const [editingDoc, setEditingDoc] = useState<ComplianceDocument | null>(null);
   const [docFormData, setDocFormData] = useState<Omit<ComplianceDocument, "id">>({
@@ -263,6 +357,11 @@ const ActivityDetailPage: NextPage = () => {
             }
           : null,
       );
+      setDocAttestations(prev => {
+        const newState = { ...prev };
+        delete newState[docId];
+        return newState;
+      });
     }
   };
 
@@ -313,9 +412,42 @@ const ActivityDetailPage: NextPage = () => {
         return "badge-info";
       case ComplianceStatus.ACTION_REQUIRED:
         return "badge-warning";
+      case ComplianceStatus.EXPIRED:
+        return "badge-error";
       default:
         return "badge-ghost";
     }
+  };
+
+  const renderAttestationStatus = (attestation: AttestationResult | null | undefined) => {
+    if (attestation === undefined || isLoadingAttestations) {
+      return (
+        <span className="text-xs opacity-60">
+          (<ClockIcon className="h-3 w-3 inline-block mr-1" />
+          Checking attestation...)
+        </span>
+      );
+    }
+    if (attestation === null) {
+      return (
+        <span className="text-xs text-error">
+          (<ExclamationCircleIcon className="h-3 w-3 inline-block mr-1" />
+          Not attested)
+        </span>
+      );
+    }
+    return (
+      <Link
+        href={getEASScanUrl(attestation.id)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-xs text-success hover:underline tooltip"
+        data-tip={`Attested on ${new Date(attestation.time * 1000).toLocaleDateString()}. UID: ${attestation.id.substring(0, 10)}...`}
+      >
+        (<CheckCircleIcon className="h-3 w-3 inline-block mr-1" />
+        Attested)
+      </Link>
+    );
   };
 
   if (isLoadingActivity || (!activityIdFromRoute && params.id)) {
@@ -353,7 +485,10 @@ const ActivityDetailPage: NextPage = () => {
         <div className="bg-base-200 p-6 sm:p-8 rounded-lg shadow-xl mb-8">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-primary mb-1">{activity.name}</h1>
+              <h1 className="text-3xl sm:text-4xl font-bold text-primary mb-1 flex items-center">
+                {activity.name}
+                <span className="ml-2">{renderAttestationStatus(activityAttestation)}</span>
+              </h1>
               <p className="text-sm text-base-content/70">
                 Type: {activity.type} | Status:{" "}
                 <span
@@ -601,7 +736,7 @@ const ActivityDetailPage: NextPage = () => {
               <p>
                 <strong>Owner:</strong>{" "}
                 <Link
-                  href={`https://etherscan.io/address/${activity.owner}`}
+                  href={`https://basescan.org/address/${activity.owner}`}
                   target="_blank"
                   className="link link-accent text-xs"
                 >
@@ -640,6 +775,7 @@ const ActivityDetailPage: NextPage = () => {
                     <th>Name</th>
                     <th>Type</th>
                     <th>Status</th>
+                    <th>Attestation</th>
                     <th>Submitted</th>
                     <th>Link/Hash</th>
                     <th>Actions</th>
@@ -653,6 +789,7 @@ const ActivityDetailPage: NextPage = () => {
                       <td>
                         <span className={`badge badge-xs ${getComplianceStatusColor(doc.status)}`}>{doc.status}</span>
                       </td>
+                      <td>{renderAttestationStatus(docAttestations[doc.id as Hex])}</td>
                       <td>{doc.submittedDate ? new Date(doc.submittedDate).toLocaleDateString() : "-"}</td>
                       <td className="truncate max-w-[100px] sm:max-w-xs" title={doc.documentHashOrLink}>
                         {doc.documentHashOrLink || "N/A"}
