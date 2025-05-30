@@ -5,7 +5,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { hardhat } from "viem/chains";
-import { Bars3Icon, BugAntIcon } from "@heroicons/react/24/outline";
+import { useAccount } from "wagmi";
+import {
+  Bars3Icon,
+  ClipboardDocumentListIcon,
+  DocumentTextIcon,
+  GlobeAltIcon,
+  RocketLaunchIcon,
+} from "@heroicons/react/24/outline";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
 
@@ -20,36 +27,58 @@ export const menuLinks: HeaderMenuLink[] = [
     label: "Home",
     href: "/",
   },
-
   {
-    label: "Debug Contracts",
-    href: "/debug",
-    icon: <BugAntIcon className="h-4 w-4" />,
+    label: "Dashboard",
+    href: "/dashboard",
+    icon: <RocketLaunchIcon className="h-4 w-4" />,
   },
+  {
+    label: "My Activities",
+    href: "/activities",
+    icon: <ClipboardDocumentListIcon className="h-4 w-4" />,
+  },
+  {
+    label: "Licensing",
+    href: "/licensing",
+    icon: <DocumentTextIcon className="h-4 w-4" />,
+  },
+  {
+    label: "Logistics",
+    href: "/logistics",
+    icon: <GlobeAltIcon className="h-4 w-4" />,
+  },
+  // Debug Contracts temporarily removed
 ];
 
 export const HeaderMenuLinks = () => {
+  const { isConnected } = useAccount();
   const pathname = usePathname();
 
   return (
     <>
-      {menuLinks.map(({ label, href, icon }) => {
-        const isActive = pathname === href;
-        return (
-          <li key={href}>
-            <Link
-              href={href}
-              passHref
-              className={`${
-                isActive ? "bg-secondary shadow-md" : ""
-              } hover:bg-secondary hover:shadow-md focus:!bg-secondary active:!text-neutral py-1.5 px-3 text-sm rounded-full gap-2 grid grid-flow-col`}
-            >
-              {icon}
-              <span>{label}</span>
-            </Link>
-          </li>
-        );
-      })}
+      {menuLinks
+        .filter(({ href }) => {
+          // Always show Home link; other links require wallet connection
+          if (href === "/") return true;
+          return isConnected;
+        })
+        .map(({ label, href, icon }) => {
+          const isActive = pathname === href;
+          return (
+            <li key={href}>
+              <Link
+                href={href}
+                passHref
+                className={`${
+                  isActive ? "bg-secondary shadow-md" : ""
+                } hover:bg-secondary hover:shadow-md focus:!bg-secondary active:!text-neutral py-1.5 px-3 text-sm rounded-full gap-2 grid grid-flow-col`}
+              >
+                {icon}
+                <span>{label}</span>
+              </Link>
+            </li>
+          );
+        })}
     </>
   );
 };
@@ -84,11 +113,17 @@ export const Header = () => {
         </details>
         <Link href="/" passHref className="hidden lg:flex items-center gap-2 ml-4 mr-6 shrink-0">
           <div className="flex relative w-10 h-10">
-            <Image alt="SE2 logo" className="cursor-pointer" fill src="/logo.svg" />
+            <Image
+              alt="Lunargistics icon"
+              className="cursor-pointer"
+              fill
+              src="/icon.png"
+              style={{ filter: "brightness(0) invert(1)" }}
+            />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold leading-tight">Scaffold-ETH</span>
-            <span className="text-xs">Ethereum dev stack</span>
+            <span className="font-bold leading-tight">Lunargistics</span>
+            <span className="text-xs">Space Launch Simplified</span>
           </div>
         </Link>
         <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">

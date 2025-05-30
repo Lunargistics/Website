@@ -4,6 +4,807 @@
  */
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
-const deployedContracts = {} as const;
+const deployedContracts = {
+  31337: {
+    SpaceActivityManager: {
+      address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+      abi: [
+        {
+          inputs: [],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "activityId",
+              type: "bytes32",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "owner",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "name",
+              type: "string",
+            },
+            {
+              indexed: false,
+              internalType: "enum SpaceActivityManager.ActivityType",
+              name: "activityType",
+              type: "uint8",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "createdAt",
+              type: "uint256",
+            },
+          ],
+          name: "ActivityLogged",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "activityId",
+              type: "bytes32",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "updater",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "enum SpaceActivityManager.ActivityStatus",
+              name: "newStatus",
+              type: "uint8",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "updatedAt",
+              type: "uint256",
+            },
+          ],
+          name: "ActivityUpdated",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "activityId",
+              type: "bytes32",
+            },
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "documentId",
+              type: "bytes32",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "documentName",
+              type: "string",
+            },
+            {
+              indexed: false,
+              internalType: "enum SpaceActivityManager.DocComplianceStatus",
+              name: "status",
+              type: "uint8",
+            },
+          ],
+          name: "ComplianceDocumentAdded",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "activityId",
+              type: "bytes32",
+            },
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "documentId",
+              type: "bytes32",
+            },
+            {
+              indexed: false,
+              internalType: "enum SpaceActivityManager.DocComplianceStatus",
+              name: "newStatus",
+              type: "uint8",
+            },
+          ],
+          name: "ComplianceDocumentUpdated",
+          type: "event",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "_activityId",
+              type: "bytes32",
+            },
+            {
+              internalType: "string",
+              name: "_documentName",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_documentType",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_documentHashOrLink",
+              type: "string",
+            },
+            {
+              internalType: "enum SpaceActivityManager.DocComplianceStatus",
+              name: "_status",
+              type: "uint8",
+            },
+            {
+              internalType: "uint256",
+              name: "_submittedDate",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "_expiryDate",
+              type: "uint256",
+            },
+            {
+              internalType: "string",
+              name: "_notes",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_responsibleEntity",
+              type: "string",
+            },
+          ],
+          name: "addComplianceDocumentToActivity",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "documentId",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "_owner",
+              type: "address",
+            },
+          ],
+          name: "getActivitiesByOwner",
+          outputs: [
+            {
+              internalType: "bytes32[]",
+              name: "",
+              type: "bytes32[]",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "_activityId",
+              type: "bytes32",
+            },
+          ],
+          name: "getActivityById",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "bytes32",
+                  name: "id",
+                  type: "bytes32",
+                },
+                {
+                  internalType: "address",
+                  name: "owner",
+                  type: "address",
+                },
+                {
+                  internalType: "enum SpaceActivityManager.ActivityType",
+                  name: "activityType",
+                  type: "uint8",
+                },
+                {
+                  internalType: "string",
+                  name: "name",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "description",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "organization",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "projectManager",
+                  type: "string",
+                },
+                {
+                  internalType: "uint256",
+                  name: "startDate",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "endDate",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "launchDateTime",
+                  type: "uint256",
+                },
+                {
+                  internalType: "enum SpaceActivityManager.ActivityStatus",
+                  name: "status",
+                  type: "uint8",
+                },
+                {
+                  internalType: "string",
+                  name: "externalApiLaunchId",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "externalApiSource",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "launchSite",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "destination",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "payloadDetails",
+                  type: "string",
+                },
+                {
+                  components: [
+                    {
+                      internalType: "bytes32",
+                      name: "id",
+                      type: "bytes32",
+                    },
+                    {
+                      internalType: "string",
+                      name: "documentName",
+                      type: "string",
+                    },
+                    {
+                      internalType: "string",
+                      name: "documentType",
+                      type: "string",
+                    },
+                    {
+                      internalType: "string",
+                      name: "documentHashOrLink",
+                      type: "string",
+                    },
+                    {
+                      internalType: "enum SpaceActivityManager.DocComplianceStatus",
+                      name: "status",
+                      type: "uint8",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "submittedDate",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "reviewDate",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "expiryDate",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "string",
+                      name: "notes",
+                      type: "string",
+                    },
+                    {
+                      internalType: "string",
+                      name: "responsibleEntity",
+                      type: "string",
+                    },
+                  ],
+                  internalType: "struct SpaceActivityManager.ComplianceDocument[]",
+                  name: "complianceDocuments",
+                  type: "tuple[]",
+                },
+                {
+                  internalType: "uint256",
+                  name: "createdAt",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "updatedAt",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct SpaceActivityManager.Activity",
+              name: "",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getAllActivityIds",
+          outputs: [
+            {
+              internalType: "bytes32[]",
+              name: "",
+              type: "bytes32[]",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "_activityId",
+              type: "bytes32",
+            },
+          ],
+          name: "getComplianceDocuments",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "bytes32",
+                  name: "id",
+                  type: "bytes32",
+                },
+                {
+                  internalType: "string",
+                  name: "documentName",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "documentType",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "documentHashOrLink",
+                  type: "string",
+                },
+                {
+                  internalType: "enum SpaceActivityManager.DocComplianceStatus",
+                  name: "status",
+                  type: "uint8",
+                },
+                {
+                  internalType: "uint256",
+                  name: "submittedDate",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "reviewDate",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "expiryDate",
+                  type: "uint256",
+                },
+                {
+                  internalType: "string",
+                  name: "notes",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "responsibleEntity",
+                  type: "string",
+                },
+              ],
+              internalType: "struct SpaceActivityManager.ComplianceDocument[]",
+              name: "",
+              type: "tuple[]",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "enum SpaceActivityManager.ActivityType",
+              name: "_activityType",
+              type: "uint8",
+            },
+            {
+              internalType: "string",
+              name: "_name",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_description",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_organization",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_projectManager",
+              type: "string",
+            },
+            {
+              internalType: "uint256",
+              name: "_startDate",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "_endDate",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "_launchDateTime",
+              type: "uint256",
+            },
+            {
+              internalType: "enum SpaceActivityManager.ActivityStatus",
+              name: "_status",
+              type: "uint8",
+            },
+            {
+              internalType: "string",
+              name: "_externalApiLaunchId",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_externalApiSource",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_launchSite",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_destination",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_payloadDetails",
+              type: "string",
+            },
+          ],
+          name: "logActivity",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "activityId",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "_activityId",
+              type: "bytes32",
+            },
+            {
+              internalType: "string",
+              name: "_name",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_description",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_organization",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_projectManager",
+              type: "string",
+            },
+            {
+              internalType: "uint256",
+              name: "_startDate",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "_endDate",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "_launchDateTime",
+              type: "uint256",
+            },
+            {
+              internalType: "enum SpaceActivityManager.ActivityStatus",
+              name: "_status",
+              type: "uint8",
+            },
+            {
+              internalType: "string",
+              name: "_externalApiLaunchId",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_externalApiSource",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_launchSite",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_destination",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_payloadDetails",
+              type: "string",
+            },
+          ],
+          name: "updateActivityDetails",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "_activityId",
+              type: "bytes32",
+            },
+            {
+              internalType: "bytes32",
+              name: "_documentId",
+              type: "bytes32",
+            },
+            {
+              internalType: "enum SpaceActivityManager.DocComplianceStatus",
+              name: "_newStatus",
+              type: "uint8",
+            },
+            {
+              internalType: "uint256",
+              name: "_reviewDate",
+              type: "uint256",
+            },
+          ],
+          name: "updateComplianceDocumentStatusInActivity",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+      ],
+      inheritedFunctions: {},
+    },
+    YourContract: {
+      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      abi: [
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "_owner",
+              type: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "greetingSetter",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "newGreeting",
+              type: "string",
+            },
+            {
+              indexed: false,
+              internalType: "bool",
+              name: "premium",
+              type: "bool",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "value",
+              type: "uint256",
+            },
+          ],
+          name: "GreetingChange",
+          type: "event",
+        },
+        {
+          inputs: [],
+          name: "greeting",
+          outputs: [
+            {
+              internalType: "string",
+              name: "",
+              type: "string",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "owner",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "premium",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "string",
+              name: "_newGreeting",
+              type: "string",
+            },
+          ],
+          name: "setGreeting",
+          outputs: [],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "totalCounter",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          name: "userGreetingCounter",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "withdraw",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          stateMutability: "payable",
+          type: "receive",
+        },
+      ],
+      inheritedFunctions: {},
+    },
+  },
+} as const;
 
 export default deployedContracts satisfies GenericContractsDeclaration;

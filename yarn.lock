@@ -5529,6 +5529,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/uuid@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "@types/uuid@npm:10.0.0"
+  checksum: e3958f8b0fe551c86c14431f5940c3470127293280830684154b91dc7eb3514aeb79fe3216968833cf79d4d1c67f580f054b5be2cd562bebf4f728913e73e944
+  languageName: node
+  linkType: hard
+
 "@types/wrap-ansi@npm:^3.0.0":
   version: 3.0.0
   resolution: "@types/wrap-ansi@npm:3.0.0"
@@ -16012,6 +16019,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "se-2@workspace:."
   dependencies:
+    "@types/uuid": ^10.0.0
     husky: ~9.1.6
     lint-staged: ~13.2.2
   languageName: unknown
@@ -18828,9 +18836,9 @@ __metadata:
   linkType: hard
 
 "zod@npm:^3.22.4":
-  version: 3.25.40
-  resolution: "zod@npm:3.25.40"
-  checksum: b184e4e6be0b0503aead3365bc4822debf56eecb280e1571112f1a686f6bd6c2a9165d4956523431bf1932b52963a2efc410d4ba6455b2e7516e253a4cbb9adb
+  version: 3.25.41
+  resolution: "zod@npm:3.25.41"
+  checksum: c5e132e4554e68370316b3d404578c04b1aa30062697205f0ddaeed57ce5fc7bc3da5842c11772c869e3e68f80434a0d4fc2434a0c6d078913d004fd50d85358
   languageName: node
   linkType: hard
 
