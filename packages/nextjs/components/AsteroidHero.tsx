@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChartBarIcon, CurrencyDollarIcon, RocketLaunchIcon } from "@heroicons/react/24/outline";
 
@@ -10,6 +11,11 @@ export function AsteroidHero() {
     <div className="hero min-h-[60vh] bg-gradient-to-br from-primary/10 via-base-100 to-secondary/10">
       <div className="hero-content text-center px-4">
         <div className="max-w-3xl">
+          {/* Logo - visible on mobile, hidden on larger screens */}
+          <div className="block sm:hidden mb-6">
+            <Image src="/logo.png" alt="Lunargistics Logo" width={120} height={120} className="mx-auto" priority />
+          </div>
+
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             Asteroid Commodities Exchange
           </h1>
