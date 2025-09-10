@@ -23,7 +23,7 @@ const Cesium3DViewerComponent = () => {
       
       // Initialize Cesium Viewer
       const viewer = new Cesium.Viewer(cesiumContainer.current, {
-        terrainProvider: Cesium.createWorldTerrain(),
+        terrainProvider: await Cesium.createWorldTerrainAsync(),
         baseLayerPicker: false,
         geocoder: false,
         homeButton: true,
