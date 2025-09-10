@@ -19,7 +19,7 @@ import { SmartWalletCreator } from "~~/components/SmartWalletCreator";
 const LicensingPage: NextPage = () => {
   const { isConnected } = useAccount();
   const [activeTab, setActiveTab] = useState<"wallet" | "upload" | "mint">("wallet");
-  const [userDocuments, setUserDocuments] = useState<any[]>([]);
+  const [userDocuments] = useState<any[]>([]);
 
   const steps = [
     {

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import {
-  ChartBarIcon,
   CheckCircleIcon,
   ClockIcon,
   DocumentCheckIcon,

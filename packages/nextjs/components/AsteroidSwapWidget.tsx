@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { formatEther, parseEther } from "viem";
-import { useAccount, useBalance, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useAccount } from "wagmi";
 import { ArrowsUpDownIcon } from "@heroicons/react/24/outline";
-import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
 interface SwapWidgetProps {
@@ -13,7 +12,7 @@ interface SwapWidgetProps {
   dexAddress?: string;
 }
 
-export function AsteroidSwapWidget({ asteroidId, tokenFactoryAddress, dexAddress }: SwapWidgetProps) {
+export function AsteroidSwapWidget({ asteroidId: _asteroidId, tokenFactoryAddress: _tokenFactoryAddress, dexAddress: _dexAddress }: SwapWidgetProps) {
   const { address } = useAccount();
   const [fromToken, setFromToken] = useState("USDC");
   const [toToken, setToToken] = useState("iron");

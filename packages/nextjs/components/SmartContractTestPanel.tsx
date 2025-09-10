@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Address, formatEther, parseEther } from "viem";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import deployedContracts from "~~/contracts/deployedContracts";
-import { useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
+// import { useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
 const TestPanel = () => {
@@ -34,8 +34,8 @@ const TestPanel = () => {
   const [tokenB, setTokenB] = useState("");
   const [amountA, setAmountA] = useState("");
   const [amountB, setAmountB] = useState("");
-  const [swapPath, setSwapPath] = useState<string[]>([]);
-  const [swapAmount, setSwapAmount] = useState("");
+  const [, setSwapPath] = useState<string[]>([]);
+  const [, setSwapAmount] = useState("");
 
   // Get deployed contracts
   const contracts = deployedContracts[31337];
@@ -133,7 +133,7 @@ const TestPanel = () => {
   };
 
   // Get token balance
-  const getTokenBalance = async (tokenAddress: string, account: string) => {
+  const _getTokenBalance = async (tokenAddress: string, account: string) => {
     if (!publicClient) return "0";
 
     try {

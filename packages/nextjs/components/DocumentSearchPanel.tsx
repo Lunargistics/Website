@@ -137,7 +137,7 @@ export const DocumentSearchPanel = ({ documents, onDocumentSelect }: DocumentSea
 
         {useAISearch && (
           <div className="text-xs opacity-70 mt-1">
-            Try: "Show me all active licenses", "Documents expiring soon", "Environmental assessments"
+            Try: &quot;Show me all active licenses&quot;, &quot;Documents expiring soon&quot;, &quot;Environmental assessments&quot;
           </div>
         )}
 

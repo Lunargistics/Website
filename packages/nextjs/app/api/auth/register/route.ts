@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from "next/server";
 import { AuthErrorHandler, handleAuthError } from "~~/lib/errorHandler";
 import dbConnect from "~~/lib/mongodb";

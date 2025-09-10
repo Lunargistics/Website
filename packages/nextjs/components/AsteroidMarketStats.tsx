@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { TrendingDownIcon, TrendingUpIcon } from "@heroicons/react/24/outline";
 
 interface MarketStat {
@@ -11,7 +11,7 @@ interface MarketStat {
 }
 
 export function AsteroidMarketStats() {
-  const [stats, setStats] = useState<MarketStat[]>([
+  const [stats] = useState<MarketStat[]>([
     { label: "Total Value Locked", value: "$12.4M", change: 15.2, trend: "up" },
     { label: "24h Volume", value: "$2.1M", change: -3.4, trend: "down" },
     { label: "Active Traders", value: "1,234", change: 8.7, trend: "up" },
