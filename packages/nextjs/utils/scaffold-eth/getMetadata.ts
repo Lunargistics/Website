@@ -8,7 +8,7 @@ const titleTemplate = "%s | Lunargistics";
 export const getMetadata = ({
   title,
   description,
-  imageRelativePath = "/thumbnail.jpg",
+  imageRelativePath = "/LunarBkg1.png",
 }: {
   title: string;
   description: string;
