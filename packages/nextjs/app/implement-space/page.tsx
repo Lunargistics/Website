@@ -10,7 +10,7 @@ import SpaceEquipmentSuppliers from "~~/components/SpaceEquipmentSuppliers";
 import SpaceVisualization, { OrbitalMechanics } from "~~/components/SpaceVisualization";
 
 // Dynamic imports for 3D components to avoid SSR issues
-const Cesium3DViewer = dynamic(() => import("~~/components/Cesium3DViewer"), {
+const WorldWind3DViewer = dynamic(() => import("~~/components/WorldWind3DViewer"), {
   ssr: false,
   loading: () => (
     <div className="h-[600px] w-full bg-base-200 rounded-lg flex items-center justify-center">
@@ -70,7 +70,7 @@ export default function ImplementSpacePage() {
   ];
 
   const [showVisualization, setShowVisualization] = useState(false);
-  const [viewMode, setViewMode] = useState<"2d" | "3d" | "worldwind">("worldwind");
+  const [viewMode, setViewMode] = useState<"2d" | "3d" | "worldwind">("3d");
   const [showOrbitalCalculator, setShowOrbitalCalculator] = useState(false);
   const [showICDProcessor, setShowICDProcessor] = useState(false);
   const [showEquipmentMarketplace, setShowEquipmentMarketplace] = useState(false);
@@ -596,14 +596,12 @@ Include specific numerical values and orbital mechanics calculations where relev
                 <h2 className="text-2xl font-bold text-white">Real-Time Space Tracking</h2>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setViewMode("worldwind")}
+                    onClick={() => setViewMode("3d")}
                     className={`px-4 py-2 rounded-lg transition ${
-                      viewMode === "worldwind"
-                        ? "bg-purple-600 text-white"
-                        : "bg-white/10 text-purple-200 hover:bg-white/20"
+                      viewMode === "3d" ? "bg-purple-600 text-white" : "bg-white/10 text-purple-200 hover:bg-white/20"
                     }`}
                   >
-                    WorldWind
+                    NASA WorldWind 3D
                   </button>
                   <button
                     onClick={() => setViewMode("2d")}
@@ -614,12 +612,14 @@ Include specific numerical values and orbital mechanics calculations where relev
                     2D Canvas
                   </button>
                   <button
-                    onClick={() => setViewMode("3d")}
+                    onClick={() => setViewMode("worldwind")}
                     className={`px-4 py-2 rounded-lg transition ${
-                      viewMode === "3d" ? "bg-purple-600 text-white" : "bg-white/10 text-purple-200 hover:bg-white/20"
+                      viewMode === "worldwind"
+                        ? "bg-purple-600 text-white"
+                        : "bg-white/10 text-purple-200 hover:bg-white/20"
                     }`}
                   >
-                    Cesium 3D
+                    Alternative View
                   </button>
                   <button
                     onClick={() => setShowOrbitalCalculator(!showOrbitalCalculator)}
@@ -686,23 +686,11 @@ Include specific numerical values and orbital mechanics calculations where relev
                 </div>
               ) : viewMode === "worldwind" ? (
                 <div className="worldwind-wrapper">
-                  {/* <WorldWindViewer /> */}
-                  <div className="h-[600px] w-full bg-base-200 rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <span className="loading loading-spinner loading-lg mb-4"></span>
-                      <p className="text-lg">WorldWind Viewer Coming Soon</p>
-                    </div>
-                  </div>
-                  <div className="mt-4 text-sm text-purple-200 opacity-70">
-                    <p>• Drag to rotate the globe</p>
-                    <p>• Scroll to zoom in/out</p>
-                    <p>• Toggle layers for different data views</p>
-                    <p>• NASA data sources integrated</p>
-                  </div>
+                  <WorldWind3DViewer />
                 </div>
               ) : (
                 <div className="cesium-wrapper">
-                  <Cesium3DViewer />
+                  <WorldWind3DViewer />
                   <div className="mt-4 text-sm text-purple-200 opacity-70">
                     <p>• Use mouse to rotate and zoom the Earth</p>
                     <p>• Click on objects to view details</p>

@@ -7,7 +7,6 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
@@ -24,9 +23,7 @@ contract SpaceElementsNFT is
     Ownable,
     ReentrancyGuard 
 {
-    using Counters for Counters.Counter;
-    
-    Counters.Counter private _tokenIdCounter;
+    uint256 private _tokenIdCounter;
     
     // PNT Element Types
     enum ElementType {
@@ -140,10 +137,10 @@ contract SpaceElementsNFT is
         require(!widgetCodeExists[_widgetCode], "Widget code already exists");
         require(bytes(_name).length > 0, "Name cannot be empty");
         require(bytes(_widgetCode).length > 0, "Widget code cannot be empty");
-        require(_tokenIdCounter.current() < MAX_SUPPLY, "Max supply reached");
+        require(_tokenIdCounter < MAX_SUPPLY, "Max supply reached");
         
-        uint256 tokenId = _tokenIdCounter.current();
-        _tokenIdCounter.increment();
+        uint256 tokenId = _tokenIdCounter;
+        _tokenIdCounter++;
         
         _safeMint(msg.sender, tokenId);
         _setTokenURI(tokenId, _tokenURI);
@@ -338,7 +335,7 @@ contract SpaceElementsNFT is
      * @dev Get active listings
      */
     function getActiveListings() public view returns (uint256[] memory) {
-        uint256 totalSupply = _tokenIdCounter.current();
+        uint256 totalSupply = _tokenIdCounter;
         uint256[] memory activeTokenIds = new uint256[](totalSupply);
         uint256 activeCount = 0;
         
@@ -376,23 +373,26 @@ contract SpaceElementsNFT is
         require(success, "Withdrawal failed");
     }
     
-    // Required overrides
-    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
-        super._burn(tokenId);
-        
-        // Clean up element data
-        delete spaceElements[tokenId];
-        delete listings[tokenId];
-        delete widgetCodeExists[spaceElements[tokenId].widgetCode];
-    }
-    
-    function _beforeTokenTransfer(
-        address from,
+    // Required overrides for OpenZeppelin v5
+    function _update(
         address to,
         uint256 tokenId,
-        uint256 batchSize
-    ) internal override(ERC721, ERC721Enumerable) {
-        super._beforeTokenTransfer(from, to, tokenId, batchSize);
+        address auth
+    ) internal override(ERC721, ERC721Enumerable) returns (address) {
+        address from = _ownerOf(tokenId);
+        
+        // If burning (to == address(0)), clean up element data
+        if (to == address(0)) {
+            delete spaceElements[tokenId];
+            delete listings[tokenId];
+            delete widgetCodeExists[spaceElements[tokenId].widgetCode];
+        }
+        
+        return super._update(to, tokenId, auth);
+    }
+    
+    function _increaseBalance(address account, uint128 value) internal override(ERC721, ERC721Enumerable) {
+        super._increaseBalance(account, value);
     }
     
     function tokenURI(uint256 tokenId)
