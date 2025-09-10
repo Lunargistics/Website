@@ -2,8 +2,20 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Package, Rocket, Satellite, Save, Send, Sparkles, Users } from "lucide-react";
+import { Globe, MapPin, Package, Rocket, Satellite, Save, Send, Sparkles, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
+import dynamic from "next/dynamic";
+import SpaceVisualization from "~~/components/SpaceVisualization";
+
+// Dynamic import for Cesium component
+const Cesium3DViewer = dynamic(() => import("~~/components/Cesium3DViewer"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[600px] w-full bg-base-200 rounded-lg flex items-center justify-center">
+      <span className="loading loading-spinner loading-lg"></span>
+    </div>
+  ),
+});
 
 interface MissionElement {
   id: string;
@@ -46,12 +58,17 @@ export default function ImplementSpacePage() {
     "Optimizing resource allocation...",
   ];
 
+  const [showVisualization, setShowVisualization] = useState(false);
+  const [viewMode, setViewMode] = useState<"2d" | "3d">("2d");
+  const [showOrbitalCalculator, setShowOrbitalCalculator] = useState(false);
+  
   const missionSteps = [
     { icon: Rocket, label: "Mission Overview", key: "overview" },
     { icon: Satellite, label: "Payload Design", key: "payload" },
     { icon: Users, label: "Crew Requirements", key: "crew" },
     { icon: MapPin, label: "Trajectory Planning", key: "trajectory" },
     { icon: Package, label: "Resource Allocation", key: "resources" },
+    { icon: Globe, label: "Space Tracking", key: "tracking" },
   ];
 
   useEffect(() => {
@@ -310,23 +327,32 @@ Format the response as a detailed technical document with specific numbers and r
               </div>
 
               {mission && (
-                <button
-                  onClick={saveMission}
-                  disabled={isSaving}
-                  className="w-full mt-6 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-4 rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  {isSaving ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-5 h-5" />
-                      Save Mission Plan
-                    </>
-                  )}
-                </button>
+                <>
+                  <button
+                    onClick={saveMission}
+                    disabled={isSaving}
+                    className="w-full mt-6 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-4 rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    {isSaving ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-5 h-5" />
+                        Save Mission Plan
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setShowVisualization(!showVisualization)}
+                    className="w-full mt-3 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-cyan-700 transition-all"
+                  >
+                    <Globe className="w-5 h-5" />
+                    {showVisualization ? "Hide" : "Show"} Space Tracking
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -447,6 +473,87 @@ Format the response as a detailed technical document with specific numbers and r
             </div>
           </div>
         </div>
+        
+        {/* Space Visualization Section */}
+        {showVisualization && (
+          <div className="mt-8 max-w-7xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-purple-500/20 p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-white">Real-Time Space Tracking</h2>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setViewMode("2d")}
+                    className={`px-4 py-2 rounded-lg transition ${
+                      viewMode === "2d"
+                        ? "bg-purple-600 text-white"
+                        : "bg-white/10 text-purple-200 hover:bg-white/20"
+                    }`}
+                  >
+                    2D View
+                  </button>
+                  <button
+                    onClick={() => setViewMode("3d")}
+                    className={`px-4 py-2 rounded-lg transition ${
+                      viewMode === "3d"
+                        ? "bg-purple-600 text-white"
+                        : "bg-white/10 text-purple-200 hover:bg-white/20"
+                    }`}
+                  >
+                    3D View
+                  </button>
+                  <button
+                    onClick={() => setShowOrbitalCalculator(!showOrbitalCalculator)}
+                    className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition"
+                  >
+                    Orbital Calculator
+                  </button>
+                </div>
+              </div>
+              
+              {showOrbitalCalculator && (
+                <div className="mb-6 p-4 bg-white/5 rounded-lg border border-purple-500/20">
+                  <h3 className="text-lg font-bold text-white mb-4">Orbital Mechanics Calculator</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-purple-200 text-sm mb-2">TLE Line 1</label>
+                      <input
+                        type="text"
+                        className="w-full bg-white/10 border border-purple-500/30 rounded px-3 py-2 text-white placeholder-purple-300"
+                        defaultValue="1 25544U 98067A   24345.52795139  .00012506  00000-0  22495-3 0  9991"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-purple-200 text-sm mb-2">TLE Line 2</label>
+                      <input
+                        type="text"
+                        className="w-full bg-white/10 border border-purple-500/30 rounded px-3 py-2 text-white placeholder-purple-300"
+                        defaultValue="2 25544  51.6415 208.4057 0002769  35.9667  61.6291 15.50381554436915"
+                      />
+                    </div>
+                  </div>
+                  <button className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                    Calculate Orbital Elements
+                  </button>
+                </div>
+              )}
+              
+              {viewMode === "2d" ? (
+                <div className="space-visualization-wrapper">
+                  <SpaceVisualization />
+                </div>
+              ) : (
+                <div className="cesium-wrapper">
+                  <Cesium3DViewer />
+                  <div className="mt-4 text-sm text-purple-200 opacity-70">
+                    <p>• Use mouse to rotate and zoom the Earth</p>
+                    <p>• Click on objects to view details</p>
+                    <p>• Timeline controls satellite animation</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
