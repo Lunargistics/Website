@@ -104,9 +104,24 @@ export const authOptions: NextAuthOptions = {
           }
 
           // Create new user from social login
+          const baseUsername = user
+            .email!.split("@")[0]
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "");
+          let username = baseUsername;
+          let counter = 1;
+
+          // Ensure unique username
+          while (await User.findOne({ usernameLower: username.toLowerCase() })) {
+            username = `${baseUsername}${counter}`;
+            counter++;
+          }
+
           const newUser = new User({
             email: user.email,
             emailLower: user.email!.toLowerCase(),
+            username: username,
+            usernameLower: username.toLowerCase(),
             name: user.name || user.email!.split("@")[0],
             emailVerified: true, // Social logins are pre-verified
             password: Math.random().toString(36), // Dummy password for social users
@@ -122,12 +137,25 @@ export const authOptions: NextAuthOptions = {
 
       return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
-        token.id = user.id;
-        token.email = user.email;
-        token.name = user.name;
-        token.emailVerified = user.emailVerified;
+        // For OAuth logins, we need to fetch the user from database
+        if (account?.provider === "google" || account?.provider === "github") {
+          await dbConnect();
+          const dbUser = await User.findOne({ emailLower: user.email!.toLowerCase() });
+          if (dbUser) {
+            token.id = (dbUser as any)._id.toString();
+            token.email = dbUser.email;
+            token.name = dbUser.name;
+            token.emailVerified = dbUser.emailVerified;
+          }
+        } else {
+          // For credentials login, user already has the correct structure
+          token.id = user.id;
+          token.email = user.email;
+          token.name = user.name;
+          token.emailVerified = user.emailVerified;
+        }
       }
       return token;
     },
