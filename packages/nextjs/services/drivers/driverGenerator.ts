@@ -3,13 +3,12 @@
  * Generates software drivers, test scripts, and simulation code for mission hardware
  * Implements requirements MP-DRV-1 through MP-DRV-5
  */
-
-import { EquipmentData } from '../ipfs/pinataService';
+import { EquipmentData } from "../ipfs/pinataService";
 
 export interface InterfaceDefinition {
   id: string;
   name: string;
-  type: 'serial' | 'spi' | 'i2c' | 'ethernet' | 'spacewire' | 'can' | 'rs422' | 'rs485' | 'custom';
+  type: "serial" | "spi" | "i2c" | "ethernet" | "spacewire" | "can" | "rs422" | "rs485" | "custom";
   protocol: string;
   dataRate: number; // bits per second
   voltage?: number; // V
@@ -22,7 +21,7 @@ export interface InterfaceDefinition {
 export interface PinConfiguration {
   pin: number;
   signal: string;
-  direction: 'input' | 'output' | 'bidirectional';
+  direction: "input" | "output" | "bidirectional";
   voltage: number;
   description: string;
 }
@@ -48,7 +47,7 @@ export interface TelemetryDefinition {
 
 export interface ParameterDefinition {
   name: string;
-  type: 'uint8' | 'uint16' | 'uint32' | 'int8' | 'int16' | 'int32' | 'float' | 'double' | 'string' | 'bytes';
+  type: "uint8" | "uint16" | "uint32" | "int8" | "int16" | "int32" | "float" | "double" | "string" | "bytes";
   size: number; // bytes
   range?: { min: number; max: number };
   default?: any;
@@ -79,8 +78,8 @@ export interface TimingRequirements {
 }
 
 export interface DriverGenerationOptions {
-  language: 'c' | 'cpp' | 'python' | 'javascript' | 'rust' | 'vhdl' | 'verilog';
-  platform: 'embedded' | 'linux' | 'windows' | 'rtos' | 'baremetal';
+  language: "c" | "cpp" | "python" | "javascript" | "rust" | "vhdl" | "verilog";
+  platform: "embedded" | "linux" | "windows" | "rtos" | "baremetal";
   features: {
     errorHandling: boolean;
     logging: boolean;
@@ -91,7 +90,7 @@ export interface DriverGenerationOptions {
     simulation: boolean;
     documentation: boolean;
   };
-  optimization: 'size' | 'speed' | 'balanced';
+  optimization: "size" | "speed" | "balanced";
 }
 
 class DriverGeneratorService {
@@ -100,35 +99,35 @@ class DriverGeneratorService {
    */
   generateCDriver(
     component: EquipmentData,
-    interface: InterfaceDefinition,
-    options: DriverGenerationOptions
+    interfaceDef: InterfaceDefinition,
+    options: DriverGenerationOptions,
   ): string {
-    let code = this.generateCHeader(component, interface);
-    code += '\n' + this.generateCImplementation(component, interface, options);
-    
+    let code = this.generateCHeader(component, interfaceDef);
+    code += "\n" + this.generateCImplementation(component, interfaceDef, options);
+
     if (options.features.unitTests) {
-      code += '\n' + this.generateCTestSuite(component, interface);
+      code += "\n" + this.generateCTestSuite(component, interfaceDef);
     }
-    
+
     return code;
   }
 
   /**
    * Generate C header file
    */
-  private generateCHeader(component: EquipmentData, interface: InterfaceDefinition): string {
-    const guardName = `${component.name.toUpperCase().replace(/\s+/g, '_')}_H`;
-    
+  private generateCHeader(component: EquipmentData, interfaceDef: InterfaceDefinition): string {
+    const guardName = `${component.name.toUpperCase().replace(/\s+/g, "_")}_H`;
+
     let header = `/**
- * @file ${component.name.toLowerCase().replace(/\s+/g, '_')}.h
+ * @file ${component.name.toLowerCase().replace(/\s+/g, "_")}.h
  * @brief Driver interface for ${component.name}
  * @author Mission Planning Suite - Auto Generated
  * @date ${new Date().toISOString()}
  * 
  * Component: ${component.name}
  * Manufacturer: ${component.manufacturer}
- * Interface: ${interface.type.toUpperCase()} - ${interface.protocol}
- * Data Rate: ${interface.dataRate} bps
+ * Interface: ${interfaceDef.type.toUpperCase()} - ${interfaceDef.protocol}
+ * Data Rate: ${interfaceDef.dataRate} bps
  */
 
 #ifndef ${guardName}
@@ -142,18 +141,18 @@ extern "C" {
 #include <stdbool.h>
 
 /* Configuration Constants */
-#define ${component.name.toUpperCase().replace(/\s+/g, '_')}_INTERFACE_TYPE "${interface.type}"
-#define ${component.name.toUpperCase().replace(/\s+/g, '_')}_DATA_RATE ${interface.dataRate}
-#define ${component.name.toUpperCase().replace(/\s+/g, '_')}_BUFFER_SIZE 256
+#define ${component.name.toUpperCase().replace(/\s+/g, "_")}_INTERFACE_TYPE "${interfaceDef.type}"
+#define ${component.name.toUpperCase().replace(/\s+/g, "_")}_DATA_RATE ${interfaceDef.dataRate}
+#define ${component.name.toUpperCase().replace(/\s+/g, "_")}_BUFFER_SIZE 256
 
 /* Status Codes */
 typedef enum {
-    ${component.name.toUpperCase().replace(/\s+/g, '_')}_OK = 0,
-    ${component.name.toUpperCase().replace(/\s+/g, '_')}_ERROR = -1,
-    ${component.name.toUpperCase().replace(/\s+/g, '_')}_TIMEOUT = -2,
-    ${component.name.toUpperCase().replace(/\s+/g, '_')}_INVALID_PARAM = -3,
-    ${component.name.toUpperCase().replace(/\s+/g, '_')}_NOT_INITIALIZED = -4
-} ${component.name.toLowerCase().replace(/\s+/g, '_')}_status_t;
+    ${component.name.toUpperCase().replace(/\s+/g, "_")}_OK = 0,
+    ${component.name.toUpperCase().replace(/\s+/g, "_")}_ERROR = -1,
+    ${component.name.toUpperCase().replace(/\s+/g, "_")}_TIMEOUT = -2,
+    ${component.name.toUpperCase().replace(/\s+/g, "_")}_INVALID_PARAM = -3,
+    ${component.name.toUpperCase().replace(/\s+/g, "_")}_NOT_INITIALIZED = -4
+} ${component.name.toLowerCase().replace(/\s+/g, "_")}_status_t;
 
 /* Device Handle */
 typedef struct {
@@ -161,22 +160,22 @@ typedef struct {
     uint8_t device_id;
     bool initialized;
     uint32_t timeout_ms;
-    uint8_t tx_buffer[${component.name.toUpperCase().replace(/\s+/g, '_')}_BUFFER_SIZE];
-    uint8_t rx_buffer[${component.name.toUpperCase().replace(/\s+/g, '_')}_BUFFER_SIZE];
-} ${component.name.toLowerCase().replace(/\s+/g, '_')}_device_t;
+    uint8_t tx_buffer[${component.name.toUpperCase().replace(/\s+/g, "_")}_BUFFER_SIZE];
+    uint8_t rx_buffer[${component.name.toUpperCase().replace(/\s+/g, "_")}_BUFFER_SIZE];
+} ${component.name.toLowerCase().replace(/\s+/g, "_")}_device_t;
 
 `;
 
     // Add command definitions
     header += `/* Command Opcodes */\n`;
-    interface.commands.forEach(cmd => {
+    interfaceDef.commands.forEach(cmd => {
       header += `#define CMD_${cmd.name.toUpperCase()} 0x${cmd.opcode}\n`;
     });
-    header += '\n';
+    header += "\n";
 
     // Add telemetry structures
     header += `/* Telemetry Structures */\n`;
-    interface.telemetry.forEach(tlm => {
+    interfaceDef.telemetry.forEach(tlm => {
       header += `typedef struct __attribute__((packed)) {\n`;
       tlm.fields.forEach(field => {
         header += `    ${this.getCType(field.type)} ${field.name}; /* ${field.description} */\n`;
@@ -186,19 +185,19 @@ typedef struct {
 
     // Add function prototypes
     header += `/* Function Prototypes */\n`;
-    header += `${component.name.toLowerCase().replace(/\s+/g, '_')}_status_t ${component.name.toLowerCase().replace(/\s+/g, '_')}_init(
-    ${component.name.toLowerCase().replace(/\s+/g, '_')}_device_t* device,
+    header += `${component.name.toLowerCase().replace(/\s+/g, "_")}_status_t ${component.name.toLowerCase().replace(/\s+/g, "_")}_init(
+    ${component.name.toLowerCase().replace(/\s+/g, "_")}_device_t* device,
     void* interface_config
 );\n\n`;
 
-    header += `${component.name.toLowerCase().replace(/\s+/g, '_')}_status_t ${component.name.toLowerCase().replace(/\s+/g, '_')}_deinit(
-    ${component.name.toLowerCase().replace(/\s+/g, '_')}_device_t* device
+    header += `${component.name.toLowerCase().replace(/\s+/g, "_")}_status_t ${component.name.toLowerCase().replace(/\s+/g, "_")}_deinit(
+    ${component.name.toLowerCase().replace(/\s+/g, "_")}_device_t* device
 );\n\n`;
 
     // Add command functions
-    interface.commands.forEach(cmd => {
-      header += `${component.name.toLowerCase().replace(/\s+/g, '_')}_status_t ${component.name.toLowerCase().replace(/\s+/g, '_')}_${cmd.name.toLowerCase()}(\n`;
-      header += `    ${component.name.toLowerCase().replace(/\s+/g, '_')}_device_t* device`;
+    interfaceDef.commands.forEach(cmd => {
+      header += `${component.name.toLowerCase().replace(/\s+/g, "_")}_status_t ${component.name.toLowerCase().replace(/\s+/g, "_")}_${cmd.name.toLowerCase()}(\n`;
+      header += `    ${component.name.toLowerCase().replace(/\s+/g, "_")}_device_t* device`;
       cmd.parameters.forEach(param => {
         header += `,\n    ${this.getCType(param.type)} ${param.name}`;
       });
@@ -209,9 +208,9 @@ typedef struct {
     });
 
     // Add telemetry functions
-    interface.telemetry.forEach(tlm => {
-      header += `${component.name.toLowerCase().replace(/\s+/g, '_')}_status_t ${component.name.toLowerCase().replace(/\s+/g, '_')}_get_${tlm.name.toLowerCase()}(\n`;
-      header += `    ${component.name.toLowerCase().replace(/\s+/g, '_')}_device_t* device,\n`;
+    interfaceDef.telemetry.forEach(tlm => {
+      header += `${component.name.toLowerCase().replace(/\s+/g, "_")}_status_t ${component.name.toLowerCase().replace(/\s+/g, "_")}_get_${tlm.name.toLowerCase()}(\n`;
+      header += `    ${component.name.toLowerCase().replace(/\s+/g, "_")}_device_t* device,\n`;
       header += `    ${tlm.name.toLowerCase()}_t* data\n`;
       header += `);\n\n`;
     });
@@ -231,17 +230,17 @@ typedef struct {
    */
   private generateCImplementation(
     component: EquipmentData,
-    interface: InterfaceDefinition,
-    options: DriverGenerationOptions
+    interfaceDef: InterfaceDefinition,
+    options: DriverGenerationOptions,
   ): string {
     let impl = `/**
- * @file ${component.name.toLowerCase().replace(/\s+/g, '_')}.c
+ * @file ${component.name.toLowerCase().replace(/\s+/g, "_")}.c
  * @brief Driver implementation for ${component.name}
  * @author Mission Planning Suite - Auto Generated
  * @date ${new Date().toISOString()}
  */
 
-#include "${component.name.toLowerCase().replace(/\s+/g, '_')}.h"
+#include "${component.name.toLowerCase().replace(/\s+/g, "_")}.h"
 #include <string.h>
 #include <stdio.h>
 `;
@@ -257,12 +256,12 @@ typedef struct {
 
     // Add helper functions
     impl += `/* Helper Functions */\n`;
-    impl += `static int send_command(${component.name.toLowerCase().replace(/\s+/g, '_')}_device_t* device, 
+    impl += `static int send_command(${component.name.toLowerCase().replace(/\s+/g, "_")}_device_t* device, 
                         uint8_t opcode, 
                         uint8_t* params, 
                         size_t param_len) {
     if (!device || !device->initialized) {
-        return ${component.name.toUpperCase().replace(/\s+/g, '_')}_NOT_INITIALIZED;
+        return ${component.name.toUpperCase().replace(/\s+/g, "_")}_NOT_INITIALIZED;
     }
     
     /* Build command packet */
@@ -275,15 +274,15 @@ typedef struct {
     /* TODO: Implement actual interface transmission */
     LOG_INFO("Sending command 0x%02X with %zu bytes of parameters", opcode, param_len);
     
-    return ${component.name.toUpperCase().replace(/\s+/g, '_')}_OK;
+    return ${component.name.toUpperCase().replace(/\s+/g, "_")}_OK;
 }
 
-static int receive_response(${component.name.toLowerCase().replace(/\s+/g, '_')}_device_t* device, 
+static int receive_response(${component.name.toLowerCase().replace(/\s+/g, "_")}_device_t* device, 
                            void* response, 
                            size_t response_len,
                            uint32_t timeout_ms) {
     if (!device || !device->initialized) {
-        return ${component.name.toUpperCase().replace(/\s+/g, '_')}_NOT_INITIALIZED;
+        return ${component.name.toUpperCase().replace(/\s+/g, "_")}_NOT_INITIALIZED;
     }
     
     /* TODO: Implement actual interface reception with timeout */
@@ -293,45 +292,45 @@ static int receive_response(${component.name.toLowerCase().replace(/\s+/g, '_')}
         memcpy(response, device->rx_buffer, response_len);
     }
     
-    return ${component.name.toUpperCase().replace(/\s+/g, '_')}_OK;
+    return ${component.name.toUpperCase().replace(/\s+/g, "_")}_OK;
 }
 
 `;
 
     // Add initialization function
     impl += `/* Initialization */\n`;
-    impl += `${component.name.toLowerCase().replace(/\s+/g, '_')}_status_t ${component.name.toLowerCase().replace(/\s+/g, '_')}_init(
-    ${component.name.toLowerCase().replace(/\s+/g, '_')}_device_t* device,
+    impl += `${component.name.toLowerCase().replace(/\s+/g, "_")}_status_t ${component.name.toLowerCase().replace(/\s+/g, "_")}_init(
+    ${component.name.toLowerCase().replace(/\s+/g, "_")}_device_t* device,
     void* interface_config) {
     
     if (!device) {
-        return ${component.name.toUpperCase().replace(/\s+/g, '_')}_INVALID_PARAM;
+        return ${component.name.toUpperCase().replace(/\s+/g, "_")}_INVALID_PARAM;
     }
     
     LOG_INFO("Initializing ${component.name} driver");
     
     /* Clear device structure */
-    memset(device, 0, sizeof(${component.name.toLowerCase().replace(/\s+/g, '_')}_device_t));
+    memset(device, 0, sizeof(${component.name.toLowerCase().replace(/\s+/g, "_")}_device_t));
     
     /* Initialize interface */
-    /* TODO: Initialize actual hardware interface (${interface.type}) */
+    /* TODO: Initialize actual hardware interface (${interfaceDef.type}) */
     device->interface_handle = interface_config;
-    device->timeout_ms = ${interface.timing?.timeout || 1000};
+    device->timeout_ms = ${interfaceDef.timing?.timeout || 1000};
     device->initialized = true;
     
     LOG_INFO("${component.name} driver initialized successfully");
     
-    return ${component.name.toUpperCase().replace(/\s+/g, '_')}_OK;
+    return ${component.name.toUpperCase().replace(/\s+/g, "_")}_OK;
 }
 
 `;
 
     // Add deinitialization function
-    impl += `${component.name.toLowerCase().replace(/\s+/g, '_')}_status_t ${component.name.toLowerCase().replace(/\s+/g, '_')}_deinit(
-    ${component.name.toLowerCase().replace(/\s+/g, '_')}_device_t* device) {
+    impl += `${component.name.toLowerCase().replace(/\s+/g, "_")}_status_t ${component.name.toLowerCase().replace(/\s+/g, "_")}_deinit(
+    ${component.name.toLowerCase().replace(/\s+/g, "_")}_device_t* device) {
     
     if (!device || !device->initialized) {
-        return ${component.name.toUpperCase().replace(/\s+/g, '_')}_NOT_INITIALIZED;
+        return ${component.name.toUpperCase().replace(/\s+/g, "_")}_NOT_INITIALIZED;
     }
     
     LOG_INFO("Deinitializing ${component.name} driver");
@@ -339,16 +338,16 @@ static int receive_response(${component.name.toLowerCase().replace(/\s+/g, '_')}
     /* TODO: Close hardware interface */
     device->initialized = false;
     
-    return ${component.name.toUpperCase().replace(/\s+/g, '_')}_OK;
+    return ${component.name.toUpperCase().replace(/\s+/g, "_")}_OK;
 }
 
 `;
 
     // Add command implementations
-    interface.commands.forEach(cmd => {
+    interfaceDef.commands.forEach(cmd => {
       impl += `/* Command: ${cmd.name} - ${cmd.description} */\n`;
-      impl += `${component.name.toLowerCase().replace(/\s+/g, '_')}_status_t ${component.name.toLowerCase().replace(/\s+/g, '_')}_${cmd.name.toLowerCase()}(\n`;
-      impl += `    ${component.name.toLowerCase().replace(/\s+/g, '_')}_device_t* device`;
+      impl += `${component.name.toLowerCase().replace(/\s+/g, "_")}_status_t ${component.name.toLowerCase().replace(/\s+/g, "_")}_${cmd.name.toLowerCase()}(\n`;
+      impl += `    ${component.name.toLowerCase().replace(/\s+/g, "_")}_device_t* device`;
       cmd.parameters.forEach(param => {
         impl += `,\n    ${this.getCType(param.type)} ${param.name}`;
       });
@@ -356,30 +355,30 @@ static int receive_response(${component.name.toLowerCase().replace(/\s+/g, '_')}
         impl += `,\n    void* response`;
       }
       impl += `) {\n`;
-      
+
       impl += `    int status;\n`;
       impl += `    uint8_t params[${cmd.parameters.reduce((sum, p) => sum + p.size, 0) || 1}];\n`;
       impl += `    size_t param_offset = 0;\n\n`;
-      
+
       // Parameter validation
       if (options.features.errorHandling) {
         impl += `    /* Validate parameters */\n`;
         impl += `    if (!device || !device->initialized) {\n`;
         impl += `        LOG_ERROR("Device not initialized");\n`;
-        impl += `        return ${component.name.toUpperCase().replace(/\s+/g, '_')}_NOT_INITIALIZED;\n`;
+        impl += `        return ${component.name.toUpperCase().replace(/\s+/g, "_")}_NOT_INITIALIZED;\n`;
         impl += `    }\n\n`;
-        
+
         cmd.parameters.forEach(param => {
           if (param.range) {
             impl += `    if (${param.name} < ${param.range.min} || ${param.name} > ${param.range.max}) {\n`;
             impl += `        LOG_ERROR("Parameter ${param.name} out of range");\n`;
-            impl += `        return ${component.name.toUpperCase().replace(/\s+/g, '_')}_INVALID_PARAM;\n`;
+            impl += `        return ${component.name.toUpperCase().replace(/\s+/g, "_")}_INVALID_PARAM;\n`;
             impl += `    }\n`;
           }
         });
-        impl += '\n';
+        impl += "\n";
       }
-      
+
       // Pack parameters
       if (cmd.parameters.length > 0) {
         impl += `    /* Pack parameters */\n`;
@@ -387,31 +386,31 @@ static int receive_response(${component.name.toLowerCase().replace(/\s+/g, '_')}
           impl += `    memcpy(&params[param_offset], &${param.name}, ${param.size});\n`;
           impl += `    param_offset += ${param.size};\n`;
         });
-        impl += '\n';
+        impl += "\n";
       }
-      
+
       // Send command
       impl += `    /* Send command */\n`;
       impl += `    status = send_command(device, CMD_${cmd.name.toUpperCase()}, `;
-      impl += cmd.parameters.length > 0 ? 'params, param_offset);\n' : 'NULL, 0);\n';
-      impl += `    if (status != ${component.name.toUpperCase().replace(/\s+/g, '_')}_OK) {\n`;
+      impl += cmd.parameters.length > 0 ? "params, param_offset);\n" : "NULL, 0);\n";
+      impl += `    if (status != ${component.name.toUpperCase().replace(/\s+/g, "_")}_OK) {\n`;
       impl += `        LOG_ERROR("Failed to send ${cmd.name} command");\n`;
       impl += `        return status;\n`;
       impl += `    }\n\n`;
-      
+
       // Receive response
       if (cmd.response) {
         impl += `    /* Receive response */\n`;
         impl += `    status = receive_response(device, response, `;
         impl += `sizeof(${cmd.response.format}), ${cmd.response.timeout});\n`;
-        impl += `    if (status != ${component.name.toUpperCase().replace(/\s+/g, '_')}_OK) {\n`;
+        impl += `    if (status != ${component.name.toUpperCase().replace(/\s+/g, "_")}_OK) {\n`;
         impl += `        LOG_ERROR("Failed to receive response for ${cmd.name}");\n`;
         impl += `        return status;\n`;
         impl += `    }\n\n`;
       }
-      
+
       impl += `    LOG_INFO("${cmd.name} command executed successfully");\n`;
-      impl += `    return ${component.name.toUpperCase().replace(/\s+/g, '_')}_OK;\n`;
+      impl += `    return ${component.name.toUpperCase().replace(/\s+/g, "_")}_OK;\n`;
       impl += `}\n\n`;
     });
 
@@ -421,30 +420,30 @@ static int receive_response(${component.name.toLowerCase().replace(/\s+/g, '_')}
   /**
    * Generate C test suite
    */
-  private generateCTestSuite(component: EquipmentData, interface: InterfaceDefinition): string {
+  private generateCTestSuite(component: EquipmentData, interfaceDef: InterfaceDefinition): string {
     let test = `/**
- * @file test_${component.name.toLowerCase().replace(/\s+/g, '_')}.c
+ * @file test_${component.name.toLowerCase().replace(/\s+/g, "_")}.c
  * @brief Unit tests for ${component.name} driver
  * @author Mission Planning Suite - Auto Generated
  */
 
 #include <assert.h>
 #include <stdio.h>
-#include "${component.name.toLowerCase().replace(/\s+/g, '_')}.h"
+#include "${component.name.toLowerCase().replace(/\s+/g, "_")}.h"
 
 /* Test initialization */
 void test_init() {
-    ${component.name.toLowerCase().replace(/\s+/g, '_')}_device_t device;
-    ${component.name.toLowerCase().replace(/\s+/g, '_')}_status_t status;
+    ${component.name.toLowerCase().replace(/\s+/g, "_")}_device_t device;
+    ${component.name.toLowerCase().replace(/\s+/g, "_")}_status_t status;
     
     printf("Testing initialization...\\n");
     
-    status = ${component.name.toLowerCase().replace(/\s+/g, '_')}_init(&device, NULL);
-    assert(status == ${component.name.toUpperCase().replace(/\s+/g, '_')}_OK);
+    status = ${component.name.toLowerCase().replace(/\s+/g, "_")}_init(&device, NULL);
+    assert(status == ${component.name.toUpperCase().replace(/\s+/g, "_")}_OK);
     assert(device.initialized == true);
     
-    status = ${component.name.toLowerCase().replace(/\s+/g, '_')}_deinit(&device);
-    assert(status == ${component.name.toUpperCase().replace(/\s+/g, '_')}_OK);
+    status = ${component.name.toLowerCase().replace(/\s+/g, "_")}_deinit(&device);
+    assert(status == ${component.name.toUpperCase().replace(/\s+/g, "_")}_OK);
     assert(device.initialized == false);
     
     printf("  PASSED\\n");
@@ -453,37 +452,37 @@ void test_init() {
 `;
 
     // Add command tests
-    interface.commands.forEach(cmd => {
+    interfaceDef.commands.forEach(cmd => {
       test += `/* Test ${cmd.name} command */\n`;
       test += `void test_${cmd.name.toLowerCase()}() {\n`;
-      test += `    ${component.name.toLowerCase().replace(/\s+/g, '_')}_device_t device;\n`;
-      test += `    ${component.name.toLowerCase().replace(/\s+/g, '_')}_status_t status;\n`;
-      
+      test += `    ${component.name.toLowerCase().replace(/\s+/g, "_")}_device_t device;\n`;
+      test += `    ${component.name.toLowerCase().replace(/\s+/g, "_")}_status_t status;\n`;
+
       if (cmd.response) {
         test += `    ${cmd.response.format} response;\n`;
       }
-      
+
       test += `\n    printf("Testing ${cmd.name} command...\\n");\n\n`;
       test += `    /* Initialize device */\n`;
-      test += `    status = ${component.name.toLowerCase().replace(/\s+/g, '_')}_init(&device, NULL);\n`;
-      test += `    assert(status == ${component.name.toUpperCase().replace(/\s+/g, '_')}_OK);\n\n`;
-      
+      test += `    status = ${component.name.toLowerCase().replace(/\s+/g, "_")}_init(&device, NULL);\n`;
+      test += `    assert(status == ${component.name.toUpperCase().replace(/\s+/g, "_")}_OK);\n\n`;
+
       test += `    /* Execute command */\n`;
-      test += `    status = ${component.name.toLowerCase().replace(/\s+/g, '_')}_${cmd.name.toLowerCase()}(&device`;
-      
+      test += `    status = ${component.name.toLowerCase().replace(/\s+/g, "_")}_${cmd.name.toLowerCase()}(&device`;
+
       cmd.parameters.forEach(param => {
-        test += `, ${param.default || '0'}`;
+        test += `, ${param.default || "0"}`;
       });
-      
+
       if (cmd.response) {
         test += `, &response`;
       }
-      
+
       test += `);\n`;
-      test += `    assert(status == ${component.name.toUpperCase().replace(/\s+/g, '_')}_OK);\n\n`;
-      
+      test += `    assert(status == ${component.name.toUpperCase().replace(/\s+/g, "_")}_OK);\n\n`;
+
       test += `    /* Cleanup */\n`;
-      test += `    ${component.name.toLowerCase().replace(/\s+/g, '_')}_deinit(&device);\n`;
+      test += `    ${component.name.toLowerCase().replace(/\s+/g, "_")}_deinit(&device);\n`;
       test += `    printf("  PASSED\\n");\n`;
       test += `}\n\n`;
     });
@@ -494,7 +493,7 @@ void test_init() {
     test_init();
 `;
 
-    interface.commands.forEach(cmd => {
+    interfaceDef.commands.forEach(cmd => {
       test += `    test_${cmd.name.toLowerCase()}();\n`;
     });
 
@@ -512,8 +511,8 @@ void test_init() {
    */
   generatePythonDriver(
     component: EquipmentData,
-    interface: InterfaceDefinition,
-    options: DriverGenerationOptions
+    interfaceDef: InterfaceDefinition,
+    options: DriverGenerationOptions,
   ): string {
     let code = `#!/usr/bin/env python3
 """
@@ -522,7 +521,7 @@ Auto-generated by Mission Planning Suite
 
 Component: ${component.name}
 Manufacturer: ${component.manufacturer}
-Interface: ${interface.type.toUpperCase()} - ${interface.protocol}
+Interface: ${interfaceDef.type.toUpperCase()} - ${interfaceDef.protocol}
 Generated: ${new Date().toISOString()}
 """
 
@@ -536,7 +535,7 @@ from dataclasses import dataclass
 # Configure logging
 logger = logging.getLogger(__name__)
 
-class ${component.name.replace(/\s+/g, '')}Status(IntEnum):
+class ${component.name.replace(/\s+/g, "")}Status(IntEnum):
     """Status codes for ${component.name} operations"""
     OK = 0
     ERROR = -1
@@ -547,28 +546,28 @@ class ${component.name.replace(/\s+/g, '')}Status(IntEnum):
 # Command opcodes
 `;
 
-    interface.commands.forEach(cmd => {
+    interfaceDef.commands.forEach(cmd => {
       code += `CMD_${cmd.name.toUpperCase()} = 0x${cmd.opcode}\n`;
     });
 
     code += `\n# Telemetry structures\n`;
-    interface.telemetry.forEach(tlm => {
+    interfaceDef.telemetry.forEach(tlm => {
       code += `@dataclass\n`;
       code += `class ${tlm.name}:\n`;
       code += `    """${tlm.name} telemetry structure"""\n`;
       tlm.fields.forEach(field => {
         code += `    ${field.name}: ${this.getPythonType(field.type)}  # ${field.description}\n`;
       });
-      code += '\n';
+      code += "\n";
     });
 
     code += `
-class ${component.name.replace(/\s+/g, '')}Driver:
+class ${component.name.replace(/\s+/g, "")}Driver:
     """
     Driver class for ${component.name}
     
     This driver provides interface to control and monitor the ${component.name}
-    via ${interface.type} interface at ${interface.dataRate} bps.
+    via ${interfaceDef.type} interface at ${interfaceDef.dataRate} bps.
     """
     
     def __init__(self, interface_config: dict = None):
@@ -576,53 +575,53 @@ class ${component.name.replace(/\s+/g, '')}Driver:
         Initialize the ${component.name} driver
         
         Args:
-            interface_config: Configuration for the ${interface.type} interface
+            interface_config: Configuration for the ${interfaceDef.type} interface
         """
         self.interface_config = interface_config or {}
         self.initialized = False
-        self.timeout = ${interface.timing?.timeout || 1000} / 1000.0  # Convert to seconds
+        self.timeout = ${interfaceDef.timing?.timeout || 1000} / 1000.0  # Convert to seconds
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         
-    def init(self) -> ${component.name.replace(/\s+/g, '')}Status:
+    def init(self) -> ${component.name.replace(/\s+/g, "")}Status:
         """Initialize the hardware interface"""
         try:
             self.logger.info(f"Initializing ${component.name} driver")
             
-            # TODO: Initialize actual ${interface.type} interface
+            # TODO: Initialize actual ${interfaceDef.type} interface
             # Example for serial:
             # self.port = serial.Serial(
             #     port=self.interface_config.get('port', '/dev/ttyUSB0'),
-            #     baudrate=${interface.dataRate},
+            #     baudrate=${interfaceDef.dataRate},
             #     timeout=self.timeout
             # )
             
             self.initialized = True
             self.logger.info("Driver initialized successfully")
-            return ${component.name.replace(/\s+/g, '')}Status.OK
+            return ${component.name.replace(/\s+/g, "")}Status.OK
             
         except Exception as e:
             self.logger.error(f"Failed to initialize: {e}")
-            return ${component.name.replace(/\s+/g, '')}Status.ERROR
+            return ${component.name.replace(/\s+/g, "")}Status.ERROR
     
-    def deinit(self) -> ${component.name.replace(/\s+/g, '')}Status:
+    def deinit(self) -> ${component.name.replace(/\s+/g, "")}Status:
         """Deinitialize the hardware interface"""
         if not self.initialized:
-            return ${component.name.replace(/\s+/g, '')}Status.NOT_INITIALIZED
+            return ${component.name.replace(/\s+/g, "")}Status.NOT_INITIALIZED
             
         try:
             self.logger.info("Deinitializing driver")
             # TODO: Close hardware interface
             self.initialized = False
-            return ${component.name.replace(/\s+/g, '')}Status.OK
+            return ${component.name.replace(/\s+/g, "")}Status.OK
             
         except Exception as e:
             self.logger.error(f"Failed to deinitialize: {e}")
-            return ${component.name.replace(/\s+/g, '')}Status.ERROR
+            return ${component.name.replace(/\s+/g, "")}Status.ERROR
     
-    def _send_command(self, opcode: int, params: bytes = b'') -> ${component.name.replace(/\s+/g, '')}Status:
+    def _send_command(self, opcode: int, params: bytes = b'') -> ${component.name.replace(/\s+/g, "")}Status:
         """Send a command to the device"""
         if not self.initialized:
-            return ${component.name.replace(/\s+/g, '')}Status.NOT_INITIALIZED
+            return ${component.name.replace(/\s+/g, "")}Status.NOT_INITIALIZED
             
         try:
             # Build command packet
@@ -631,16 +630,16 @@ class ${component.name.replace(/\s+/g, '')}Driver:
             # TODO: Send via actual interface
             self.logger.debug(f"Sending command 0x{opcode:02X} with {len(params)} bytes of parameters")
             
-            return ${component.name.replace(/\s+/g, '')}Status.OK
+            return ${component.name.replace(/\s+/g, "")}Status.OK
             
         except Exception as e:
             self.logger.error(f"Failed to send command: {e}")
-            return ${component.name.replace(/\s+/g, '')}Status.ERROR
+            return ${component.name.replace(/\s+/g, "")}Status.ERROR
     
-    def _receive_response(self, expected_size: int) -> Tuple[${component.name.replace(/\s+/g, '')}Status, Optional[bytes]]:
+    def _receive_response(self, expected_size: int) -> Tuple[${component.name.replace(/\s+/g, "")}Status, Optional[bytes]]:
         """Receive response from the device"""
         if not self.initialized:
-            return ${component.name.replace(/\s+/g, '')}Status.NOT_INITIALIZED, None
+            return ${component.name.replace(/\s+/g, "")}Status.NOT_INITIALIZED, None
             
         try:
             # TODO: Receive via actual interface
@@ -649,20 +648,20 @@ class ${component.name.replace(/\s+/g, '')}Driver:
             # Simulated response
             response = b'\\x00' * expected_size
             
-            return ${component.name.replace(/\s+/g, '')}Status.OK, response
+            return ${component.name.replace(/\s+/g, "")}Status.OK, response
             
         except Exception as e:
             self.logger.error(f"Failed to receive response: {e}")
-            return ${component.name.replace(/\s+/g, '')}Status.ERROR, None
+            return ${component.name.replace(/\s+/g, "")}Status.ERROR, None
 `;
 
     // Add command methods
-    interface.commands.forEach(cmd => {
+    interfaceDef.commands.forEach(cmd => {
       code += `\n    def ${cmd.name.toLowerCase()}(self`;
       cmd.parameters.forEach(param => {
         code += `, ${param.name}: ${this.getPythonType(param.type)}`;
       });
-      code += `) -> ${cmd.response ? `Tuple[${component.name.replace(/\s+/g, '')}Status, Any]` : `${component.name.replace(/\s+/g, '')}Status`}:\n`;
+      code += `) -> ${cmd.response ? `Tuple[${component.name.replace(/\s+/g, "")}Status, Any]` : `${component.name.replace(/\s+/g, "")}Status`}:\n`;
       code += `        """\n`;
       code += `        ${cmd.description}\n`;
       code += `        \n`;
@@ -672,22 +671,22 @@ class ${component.name.replace(/\s+/g, '')}Driver:
         if (param.range) {
           code += ` (range: ${param.range.min}-${param.range.max})`;
         }
-        code += '\n';
+        code += "\n";
       });
       code += `        \n`;
       code += `        Returns:\n`;
-      code += `            ${cmd.response ? 'Status code and response data' : 'Status code'}\n`;
+      code += `            ${cmd.response ? "Status code and response data" : "Status code"}\n`;
       code += `        """\n`;
-      
+
       // Parameter validation
       cmd.parameters.forEach(param => {
         if (param.range) {
           code += `        if not (${param.range.min} <= ${param.name} <= ${param.range.max}):\n`;
           code += `            self.logger.error(f"Parameter ${param.name} out of range: {${param.name}}")\n`;
-          code += `            return ${component.name.replace(/\s+/g, '')}Status.INVALID_PARAM${cmd.response ? ', None' : ''}\n`;
+          code += `            return ${component.name.replace(/\s+/g, "")}Status.INVALID_PARAM${cmd.response ? ", None" : ""}\n`;
         }
       });
-      
+
       // Pack parameters
       if (cmd.parameters.length > 0) {
         code += `        \n        # Pack parameters\n`;
@@ -703,48 +702,48 @@ class ${component.name.replace(/\s+/g, '')}Driver:
       } else {
         code += `        params = b''\n`;
       }
-      
+
       // Send command
       code += `        \n        # Send command\n`;
       code += `        status = self._send_command(CMD_${cmd.name.toUpperCase()}, params)\n`;
-      code += `        if status != ${component.name.replace(/\s+/g, '')}Status.OK:\n`;
-      code += `            return status${cmd.response ? ', None' : ''}\n`;
-      
+      code += `        if status != ${component.name.replace(/\s+/g, "")}Status.OK:\n`;
+      code += `            return status${cmd.response ? ", None" : ""}\n`;
+
       // Receive response
       if (cmd.response) {
         code += `        \n        # Receive response\n`;
         code += `        status, response_data = self._receive_response(${cmd.response.fields.reduce((sum, f) => sum + f.size, 0)})\n`;
-        code += `        if status != ${component.name.replace(/\s+/g, '')}Status.OK:\n`;
+        code += `        if status != ${component.name.replace(/\s+/g, "")}Status.OK:\n`;
         code += `            return status, None\n`;
         code += `        \n        # Parse response\n`;
         code += `        # TODO: Implement response parsing\n`;
-        code += `        return ${component.name.replace(/\s+/g, '')}Status.OK, response_data\n`;
+        code += `        return ${component.name.replace(/\s+/g, "")}Status.OK, response_data\n`;
       } else {
-        code += `        \n        return ${component.name.replace(/\s+/g, '')}Status.OK\n`;
+        code += `        \n        return ${component.name.replace(/\s+/g, "")}Status.OK\n`;
       }
     });
 
     // Add telemetry methods
-    interface.telemetry.forEach(tlm => {
-      code += `\n    def get_${tlm.name.toLowerCase()}(self) -> Tuple[${component.name.replace(/\s+/g, '')}Status, Optional[${tlm.name}]]:\n`;
+    interfaceDef.telemetry.forEach(tlm => {
+      code += `\n    def get_${tlm.name.toLowerCase()}(self) -> Tuple[${component.name.replace(/\s+/g, "")}Status, Optional[${tlm.name}]]:\n`;
       code += `        """Get ${tlm.name} telemetry data"""\n`;
       code += `        if not self.initialized:\n`;
-      code += `            return ${component.name.replace(/\s+/g, '')}Status.NOT_INITIALIZED, None\n`;
+      code += `            return ${component.name.replace(/\s+/g, "")}Status.NOT_INITIALIZED, None\n`;
       code += `        \n`;
       code += `        # TODO: Implement telemetry retrieval\n`;
       code += `        # This would typically send a request command and parse the response\n`;
       code += `        \n`;
-      code += `        return ${component.name.replace(/\s+/g, '')}Status.OK, None\n`;
+      code += `        return ${component.name.replace(/\s+/g, "")}Status.OK, None\n`;
     });
 
     // Add simulation mode if requested
     if (options.features.simulation) {
-      code += this.generatePythonSimulator(component, interface);
+      code += this.generatePythonSimulator(component, interfaceDef);
     }
 
     // Add test code if requested
     if (options.features.unitTests) {
-      code += this.generatePythonTests(component, interface);
+      code += this.generatePythonTests(component, interfaceDef);
     }
 
     return code;
@@ -753,10 +752,10 @@ class ${component.name.replace(/\s+/g, '')}Driver:
   /**
    * Generate Python simulator
    */
-  private generatePythonSimulator(component: EquipmentData, interface: InterfaceDefinition): string {
+  private generatePythonSimulator(component: EquipmentData, _interfaceDef: InterfaceDefinition): string {
     return `
 
-class ${component.name.replace(/\s+/g, '')}Simulator:
+class ${component.name.replace(/\s+/g, "")}Simulator:
     """
     Simulator for ${component.name}
     Provides simulated responses for testing without hardware
@@ -789,19 +788,19 @@ class ${component.name.replace(/\s+/g, '')}Simulator:
   /**
    * Generate Python unit tests
    */
-  private generatePythonTests(component: EquipmentData, interface: InterfaceDefinition): string {
+  private generatePythonTests(component: EquipmentData, interfaceDef: InterfaceDefinition): string {
     return `
 
 # Unit Tests
 if __name__ == "__main__":
     import unittest
     
-    class Test${component.name.replace(/\s+/g, '')}Driver(unittest.TestCase):
+    class Test${component.name.replace(/\s+/g, "")}Driver(unittest.TestCase):
         """Unit tests for ${component.name} driver"""
         
         def setUp(self):
             """Set up test fixtures"""
-            self.driver = ${component.name.replace(/\s+/g, '')}Driver()
+            self.driver = ${component.name.replace(/\s+/g, "")}Driver()
             
         def tearDown(self):
             """Clean up after tests"""
@@ -811,25 +810,25 @@ if __name__ == "__main__":
         def test_initialization(self):
             """Test driver initialization"""
             status = self.driver.init()
-            self.assertEqual(status, ${component.name.replace(/\s+/g, '')}Status.OK)
+            self.assertEqual(status, ${component.name.replace(/\s+/g, "")}Status.OK)
             self.assertTrue(self.driver.initialized)
             
             status = self.driver.deinit()
-            self.assertEqual(status, ${component.name.replace(/\s+/g, '')}Status.OK)
+            self.assertEqual(status, ${component.name.replace(/\s+/g, "")}Status.OK)
             self.assertFalse(self.driver.initialized)
             
         def test_commands(self):
             """Test command execution"""
             status = self.driver.init()
-            self.assertEqual(status, ${component.name.replace(/\s+/g, '')}Status.OK)
+            self.assertEqual(status, ${component.name.replace(/\s+/g, "")}Status.OK)
             
             # TODO: Add specific command tests
             
         def test_error_handling(self):
             """Test error handling"""
             # Test command without initialization
-            status = self.driver.${interface.commands[0]?.name.toLowerCase() || 'test'}()
-            self.assertEqual(status, ${component.name.replace(/\s+/g, '')}Status.NOT_INITIALIZED)
+            status = self.driver.${interfaceDef.commands[0]?.name.toLowerCase() || "test"}()
+            self.assertEqual(status, ${component.name.replace(/\s+/g, "")}Status.NOT_INITIALIZED)
     
     # Run tests
     unittest.main()
@@ -841,23 +840,23 @@ if __name__ == "__main__":
    */
   generateSimulationDriver(
     component: EquipmentData,
-    interface: InterfaceDefinition,
+    interfaceDef: InterfaceDefinition,
     simulationParams: {
       dataRate?: number;
       errorRate?: number;
       latency?: number;
       noise?: number;
-    }
+    },
   ): string {
     return `/**
  * Simulation Driver for ${component.name}
  * Provides realistic simulated behavior for testing
  */
 
-class ${component.name.replace(/\s+/g, '')}Simulator {
+class ${component.name.replace(/\s+/g, "")}Simulator {
     constructor(config = {}) {
         this.config = {
-            dataRate: ${simulationParams.dataRate || interface.dataRate},
+            dataRate: ${simulationParams.dataRate || interfaceDef.dataRate},
             errorRate: ${simulationParams.errorRate || 0.001},
             latency: ${simulationParams.latency || 10},
             noise: ${simulationParams.noise || 0.01},
@@ -877,7 +876,7 @@ class ${component.name.replace(/\s+/g, '')}Simulator {
     }
     
     setupTelemetryGenerators() {
-${interface.telemetry.map(tlm => `        this.telemetryGenerators.set('${tlm.name}', () => this.generate${tlm.name}());`).join('\n')}
+${interfaceDef.telemetry.map(tlm => `        this.telemetryGenerators.set('${tlm.name}', () => this.generate${tlm.name}());`).join("\n")}
     }
     
     processCommand(opcode, params) {
@@ -905,14 +904,20 @@ ${interface.telemetry.map(tlm => `        this.telemetryGenerators.set('${tlm.na
     generateResponse(opcode, params) {
         // Simulate command-specific responses
         switch(opcode) {
-${interface.commands.map(cmd => `            case 0x${cmd.opcode}:
-                return this.handle${cmd.name}(params);`).join('\n')}
+${interfaceDef.commands
+  .map(
+    cmd => `            case 0x${cmd.opcode}:
+                return this.handle${cmd.name}(params);`,
+  )
+  .join("\n")}
             default:
                 return { status: 'ERROR', message: 'Unknown command' };
         }
     }
     
-${interface.commands.map(cmd => `    handle${cmd.name}(params) {
+${interfaceDef.commands
+  .map(
+    cmd => `    handle${cmd.name}(params) {
         // Simulate ${cmd.name} command
         console.log('Simulating ${cmd.name} with params:', params);
         
@@ -923,12 +928,16 @@ ${interface.commands.map(cmd => `    handle${cmd.name}(params) {
             status: 'OK',
             data: this.generateSimulatedData('${cmd.name}')
         };
-    }`).join('\n\n')}
+    }`,
+  )
+  .join("\n\n")}
     
-${interface.telemetry.map(tlm => `    generate${tlm.name}() {
+${interfaceDef.telemetry
+  .map(
+    tlm => `    generate${tlm.name}() {
         // Generate realistic telemetry for ${tlm.name}
         const baseData = {
-${tlm.fields.map(field => `            ${field.name}: this.generateFieldValue('${field.type}', '${field.unit || ''}'),`).join('\n')}
+${tlm.fields.map(field => `            ${field.name}: this.generateFieldValue('${field.type}', '${field.unit || ""}'),`).join("\n")}
         };
         
         // Apply noise if configured
@@ -941,7 +950,9 @@ ${tlm.fields.map(field => `            ${field.name}: this.generateFieldValue('$
         }
         
         return baseData;
-    }`).join('\n\n')}
+    }`,
+  )
+  .join("\n\n")}
     
     generateFieldValue(type, unit) {
         // Generate realistic values based on type and unit
@@ -1004,7 +1015,7 @@ ${tlm.fields.map(field => `            ${field.name}: this.generateFieldValue('$
 
 // Export for use in testing
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ${component.name.replace(/\s+/g, '')}Simulator;
+    module.exports = ${component.name.replace(/\s+/g, "")}Simulator;
 }
 `;
   }
@@ -1013,8 +1024,8 @@ if (typeof module !== 'undefined' && module.exports) {
    * Generate makefile for building drivers
    */
   generateMakefile(component: EquipmentData): string {
-    const name = component.name.toLowerCase().replace(/\s+/g, '_');
-    
+    const name = component.name.toLowerCase().replace(/\s+/g, "_");
+
     return `# Makefile for ${component.name} Driver
 # Auto-generated by Mission Planning Suite
 
@@ -1063,18 +1074,18 @@ docs:
    */
   private getCType(type: string): string {
     const typeMap: Record<string, string> = {
-      'uint8': 'uint8_t',
-      'uint16': 'uint16_t',
-      'uint32': 'uint32_t',
-      'int8': 'int8_t',
-      'int16': 'int16_t',
-      'int32': 'int32_t',
-      'float': 'float',
-      'double': 'double',
-      'string': 'char*',
-      'bytes': 'uint8_t*'
+      uint8: "uint8_t",
+      uint16: "uint16_t",
+      uint32: "uint32_t",
+      int8: "int8_t",
+      int16: "int16_t",
+      int32: "int32_t",
+      float: "float",
+      double: "double",
+      string: "char*",
+      bytes: "uint8_t*",
     };
-    return typeMap[type] || 'void*';
+    return typeMap[type] || "void*";
   }
 
   /**
@@ -1082,18 +1093,18 @@ docs:
    */
   private getPythonType(type: string): string {
     const typeMap: Record<string, string> = {
-      'uint8': 'int',
-      'uint16': 'int',
-      'uint32': 'int',
-      'int8': 'int',
-      'int16': 'int',
-      'int32': 'int',
-      'float': 'float',
-      'double': 'float',
-      'string': 'str',
-      'bytes': 'bytes'
+      uint8: "int",
+      uint16: "int",
+      uint32: "int",
+      int8: "int",
+      int16: "int",
+      int32: "int",
+      float: "float",
+      double: "float",
+      string: "str",
+      bytes: "bytes",
     };
-    return typeMap[type] || 'Any';
+    return typeMap[type] || "Any";
   }
 
   /**
@@ -1101,16 +1112,16 @@ docs:
    */
   private getStructFormat(type: string): string {
     const formatMap: Record<string, string> = {
-      'uint8': 'B',
-      'uint16': 'H',
-      'uint32': 'I',
-      'int8': 'b',
-      'int16': 'h',
-      'int32': 'i',
-      'float': 'f',
-      'double': 'd'
+      uint8: "B",
+      uint16: "H",
+      uint32: "I",
+      int8: "b",
+      int16: "h",
+      int32: "i",
+      float: "f",
+      double: "d",
     };
-    return formatMap[type] || 'B';
+    return formatMap[type] || "B";
   }
 }
 

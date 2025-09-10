@@ -2,8 +2,7 @@
  * Mission Ownership Verification System
  * Manages ownership, delegation, and access control for missions
  */
-
-import { rbacManager, Permission, User, Role } from './rbac';
+import { Permission, Role, User, rbacManager } from "./rbac";
 
 export interface MissionOwnership {
   missionId: string;
@@ -25,7 +24,7 @@ export interface DelegatedAccess {
 }
 
 export interface SharedAccess {
-  type: 'user' | 'organization' | 'department' | 'public';
+  type: "user" | "organization" | "department" | "public";
   entityId?: string;
   permissions: Permission[];
   expiresAt?: Date;
@@ -45,15 +44,15 @@ export interface OwnershipTransfer {
 }
 
 export enum OwnershipAction {
-  VIEW = 'view',
-  EDIT = 'edit',
-  DELETE = 'delete',
-  SHARE = 'share',
-  TRANSFER = 'transfer',
-  DELEGATE = 'delegate',
-  APPROVE = 'approve',
-  ARCHIVE = 'archive',
-  EXPORT = 'export',
+  VIEW = "view",
+  EDIT = "edit",
+  DELETE = "delete",
+  SHARE = "share",
+  TRANSFER = "transfer",
+  DELEGATE = "delegate",
+  APPROVE = "approve",
+  ARCHIVE = "archive",
+  EXPORT = "export",
 }
 
 interface OwnershipCache {
@@ -88,11 +87,7 @@ export class MissionOwnershipManager {
   /**
    * Check if a user has access to perform an action on a mission
    */
-  async canPerformAction(
-    user: User,
-    missionId: string,
-    action: OwnershipAction
-  ): Promise<boolean> {
+  async canPerformAction(user: User, missionId: string, action: OwnershipAction): Promise<boolean> {
     // Super admins can do anything
     if (user.roles.includes(Role.SUPER_ADMIN)) {
       return true;
@@ -155,11 +150,7 @@ export class MissionOwnershipManager {
   /**
    * Create ownership record for a new mission
    */
-  async createOwnership(
-    missionId: string,
-    ownerId: string,
-    organizationId: string
-  ): Promise<MissionOwnership> {
+  async createOwnership(missionId: string, ownerId: string, organizationId: string): Promise<MissionOwnership> {
     const ownership: MissionOwnership = {
       missionId,
       ownerId,
@@ -188,19 +179,19 @@ export class MissionOwnershipManager {
     delegateTo: string,
     permissions: Permission[],
     expiresAt?: Date,
-    reason?: string
+    reason?: string,
   ): Promise<DelegatedAccess> {
     const ownership = await this.getMissionOwnership(missionId);
     if (!ownership) {
-      throw new Error('Mission not found');
+      throw new Error("Mission not found");
     }
 
     // Verify the delegator has permission to delegate
     if (ownership.ownerId !== delegatedBy) {
-      const delegator = { id: delegatedBy, roles: [] } as User;
+      const delegator = { id: delegatedBy, email: "", roles: [], createdAt: new Date() } as User;
       const canDelegate = await this.canPerformAction(delegator, missionId, OwnershipAction.DELEGATE);
       if (!canDelegate) {
-        throw new Error('User does not have permission to delegate access');
+        throw new Error("User does not have permission to delegate access");
       }
     }
 
@@ -229,21 +220,21 @@ export class MissionOwnershipManager {
   async shareMission(
     missionId: string,
     sharedBy: string,
-    shareType: 'user' | 'organization' | 'department' | 'public',
+    shareType: "user" | "organization" | "department" | "public",
     entityId: string | undefined,
     permissions: Permission[],
-    expiresAt?: Date
+    expiresAt?: Date,
   ): Promise<SharedAccess> {
     const ownership = await this.getMissionOwnership(missionId);
     if (!ownership) {
-      throw new Error('Mission not found');
+      throw new Error("Mission not found");
     }
 
     // Verify the sharer has permission to share
-    const sharer = { id: sharedBy, roles: [] } as User;
+    const sharer = { id: sharedBy, email: "", roles: [], createdAt: new Date() } as User;
     const canShare = await this.canPerformAction(sharer, missionId, OwnershipAction.SHARE);
     if (!canShare) {
-      throw new Error('User does not have permission to share this mission');
+      throw new Error("User does not have permission to share this mission");
     }
 
     const sharedAccess: SharedAccess = {
@@ -272,11 +263,11 @@ export class MissionOwnershipManager {
     toUserId: string,
     transferredBy: string,
     reason: string,
-    requiresApproval: boolean = true
+    requiresApproval: boolean = true,
   ): Promise<OwnershipTransfer> {
     const ownership = await this.getMissionOwnership(missionId);
     if (!ownership) {
-      throw new Error('Mission not found');
+      throw new Error("Mission not found");
     }
 
     // Verify the transferrer has permission
@@ -284,7 +275,7 @@ export class MissionOwnershipManager {
       const transferrer = { id: transferredBy, roles: [Role.ADMIN] } as User;
       const canTransfer = await this.canPerformAction(transferrer, missionId, OwnershipAction.TRANSFER);
       if (!canTransfer) {
-        throw new Error('User does not have permission to transfer ownership');
+        throw new Error("User does not have permission to transfer ownership");
       }
     }
 
@@ -316,22 +307,18 @@ export class MissionOwnershipManager {
   /**
    * Revoke delegated access
    */
-  async revokeDelegation(
-    missionId: string,
-    userId: string,
-    revokedBy: string
-  ): Promise<void> {
+  async revokeDelegation(missionId: string, userId: string, revokedBy: string): Promise<void> {
     const ownership = await this.getMissionOwnership(missionId);
     if (!ownership) {
-      throw new Error('Mission not found');
+      throw new Error("Mission not found");
     }
 
     // Verify the revoker has permission
     if (ownership.ownerId !== revokedBy) {
-      const revoker = { id: revokedBy, roles: [] } as User;
+      const revoker = { id: revokedBy, email: "", roles: [], createdAt: new Date() } as User;
       const canDelegate = await this.canPerformAction(revoker, missionId, OwnershipAction.DELEGATE);
       if (!canDelegate) {
-        throw new Error('User does not have permission to revoke delegation');
+        throw new Error("User does not have permission to revoke delegation");
       }
     }
 
@@ -344,7 +331,7 @@ export class MissionOwnershipManager {
   /**
    * Get all missions owned by a user
    */
-  async getMissionsOwnedBy(userId: string): Promise<string[]> {
+  async getMissionsOwnedBy(_userId: string): Promise<string[]> {
     // This would query your database
     // For now, returning empty array as placeholder
     return [];
@@ -394,22 +381,22 @@ export class MissionOwnershipManager {
   private findSharedAccess(ownership: MissionOwnership, user: User): SharedAccess | null {
     for (const share of ownership.sharedWith) {
       // Check user-specific shares
-      if (share.type === 'user' && share.entityId === user.id) {
+      if (share.type === "user" && share.entityId === user.id) {
         return share;
       }
 
       // Check organization shares
-      if (share.type === 'organization' && share.entityId === user.organizationId) {
+      if (share.type === "organization" && share.entityId === user.organizationId) {
         return share;
       }
 
       // Check department shares
-      if (share.type === 'department' && share.entityId === user.departmentId) {
+      if (share.type === "department" && share.entityId === user.departmentId) {
         return share;
       }
 
       // Check public shares
-      if (share.type === 'public') {
+      if (share.type === "public") {
         return share;
       }
     }
@@ -423,13 +410,13 @@ export class MissionOwnershipManager {
   private async getMissionOwnership(missionId: string): Promise<MissionOwnership | null> {
     // Check cache first
     const cached = this.ownershipCache[missionId];
-    if (cached && (Date.now() - cached.cachedAt.getTime()) < this.cacheTimeout) {
+    if (cached && Date.now() - cached.cachedAt.getTime() < this.cacheTimeout) {
       return cached.ownership;
     }
 
     // Load from database (implementation depends on your database choice)
     const ownership = await this.loadOwnership(missionId);
-    
+
     if (ownership) {
       this.cacheOwnership(missionId, ownership);
     }
@@ -450,7 +437,7 @@ export class MissionOwnershipManager {
   /**
    * Save ownership to database (placeholder - implement based on your database)
    */
-  private async saveOwnership(ownership: MissionOwnership): Promise<void> {
+  private async saveOwnership(_ownership: MissionOwnership): Promise<void> {
     // TODO: Implement database save
     // This would save to MongoDB, PostgreSQL, etc.
   }
@@ -458,7 +445,7 @@ export class MissionOwnershipManager {
   /**
    * Load ownership from database (placeholder - implement based on your database)
    */
-  private async loadOwnership(missionId: string): Promise<MissionOwnership | null> {
+  private async loadOwnership(_missionId: string): Promise<MissionOwnership | null> {
     // TODO: Implement database load
     // This would load from MongoDB, PostgreSQL, etc.
     return null;

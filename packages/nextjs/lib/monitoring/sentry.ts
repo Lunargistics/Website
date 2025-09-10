@@ -2,7 +2,6 @@
  * Sentry Error Reporting Configuration
  * Provides comprehensive error tracking and monitoring
  */
-
 import { ErrorInfo } from "react";
 
 // Sentry configuration (will be replaced with actual Sentry SDK)
@@ -38,7 +37,7 @@ export function initSentry(): void {
     environment: process.env.NODE_ENV || "development",
     enabled: process.env.NODE_ENV === "production",
     tracesSampleRate: 0.1,
-    beforeSend: (event) => {
+    beforeSend: event => {
       // Filter out sensitive data
       if (event.request?.cookies) {
         delete event.request.cookies;
@@ -52,10 +51,10 @@ export function initSentry(): void {
 
   if (config.enabled && config.dsn) {
     console.log("Sentry initialized with DSN:", config.dsn.substring(0, 20) + "...");
-    
+
     // In production, initialize Sentry here:
     // Sentry.init(config);
-    
+
     // Set up global error handlers
     setupGlobalErrorHandlers();
   } else {
@@ -170,7 +169,7 @@ export function createErrorBoundaryHandler() {
 function setupGlobalErrorHandlers(): void {
   // Unhandled promise rejections
   if (typeof window !== "undefined") {
-    window.addEventListener("unhandledrejection", (event) => {
+    window.addEventListener("unhandledrejection", event => {
       reportError({
         error: new Error(event.reason?.message || "Unhandled Promise Rejection"),
         level: "error",
@@ -185,7 +184,7 @@ function setupGlobalErrorHandlers(): void {
     });
 
     // Global error handler
-    window.addEventListener("error", (event) => {
+    window.addEventListener("error", event => {
       reportError({
         error: event.error || new Error(event.message),
         level: "error",
@@ -207,11 +206,11 @@ function setupGlobalErrorHandlers(): void {
  */
 function setupDevelopmentErrorHandlers(): void {
   if (typeof window !== "undefined") {
-    window.addEventListener("unhandledrejection", (event) => {
+    window.addEventListener("unhandledrejection", event => {
       console.error("Unhandled Promise Rejection:", event.reason);
     });
 
-    window.addEventListener("error", (event) => {
+    window.addEventListener("error", event => {
       console.error("Global Error:", event.error || event.message);
     });
   }
@@ -224,12 +223,12 @@ function storeErrorLocally(error: any): void {
   try {
     const errors = JSON.parse(localStorage.getItem("error_logs") || "[]");
     errors.push(error);
-    
+
     // Keep only last 100 errors
     if (errors.length > 100) {
       errors.shift();
     }
-    
+
     localStorage.setItem("error_logs", JSON.stringify(errors));
   } catch (e) {
     // Ignore storage errors
@@ -276,19 +275,14 @@ export class TrackedError extends Error {
   public readonly code: string;
   public readonly statusCode?: number;
   public readonly context?: Record<string, any>;
-  
-  constructor(
-    message: string,
-    code: string,
-    statusCode?: number,
-    context?: Record<string, any>
-  ) {
+
+  constructor(message: string, code: string, statusCode?: number, context?: Record<string, any>) {
     super(message);
     this.name = "TrackedError";
     this.code = code;
     this.statusCode = statusCode;
     this.context = context;
-    
+
     // Automatically report to Sentry
     reportError({
       error: this,
@@ -305,13 +299,10 @@ export class TrackedError extends Error {
 /**
  * Wrap async function with error tracking
  */
-export function withErrorTracking<T extends (...args: any[]) => Promise<any>>(
-  fn: T,
-  context?: Record<string, any>
-): T {
+export function withErrorTracking<T extends (...args: any[]) => Promise<any>>(fn: T, context?: Record<string, any>): T {
   return (async (...args: Parameters<T>) => {
     const transaction = startTransaction(fn.name || "anonymous", "function");
-    
+
     try {
       addBreadcrumb({
         message: `Calling ${fn.name || "anonymous function"}`,
@@ -319,7 +310,7 @@ export function withErrorTracking<T extends (...args: any[]) => Promise<any>>(
         level: "info",
         data: { args: args.slice(0, 3) }, // Limit args for privacy
       });
-      
+
       const result = await fn(...args);
       transaction.finish();
       return result;

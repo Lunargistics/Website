@@ -25,7 +25,7 @@ export const rateLimitConfigs: Record<string, RateLimitConfig> = {
     window: 60 * 1000, // 5 creates per minute
     message: "Mission creation rate limit exceeded",
   },
-  
+
   // Orbital calculations - moderate limits
   "/api/orbit/propagate": {
     limit: 20,
@@ -37,28 +37,28 @@ export const rateLimitConfigs: Record<string, RateLimitConfig> = {
     window: 60 * 1000, // 20 requests per minute
     message: "Orekit calculation rate limit exceeded",
   },
-  
+
   // Document generation - strict limits
   "/api/documents/generate": {
     limit: 5,
     window: 60 * 1000, // 5 documents per minute
     message: "Document generation rate limit exceeded",
   },
-  
+
   // Constellation analysis - resource intensive
   "/api/constellation": {
     limit: 10,
     window: 60 * 1000, // 10 analyses per minute
     message: "Constellation analysis rate limit exceeded",
   },
-  
+
   // Venice AI - strict limits
   "/api/venice": {
     limit: 10,
     window: 60 * 1000, // 10 AI requests per minute
     message: "AI request rate limit exceeded",
   },
-  
+
   // Default for other endpoints
   default: {
     limit: 60,
@@ -77,17 +77,15 @@ export default function rateLimit(options?: Options) {
     check: async (request: NextRequest, config?: RateLimitConfig) => {
       const pathname = request.nextUrl.pathname;
       const rateLimitConfig = config || rateLimitConfigs[pathname] || rateLimitConfigs.default;
-      
+
       // Get identifier from IP address or user session
       const token = getIdentifier(request);
       const tokenCount = tokenCache.get(token) || [];
       const now = Date.now();
-      
+
       // Filter out old entries outside the window
-      const validTokens = tokenCount.filter(
-        timestamp => now - timestamp < rateLimitConfig.window
-      );
-      
+      const validTokens = tokenCount.filter(timestamp => now - timestamp < rateLimitConfig.window);
+
       if (validTokens.length >= rateLimitConfig.limit) {
         return {
           success: false,
@@ -97,11 +95,11 @@ export default function rateLimit(options?: Options) {
           message: rateLimitConfig.message,
         };
       }
-      
+
       // Add current request timestamp
       validTokens.push(now);
       tokenCache.set(token, validTokens);
-      
+
       return {
         success: true,
         limit: rateLimitConfig.limit,
@@ -118,14 +116,14 @@ function getIdentifier(request: NextRequest): string {
   const forwarded = request.headers.get("x-forwarded-for");
   const realIP = request.headers.get("x-real-ip");
   const cfConnectingIP = request.headers.get("cf-connecting-ip");
-  
+
   // Use the first available IP or fallback to a default
   const ip = forwarded?.split(",")[0] || realIP || cfConnectingIP || "anonymous";
-  
+
   // You could also include user ID if authenticated
   // const userId = request.headers.get("x-user-id");
   // return userId ? `user:${userId}` : `ip:${ip}`;
-  
+
   return `ip:${ip}`;
 }
 
@@ -133,11 +131,11 @@ function getIdentifier(request: NextRequest): string {
 export async function withRateLimit(
   request: NextRequest,
   handler: () => Promise<NextResponse>,
-  customConfig?: RateLimitConfig
+  customConfig?: RateLimitConfig,
 ): Promise<NextResponse> {
   const limiter = rateLimit();
   const result = await limiter.check(request, customConfig);
-  
+
   if (!result.success) {
     return NextResponse.json(
       {
@@ -154,16 +152,16 @@ export async function withRateLimit(
           "X-RateLimit-Reset": result.reset.toISOString(),
           "Retry-After": Math.ceil((result.reset.getTime() - Date.now()) / 1000).toString(),
         },
-      }
+      },
     );
   }
-  
+
   // Add rate limit headers to successful responses
   const response = await handler();
   response.headers.set("X-RateLimit-Limit", result.limit.toString());
   response.headers.set("X-RateLimit-Remaining", result.remaining.toString());
   response.headers.set("X-RateLimit-Reset", result.reset.toISOString());
-  
+
   return response;
 }
 
@@ -173,7 +171,7 @@ export function createUserRateLimit(userId: string, config: RateLimitConfig) {
     max: 1000,
     ttl: config.window,
   });
-  
+
   return async function checkUserLimit(): Promise<{
     allowed: boolean;
     remaining: number;
@@ -181,10 +179,8 @@ export function createUserRateLimit(userId: string, config: RateLimitConfig) {
   }> {
     const now = Date.now();
     const userRequests = cache.get(userId) || [];
-    const validRequests = userRequests.filter(
-      timestamp => now - timestamp < config.window
-    );
-    
+    const validRequests = userRequests.filter(timestamp => now - timestamp < config.window);
+
     if (validRequests.length >= config.limit) {
       return {
         allowed: false,
@@ -192,10 +188,10 @@ export function createUserRateLimit(userId: string, config: RateLimitConfig) {
         resetAt: new Date(validRequests[0] + config.window),
       };
     }
-    
+
     validRequests.push(now);
     cache.set(userId, validRequests);
-    
+
     return {
       allowed: true,
       remaining: config.limit - validRequests.length,

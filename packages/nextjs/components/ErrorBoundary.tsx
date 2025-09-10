@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Component, ErrorInfo, ReactNode } from "react";
-import { AlertTriangle, RefreshCw, Home, ChevronDown, ChevronUp } from "lucide-react";
+import { AlertTriangle, ChevronDown, ChevronUp, Home, RefreshCw } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -42,19 +42,18 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
-    return { 
+    return {
       hasError: true,
       error,
-      errorCount: (prevState?.errorCount || 0) + 1
     };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Error caught by boundary:", error, errorInfo);
-    
+
     // Report to error tracking service
     this.reportError(error, errorInfo);
-    
+
     // Call custom error handler if provided
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
@@ -74,13 +73,13 @@ class ErrorBoundary extends Component<Props, State> {
   componentDidUpdate(prevProps: Props) {
     const { resetKeys, resetOnPropsChange } = this.props;
     const { hasError } = this.state;
-    
+
     if (hasError) {
       // Reset on prop changes if specified
       if (resetOnPropsChange && prevProps.children !== this.props.children) {
         this.resetErrorBoundary();
       }
-      
+
       // Reset on key changes
       if (resetKeys?.some((key, idx) => key !== prevProps.resetKeys?.[idx])) {
         this.resetErrorBoundary();
@@ -98,13 +97,13 @@ class ErrorBoundary extends Component<Props, State> {
     // Auto-retry network errors and certain known transient errors
     const transientErrors = [
       "NetworkError",
-      "TimeoutError", 
+      "TimeoutError",
       "ChunkLoadError",
       "Loading chunk",
       "Failed to fetch",
-      "Load failed"
+      "Load failed",
     ];
-    
+
     return (
       this.retryCount < this.MAX_RETRIES &&
       transientErrors.some(msg => error.message?.includes(msg) || error.name?.includes(msg))
@@ -113,17 +112,20 @@ class ErrorBoundary extends Component<Props, State> {
 
   private scheduleRetry = () => {
     this.setState({ isRecovering: true });
-    
-    this.resetTimeoutId = setTimeout(() => {
-      this.retryCount++;
-      this.resetErrorBoundary();
-    }, this.RETRY_DELAY * Math.pow(2, this.retryCount)); // Exponential backoff
+
+    this.resetTimeoutId = setTimeout(
+      () => {
+        this.retryCount++;
+        this.resetErrorBoundary();
+      },
+      this.RETRY_DELAY * Math.pow(2, this.retryCount),
+    ); // Exponential backoff
   };
 
   private reportError = async (error: Error, errorInfo: ErrorInfo) => {
     try {
       // Report to error tracking service (Sentry integration)
-      if (typeof window !== 'undefined' && (window as any).Sentry) {
+      if (typeof window !== "undefined" && (window as any).Sentry) {
         (window as any).Sentry.captureException(error, {
           contexts: {
             react: {
@@ -131,16 +133,16 @@ class ErrorBoundary extends Component<Props, State> {
             },
           },
           tags: {
-            level: this.props.level || 'component',
+            level: this.props.level || "component",
             errorBoundary: true,
           },
         });
       }
 
       // Also send to our API for logging
-      await fetch('/api/errors', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("/api/errors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: error.message,
           stack: error.stack,
@@ -152,7 +154,7 @@ class ErrorBoundary extends Component<Props, State> {
         }),
       }).catch(console.error);
     } catch (reportingError) {
-      console.error('Failed to report error:', reportingError);
+      console.error("Failed to report error:", reportingError);
     }
   };
 
@@ -173,14 +175,14 @@ class ErrorBoundary extends Component<Props, State> {
 
   private getErrorMessage(): string {
     const { error } = this.state;
-    
+
     if (!error) return "An unexpected error occurred";
-    
+
     // User-friendly error messages
     const errorMessages: Record<string, string> = {
-      "ChunkLoadError": "Failed to load application resources. Please refresh the page.",
-      "NetworkError": "Network connection issue. Please check your internet connection.",
-      "TimeoutError": "The request took too long. Please try again.",
+      ChunkLoadError: "Failed to load application resources. Please refresh the page.",
+      NetworkError: "Network connection issue. Please check your internet connection.",
+      TimeoutError: "The request took too long. Please try again.",
       "Permission denied": "You don't have permission to access this resource.",
       "404": "The requested resource was not found.",
       "500": "Server error. Our team has been notified.",
@@ -209,25 +211,25 @@ class ErrorBoundary extends Component<Props, State> {
     const isSectionLevel = level === "section";
 
     return (
-      <div className={`
+      <div
+        className={`
         flex flex-col items-center justify-center
         ${isPageLevel ? "min-h-screen" : isSectionLevel ? "min-h-[400px]" : "min-h-[200px]"}
         bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950 dark:to-orange-950
         p-8 rounded-lg
-      `}>
+      `}
+      >
         <div className="max-w-md w-full">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full mb-4">
               <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
             </div>
-            
+
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               {isRecovering ? "Recovering..." : "Oops! Something went wrong"}
             </h2>
-            
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {this.getErrorMessage()}
-            </p>
+
+            <p className="text-gray-600 dark:text-gray-400 mb-6">{this.getErrorMessage()}</p>
 
             {errorCount > 1 && (
               <div className="mb-4 text-sm text-orange-600 dark:text-orange-400">
@@ -253,10 +255,10 @@ class ErrorBoundary extends Component<Props, State> {
                   <RefreshCw className="w-4 h-4 mr-2" />
                   Try Again
                 </button>
-                
+
                 {isPageLevel && (
                   <button
-                    onClick={() => window.location.href = '/'}
+                    onClick={() => (window.location.href = "/")}
                     className="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
                   >
                     <Home className="w-4 h-4 mr-2" />
@@ -267,7 +269,7 @@ class ErrorBoundary extends Component<Props, State> {
             )}
 
             {/* Error details (development mode) */}
-            {process.env.NODE_ENV === 'development' && error && (
+            {process.env.NODE_ENV === "development" && error && (
               <div className="mt-6">
                 <button
                   onClick={this.toggleDetails}
@@ -276,17 +278,13 @@ class ErrorBoundary extends Component<Props, State> {
                   {showDetails ? <ChevronUp className="w-4 h-4 mr-1" /> : <ChevronDown className="w-4 h-4 mr-1" />}
                   {showDetails ? "Hide" : "Show"} Error Details
                 </button>
-                
+
                 {showDetails && (
                   <div className="mt-4 text-left">
                     <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 overflow-auto max-h-64">
-                      <p className="text-xs font-mono text-red-600 dark:text-red-400 mb-2">
-                        {error.toString()}
-                      </p>
+                      <p className="text-xs font-mono text-red-600 dark:text-red-400 mb-2">{error.toString()}</p>
                       {error.stack && (
-                        <pre className="text-xs text-gray-600 dark:text-gray-400 overflow-x-auto">
-                          {error.stack}
-                        </pre>
+                        <pre className="text-xs text-gray-600 dark:text-gray-400 overflow-x-auto">{error.stack}</pre>
                       )}
                       {errorInfo?.componentStack && (
                         <details className="mt-4">
@@ -317,18 +315,16 @@ class ErrorBoundary extends Component<Props, State> {
 }
 
 // Async Error Boundary for Suspense boundaries
-export function AsyncErrorBoundary({ 
-  children, 
-  fallback,
-  ...props 
-}: Props) {
+export function AsyncErrorBoundary({ children, fallback, ...props }: Props) {
   return (
     <ErrorBoundary {...props}>
       <React.Suspense
         fallback={
-          <div className="flex items-center justify-center p-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100"></div>
-          </div>
+          fallback || (
+            <div className="flex items-center justify-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100"></div>
+            </div>
+          )
         }
       >
         {children}
@@ -338,10 +334,7 @@ export function AsyncErrorBoundary({
 }
 
 // HOC for wrapping components with error boundary
-export function withErrorBoundary<P extends object>(
-  Component: React.ComponentType<P>,
-  errorBoundaryProps?: Props
-) {
+export function withErrorBoundary<P extends object>(Component: React.ComponentType<P>, errorBoundaryProps?: Props) {
   const WrappedComponent = (props: P) => (
     <ErrorBoundary {...errorBoundaryProps}>
       <Component {...props} />
@@ -349,7 +342,7 @@ export function withErrorBoundary<P extends object>(
   );
 
   WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
-  
+
   return WrappedComponent;
 }
 

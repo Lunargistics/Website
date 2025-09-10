@@ -59,16 +59,16 @@ const errorMappings: Record<string, (context?: ErrorContext) => UserFriendlyErro
   }),
 
   // Validation Errors
-  ValidationError: (context) => ({
+  ValidationError: context => ({
     title: "Invalid Input",
-    message: context?.field 
+    message: context?.field
       ? `The ${context.field} field contains invalid data.`
       : "Please check your input and try again.",
     suggestion: "Make sure all required fields are filled correctly.",
     severity: "warning",
   }),
 
-  RequiredFieldError: (context) => ({
+  RequiredFieldError: context => ({
     title: "Required Field Missing",
     message: `${context?.field || "A required field"} cannot be empty.`,
     suggestion: "Please fill in all required fields marked with an asterisk (*).",
@@ -76,7 +76,7 @@ const errorMappings: Record<string, (context?: ErrorContext) => UserFriendlyErro
   }),
 
   // Data Errors
-  NotFoundError: (context) => ({
+  NotFoundError: context => ({
     title: "Not Found",
     message: `The ${context?.component || "item"} you're looking for doesn't exist.`,
     suggestion: "It may have been moved or deleted. Try searching or go back to the dashboard.",
@@ -106,7 +106,7 @@ const errorMappings: Record<string, (context?: ErrorContext) => UserFriendlyErro
   }),
 
   // File Errors
-  FileUploadError: (context) => ({
+  FileUploadError: context => ({
     title: "Upload Failed",
     message: `Failed to upload ${context?.field || "file"}.`,
     suggestion: "Check the file size and format, then try again.",
@@ -172,7 +172,7 @@ const errorMappings: Record<string, (context?: ErrorContext) => UserFriendlyErro
   }),
 
   // Application Errors
-  FeatureUnavailable: (context) => ({
+  FeatureUnavailable: context => ({
     title: "Feature Unavailable",
     message: `${context?.component || "This feature"} is not available right now.`,
     suggestion: "Some features may be limited in your current plan or region.",
@@ -214,10 +214,7 @@ const statusCodeMappings: Record<number, string> = {
 /**
  * Get user-friendly error message
  */
-export function getUserFriendlyError(
-  error: Error | string,
-  context?: ErrorContext
-): UserFriendlyError {
+export function getUserFriendlyError(error: Error | string, context?: ErrorContext): UserFriendlyError {
   // Handle string errors
   if (typeof error === "string") {
     error = new Error(error);
@@ -243,35 +240,35 @@ export function getUserFriendlyError(
 
   // Check error message for patterns
   const errorMessage = error.message.toLowerCase();
-  
+
   // Network-related patterns
   if (errorMessage.includes("network") || errorMessage.includes("fetch")) {
     return errorMappings.NetworkError(context);
   }
-  
+
   if (errorMessage.includes("timeout")) {
     return errorMappings.TimeoutError(context);
   }
-  
+
   // Auth-related patterns
   if (errorMessage.includes("unauthorized") || errorMessage.includes("401")) {
     return errorMappings.AuthenticationError(context);
   }
-  
+
   if (errorMessage.includes("forbidden") || errorMessage.includes("403")) {
     return errorMappings.UnauthorizedError(context);
   }
-  
+
   // Data-related patterns
   if (errorMessage.includes("not found") || errorMessage.includes("404")) {
     return errorMappings.NotFoundError(context);
   }
-  
+
   // Storage-related patterns
   if (errorMessage.includes("quota") || errorMessage.includes("storage")) {
     return errorMappings.StorageQuotaError(context);
   }
-  
+
   // Default error
   return {
     title: "Something Went Wrong",
@@ -287,11 +284,11 @@ export function getUserFriendlyError(
  */
 export function formatErrorForDisplay(error: UserFriendlyError): string {
   let formatted = `${error.title}: ${error.message}`;
-  
+
   if (error.suggestion) {
     formatted += ` ${error.suggestion}`;
   }
-  
+
   return formatted;
 }
 
@@ -305,7 +302,7 @@ export const recoveryActions = {
   },
   goHome: {
     label: "Go to Dashboard",
-    action: () => window.location.href = "/",
+    action: () => (window.location.href = "/"),
   },
   goBack: {
     label: "Go Back",
@@ -317,7 +314,7 @@ export const recoveryActions = {
   }),
   signIn: {
     label: "Sign In",
-    action: () => window.location.href = "/login",
+    action: () => (window.location.href = "/login"),
   },
   clearCache: {
     label: "Clear Cache",
@@ -339,42 +336,41 @@ export const recoveryActions = {
 export function showErrorToast(
   error: Error | string,
   context?: ErrorContext,
-  toast?: any // React hot toast instance
+  toast?: any, // React hot toast instance
 ) {
   const userError = getUserFriendlyError(error, context);
-  
+
   if (!toast) {
     console.error(userError);
     return;
   }
-  
+
   const toastOptions = {
     duration: userError.severity === "critical" ? 8000 : 5000,
-    icon: userError.severity === "info" ? "ℹ️" : 
-          userError.severity === "warning" ? "⚠️" : 
-          userError.severity === "critical" ? "🚨" : "❌",
+    icon:
+      userError.severity === "info"
+        ? "ℹ️"
+        : userError.severity === "warning"
+          ? "⚠️"
+          : userError.severity === "critical"
+            ? "🚨"
+            : "❌",
   };
-  
+
   toast.error(
     <div>
       <strong>{userError.title}</strong>
       <p className="text-sm mt-1">{userError.message}</p>
-      {userError.suggestion && (
-        <p className="text-xs mt-2 opacity-90">{userError.suggestion}</p>
-      )}
+      {userError.suggestion && <p className="text-xs mt-2 opacity-90">{userError.suggestion}</p>}
     </div>,
-    toastOptions
+    toastOptions,
   );
 }
 
 /**
  * Error logger for development
  */
-export function logError(
-  error: Error,
-  context?: ErrorContext,
-  additionalData?: any
-) {
+export function logError(error: Error, context?: ErrorContext, additionalData?: any) {
   if (process.env.NODE_ENV === "development") {
     console.group(`🔴 Error: ${error.name || "Unknown"}`);
     console.error("Message:", error.message);
@@ -383,7 +379,7 @@ export function logError(
     if (additionalData) console.log("Additional Data:", additionalData);
     console.groupEnd();
   }
-  
+
   // In production, this would send to error tracking service
   // sendToErrorTracking(error, context, additionalData);
 }

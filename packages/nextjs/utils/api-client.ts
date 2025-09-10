@@ -1,12 +1,13 @@
-import { LRUCache } from 'lru-cache';
+import { LRUCache } from "lru-cache";
 
 // Types
-interface RequestConfig extends RequestInit {
+interface RequestConfig extends Omit<RequestInit, "cache"> {
   timeout?: number;
   retries?: number;
   retryDelay?: number;
-  cache?: boolean;
+  useCache?: boolean;
   cacheTime?: number;
+  cache?: RequestCache;
 }
 
 interface ApiError extends Error {
@@ -30,26 +31,23 @@ const DEFAULT_TIMEOUT = 30000;
 
 // Retryable status codes and errors
 const RETRYABLE_STATUS_CODES = [408, 429, 500, 502, 503, 504];
-const RETRYABLE_ERRORS = ['NetworkError', 'TimeoutError', 'AbortError'];
+const RETRYABLE_ERRORS = ["NetworkError", "TimeoutError", "AbortError"];
 
 /**
  * Enhanced fetch with retry logic, caching, and error handling
  */
-export async function apiClient<T = any>(
-  url: string,
-  config: RequestConfig = {}
-): Promise<T> {
+export async function apiClient<T = any>(url: string, config: RequestConfig = {}): Promise<T> {
   const {
     timeout = DEFAULT_TIMEOUT,
     retries = DEFAULT_RETRIES,
     retryDelay = DEFAULT_RETRY_DELAY,
-    cache: useCache = config.method === 'GET',
+    cache: useCache = config.method === "GET",
     cacheTime = 1000 * 60 * 5,
     ...fetchConfig
   } = config;
 
   // Check cache for GET requests
-  if (useCache && fetchConfig.method === 'GET') {
+  if (useCache && fetchConfig.method === "GET") {
     const cached = cache.get(url);
     if (cached) {
       console.log(`Cache hit for ${url}`);
@@ -69,7 +67,7 @@ export async function apiClient<T = any>(
       // Add request ID for tracking
       const requestId = generateRequestId();
       const headers = new Headers(fetchConfig.headers);
-      headers.set('X-Request-ID', requestId);
+      headers.set("X-Request-ID", requestId);
 
       // Make the request
       const response = await fetch(url, {
@@ -83,7 +81,7 @@ export async function apiClient<T = any>(
       // Handle response
       if (!response.ok) {
         const error = await createApiError(response, requestId);
-        
+
         // Check if error is retryable
         if (shouldRetry(error, attempt, retries)) {
           lastError = error;
@@ -91,7 +89,7 @@ export async function apiClient<T = any>(
           attempt++;
           continue;
         }
-        
+
         throw error;
       }
 
@@ -99,15 +97,14 @@ export async function apiClient<T = any>(
       const data = await parseResponse<T>(response);
 
       // Cache successful GET requests
-      if (useCache && fetchConfig.method === 'GET') {
+      if (useCache && fetchConfig.method === "GET") {
         cache.set(url, data, { ttl: cacheTime });
       }
 
       return data;
-
     } catch (error) {
       const apiError = normalizeError(error);
-      
+
       // Check if error is retryable
       if (shouldRetry(apiError, attempt, retries)) {
         lastError = apiError;
@@ -123,7 +120,7 @@ export async function apiClient<T = any>(
   }
 
   // If we get here, we've exhausted all retries
-  throw lastError || new Error('Max retries exceeded');
+  throw lastError || new Error("Max retries exceeded");
 }
 
 /**
@@ -131,20 +128,20 @@ export async function apiClient<T = any>(
  */
 async function createApiError(response: Response, requestId: string): Promise<ApiError> {
   let details;
-  
+
   try {
-    const contentType = response.headers.get('content-type');
-    if (contentType?.includes('application/json')) {
+    const contentType = response.headers.get("content-type");
+    if (contentType?.includes("application/json")) {
       details = await response.json();
     } else {
       details = await response.text();
     }
   } catch {
-    details = 'Failed to parse error response';
+    details = "Failed to parse error response";
   }
 
   const error: ApiError = new Error(getErrorMessage(response.status, details));
-  error.name = 'ApiError';
+  error.name = "ApiError";
   error.status = response.status;
   error.code = getErrorCode(response.status);
   error.details = details;
@@ -158,10 +155,10 @@ async function createApiError(response: Response, requestId: string): Promise<Ap
  * Normalize any error to ApiError format
  */
 function normalizeError(error: any): ApiError {
-  if (error.name === 'AbortError') {
-    const apiError: ApiError = new Error('Request timeout');
-    apiError.name = 'TimeoutError';
-    apiError.code = 'TIMEOUT';
+  if (error.name === "AbortError") {
+    const apiError: ApiError = new Error("Request timeout");
+    apiError.name = "TimeoutError";
+    apiError.code = "TIMEOUT";
     apiError.timestamp = new Date().toISOString();
     return apiError;
   }
@@ -173,7 +170,7 @@ function normalizeError(error: any): ApiError {
   }
 
   const apiError: ApiError = new Error(String(error));
-  apiError.name = 'UnknownError';
+  apiError.name = "UnknownError";
   apiError.timestamp = new Date().toISOString();
   return apiError;
 }
@@ -182,16 +179,16 @@ function normalizeError(error: any): ApiError {
  * Parse response based on content type
  */
 async function parseResponse<T>(response: Response): Promise<T> {
-  const contentType = response.headers.get('content-type');
-  
-  if (contentType?.includes('application/json')) {
+  const contentType = response.headers.get("content-type");
+
+  if (contentType?.includes("application/json")) {
     return response.json();
   }
-  
-  if (contentType?.includes('text/')) {
+
+  if (contentType?.includes("text/")) {
     return response.text() as any;
   }
-  
+
   return response.blob() as any;
 }
 
@@ -235,18 +232,18 @@ function generateRequestId(): string {
  */
 function getErrorMessage(status: number, details?: any): string {
   const messages: Record<number, string> = {
-    400: 'Invalid request. Please check your input.',
-    401: 'Authentication required. Please sign in.',
-    403: 'You don\'t have permission to access this resource.',
-    404: 'The requested resource was not found.',
-    408: 'Request timeout. Please try again.',
-    409: 'Conflict with existing data.',
-    422: 'Invalid data provided.',
-    429: 'Too many requests. Please slow down.',
-    500: 'Server error. Our team has been notified.',
-    502: 'Service temporarily unavailable.',
-    503: 'Service under maintenance.',
-    504: 'Gateway timeout. Please try again.',
+    400: "Invalid request. Please check your input.",
+    401: "Authentication required. Please sign in.",
+    403: "You don't have permission to access this resource.",
+    404: "The requested resource was not found.",
+    408: "Request timeout. Please try again.",
+    409: "Conflict with existing data.",
+    422: "Invalid data provided.",
+    429: "Too many requests. Please slow down.",
+    500: "Server error. Our team has been notified.",
+    502: "Service temporarily unavailable.",
+    503: "Service under maintenance.",
+    504: "Gateway timeout. Please try again.",
   };
 
   // Use custom message from API if available
@@ -262,21 +259,21 @@ function getErrorMessage(status: number, details?: any): string {
  */
 function getErrorCode(status: number): string {
   const codes: Record<number, string> = {
-    400: 'BAD_REQUEST',
-    401: 'UNAUTHORIZED',
-    403: 'FORBIDDEN',
-    404: 'NOT_FOUND',
-    408: 'TIMEOUT',
-    409: 'CONFLICT',
-    422: 'VALIDATION_ERROR',
-    429: 'RATE_LIMITED',
-    500: 'INTERNAL_ERROR',
-    502: 'BAD_GATEWAY',
-    503: 'SERVICE_UNAVAILABLE',
-    504: 'GATEWAY_TIMEOUT',
+    400: "BAD_REQUEST",
+    401: "UNAUTHORIZED",
+    403: "FORBIDDEN",
+    404: "NOT_FOUND",
+    408: "TIMEOUT",
+    409: "CONFLICT",
+    422: "VALIDATION_ERROR",
+    429: "RATE_LIMITED",
+    500: "INTERNAL_ERROR",
+    502: "BAD_GATEWAY",
+    503: "SERVICE_UNAVAILABLE",
+    504: "GATEWAY_TIMEOUT",
   };
 
-  return codes[status] || 'UNKNOWN_ERROR';
+  return codes[status] || "UNKNOWN_ERROR";
 }
 
 /**
@@ -291,7 +288,7 @@ function delay(ms: number): Promise<void> {
  */
 export async function batchRequests<T>(
   requests: Array<() => Promise<T>>,
-  concurrency = 3
+  concurrency = 3,
 ): Promise<Array<{ success: boolean; data?: T; error?: ApiError }>> {
   const results: Array<{ success: boolean; data?: T; error?: ApiError }> = [];
   const executing: Promise<void>[] = [];
@@ -309,7 +306,10 @@ export async function batchRequests<T>(
 
     if (executing.length >= concurrency) {
       await Promise.race(executing);
-      executing.splice(executing.findIndex(p => p), 1);
+      executing.splice(
+        executing.findIndex(p => p),
+        1,
+      );
     }
   }
 
@@ -322,7 +322,7 @@ export async function batchRequests<T>(
  */
 export function debounceApi<T extends (...args: any[]) => Promise<any>>(
   fn: T,
-  delay: number
+  delay: number,
 ): (...args: Parameters<T>) => Promise<ReturnType<T>> {
   let timeoutId: NodeJS.Timeout | null = null;
   let resolvePromise: ((value: any) => void) | null = null;
@@ -333,7 +333,7 @@ export function debounceApi<T extends (...args: any[]) => Promise<any>>(
       if (timeoutId) {
         clearTimeout(timeoutId);
         if (rejectPromise) {
-          rejectPromise(new Error('Debounced'));
+          rejectPromise(new Error("Debounced"));
         }
       }
 
@@ -362,20 +362,20 @@ export function debounceApi<T extends (...args: any[]) => Promise<any>>(
 export class CircuitBreaker {
   private failures = 0;
   private lastFailureTime = 0;
-  private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED';
-  
+  private state: "CLOSED" | "OPEN" | "HALF_OPEN" = "CLOSED";
+
   constructor(
     private readonly threshold = 5,
     private readonly timeout = 60000,
-    private readonly resetTimeout = 30000
+    private readonly resetTimeout = 30000,
   ) {}
 
   async execute<T>(fn: () => Promise<T>): Promise<T> {
-    if (this.state === 'OPEN') {
+    if (this.state === "OPEN") {
       if (Date.now() - this.lastFailureTime > this.resetTimeout) {
-        this.state = 'HALF_OPEN';
+        this.state = "HALF_OPEN";
       } else {
-        throw new Error('Circuit breaker is OPEN');
+        throw new Error("Circuit breaker is OPEN");
       }
     }
 
@@ -391,15 +391,15 @@ export class CircuitBreaker {
 
   private onSuccess() {
     this.failures = 0;
-    this.state = 'CLOSED';
+    this.state = "CLOSED";
   }
 
   private onFailure() {
     this.failures++;
     this.lastFailureTime = Date.now();
-    
+
     if (this.failures >= this.threshold) {
-      this.state = 'OPEN';
+      this.state = "OPEN";
     }
   }
 
@@ -414,33 +414,31 @@ export class CircuitBreaker {
 
 // Export a default instance with common configuration
 export const api = {
-  get: <T = any>(url: string, config?: RequestConfig) => 
-    apiClient<T>(url, { ...config, method: 'GET' }),
-  
-  post: <T = any>(url: string, data?: any, config?: RequestConfig) => 
-    apiClient<T>(url, { 
-      ...config, 
-      method: 'POST',
+  get: <T = any>(url: string, config?: RequestConfig) => apiClient<T>(url, { ...config, method: "GET" }),
+
+  post: <T = any>(url: string, data?: any, config?: RequestConfig) =>
+    apiClient<T>(url, {
+      ...config,
+      method: "POST",
       body: JSON.stringify(data),
-      headers: { 'Content-Type': 'application/json', ...config?.headers }
+      headers: { "Content-Type": "application/json", ...config?.headers },
     }),
-  
-  put: <T = any>(url: string, data?: any, config?: RequestConfig) => 
-    apiClient<T>(url, { 
-      ...config, 
-      method: 'PUT',
+
+  put: <T = any>(url: string, data?: any, config?: RequestConfig) =>
+    apiClient<T>(url, {
+      ...config,
+      method: "PUT",
       body: JSON.stringify(data),
-      headers: { 'Content-Type': 'application/json', ...config?.headers }
+      headers: { "Content-Type": "application/json", ...config?.headers },
     }),
-  
-  delete: <T = any>(url: string, config?: RequestConfig) => 
-    apiClient<T>(url, { ...config, method: 'DELETE' }),
-  
-  patch: <T = any>(url: string, data?: any, config?: RequestConfig) => 
-    apiClient<T>(url, { 
-      ...config, 
-      method: 'PATCH',
+
+  delete: <T = any>(url: string, config?: RequestConfig) => apiClient<T>(url, { ...config, method: "DELETE" }),
+
+  patch: <T = any>(url: string, data?: any, config?: RequestConfig) =>
+    apiClient<T>(url, {
+      ...config,
+      method: "PATCH",
       body: JSON.stringify(data),
-      headers: { 'Content-Type': 'application/json', ...config?.headers }
+      headers: { "Content-Type": "application/json", ...config?.headers },
     }),
 };

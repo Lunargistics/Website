@@ -43,10 +43,13 @@ const MissionPlanningDashboard = dynamic(
   () => import("~~/components/dashboard/MissionPlanningDashboard").then(mod => mod.MissionPlanningDashboard),
   { ssr: false },
 );
+const CreditsManager = dynamic(() => import("~~/components/CreditsManager"), { ssr: false });
+const CreditNotifications = dynamic(() => import("~~/components/CreditNotifications"), { ssr: false });
 
 const menuItems = [
   { id: "overview", label: "Overview", icon: "🏠" },
   { id: "mission-planning", label: "Mission Planning", icon: "🛸" },
+  { id: "credits", label: "Credits", icon: "⚡" },
   { id: "feed", label: "Social Feed", icon: "🌐" },
   { id: "profile", label: "Profile", icon: "👤" },
   { id: "outputs", label: "My Outputs", icon: "📊" },
@@ -90,7 +93,7 @@ export default function DashboardPage() {
           <div className="space-y-6">
             <h2 className="text-3xl font-bold text-white">Welcome to Lunargistics Dashboard</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div 
+              <div
                 onClick={() => setActiveTab("mission-planning")}
                 className="bg-gray-800 border border-gray-700 p-6 rounded-xl hover:border-purple-500/50 transition-all duration-200 cursor-pointer"
               >
@@ -126,6 +129,13 @@ export default function DashboardPage() {
         );
       case "mission-planning":
         return <MissionPlanningDashboard />;
+      case "credits":
+        return (
+          <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-white">Credits Management</h2>
+            <CreditsManager />
+          </div>
+        );
       case "feed":
         return (
           <div className="space-y-6">
@@ -232,6 +242,9 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <main className="flex-1 p-8 overflow-auto bg-gray-900">{renderContent()}</main>
+
+      {/* Credit Notifications */}
+      <CreditNotifications userId={session?.user?.id} />
     </div>
   );
 }

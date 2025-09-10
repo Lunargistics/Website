@@ -4,82 +4,82 @@
  */
 
 export enum Role {
-  SUPER_ADMIN = 'SUPER_ADMIN',
-  ADMIN = 'ADMIN',
-  MISSION_MANAGER = 'MISSION_MANAGER',
-  ENGINEER = 'ENGINEER',
-  ANALYST = 'ANALYST',
-  AUDITOR = 'AUDITOR',
-  VIEWER = 'VIEWER',
-  GUEST = 'GUEST',
+  SUPER_ADMIN = "SUPER_ADMIN",
+  ADMIN = "ADMIN",
+  MISSION_MANAGER = "MISSION_MANAGER",
+  ENGINEER = "ENGINEER",
+  ANALYST = "ANALYST",
+  AUDITOR = "AUDITOR",
+  VIEWER = "VIEWER",
+  GUEST = "GUEST",
 }
 
 export enum Permission {
   // Mission Permissions
-  MISSION_CREATE = 'mission:create',
-  MISSION_READ = 'mission:read',
-  MISSION_UPDATE = 'mission:update',
-  MISSION_DELETE = 'mission:delete',
-  MISSION_APPROVE = 'mission:approve',
-  MISSION_ARCHIVE = 'mission:archive',
-  MISSION_EXPORT = 'mission:export',
+  MISSION_CREATE = "mission:create",
+  MISSION_READ = "mission:read",
+  MISSION_UPDATE = "mission:update",
+  MISSION_DELETE = "mission:delete",
+  MISSION_APPROVE = "mission:approve",
+  MISSION_ARCHIVE = "mission:archive",
+  MISSION_EXPORT = "mission:export",
 
   // Equipment Permissions
-  EQUIPMENT_CREATE = 'equipment:create',
-  EQUIPMENT_READ = 'equipment:read',
-  EQUIPMENT_UPDATE = 'equipment:update',
-  EQUIPMENT_DELETE = 'equipment:delete',
-  EQUIPMENT_MINT_NFT = 'equipment:mint_nft',
+  EQUIPMENT_CREATE = "equipment:create",
+  EQUIPMENT_READ = "equipment:read",
+  EQUIPMENT_UPDATE = "equipment:update",
+  EQUIPMENT_DELETE = "equipment:delete",
+  EQUIPMENT_MINT_NFT = "equipment:mint_nft",
 
   // Standards & Compliance Permissions
-  COMPLIANCE_CREATE = 'compliance:create',
-  COMPLIANCE_READ = 'compliance:read',
-  COMPLIANCE_UPDATE = 'compliance:update',
-  COMPLIANCE_VERIFY = 'compliance:verify',
-  COMPLIANCE_AUDIT = 'compliance:audit',
+  COMPLIANCE_CREATE = "compliance:create",
+  COMPLIANCE_READ = "compliance:read",
+  COMPLIANCE_UPDATE = "compliance:update",
+  COMPLIANCE_VERIFY = "compliance:verify",
+  COMPLIANCE_AUDIT = "compliance:audit",
 
   // Document Permissions
-  DOCUMENT_CREATE = 'document:create',
-  DOCUMENT_READ = 'document:read',
-  DOCUMENT_UPDATE = 'document:update',
-  DOCUMENT_DELETE = 'document:delete',
-  DOCUMENT_SIGN = 'document:sign',
+  DOCUMENT_CREATE = "document:create",
+  DOCUMENT_READ = "document:read",
+  DOCUMENT_UPDATE = "document:update",
+  DOCUMENT_DELETE = "document:delete",
+  DOCUMENT_SIGN = "document:sign",
 
   // Orbit & Analysis Permissions
-  ORBIT_CALCULATE = 'orbit:calculate',
-  ORBIT_OPTIMIZE = 'orbit:optimize',
-  CONSTELLATION_DESIGN = 'constellation:design',
-  ANALYSIS_RUN = 'analysis:run',
-  ANALYSIS_EXPORT = 'analysis:export',
+  ORBIT_CALCULATE = "orbit:calculate",
+  ORBIT_OPTIMIZE = "orbit:optimize",
+  CONSTELLATION_DESIGN = "constellation:design",
+  ANALYSIS_RUN = "analysis:run",
+  ANALYSIS_EXPORT = "analysis:export",
 
   // IPFS Permissions
-  IPFS_UPLOAD = 'ipfs:upload',
-  IPFS_READ = 'ipfs:read',
-  IPFS_DELETE = 'ipfs:delete',
-  IPFS_PIN = 'ipfs:pin',
+  IPFS_UPLOAD = "ipfs:upload",
+  IPFS_READ = "ipfs:read",
+  IPFS_DELETE = "ipfs:delete",
+  IPFS_PIN = "ipfs:pin",
 
   // Smart Contract Permissions
-  CONTRACT_DEPLOY = 'contract:deploy',
-  CONTRACT_INTERACT = 'contract:interact',
-  CONTRACT_ADMIN = 'contract:admin',
+  CONTRACT_DEPLOY = "contract:deploy",
+  CONTRACT_INTERACT = "contract:interact",
+  CONTRACT_ADMIN = "contract:admin",
 
   // System Permissions
-  SYSTEM_ADMIN = 'system:admin',
-  USER_MANAGE = 'user:manage',
-  ROLE_MANAGE = 'role:manage',
-  AUDIT_VIEW = 'audit:view',
-  SETTINGS_MANAGE = 'settings:manage',
+  SYSTEM_ADMIN = "system:admin",
+  USER_MANAGE = "user:manage",
+  ROLE_MANAGE = "role:manage",
+  AUDIT_VIEW = "audit:view",
+  SETTINGS_MANAGE = "settings:manage",
 }
 
 export enum Resource {
-  MISSION = 'mission',
-  EQUIPMENT = 'equipment',
-  COMPLIANCE = 'compliance',
-  DOCUMENT = 'document',
-  ORBIT = 'orbit',
-  IPFS = 'ipfs',
-  CONTRACT = 'contract',
-  SYSTEM = 'system',
+  MISSION = "mission",
+  EQUIPMENT = "equipment",
+  COMPLIANCE = "compliance",
+  DOCUMENT = "document",
+  ORBIT = "orbit",
+  IPFS = "ipfs",
+  CONTRACT = "contract",
+  SYSTEM = "system",
 }
 
 interface RolePermissionMap {
@@ -213,10 +213,7 @@ const rolePermissions: RolePermissionMap = {
     Permission.IPFS_READ,
   ],
 
-  [Role.GUEST]: [
-    Permission.MISSION_READ,
-    Permission.EQUIPMENT_READ,
-  ],
+  [Role.GUEST]: [Permission.MISSION_READ, Permission.EQUIPMENT_READ],
 };
 
 export interface User {

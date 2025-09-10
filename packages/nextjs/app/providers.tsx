@@ -1,25 +1,25 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
 import { RainbowKitProvider, darkTheme, lightTheme } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useTheme } from "next-themes";
-import React, { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import { WagmiProvider } from "wagmi";
-import { ProgressBar } from "~~/components/blockexplorer/ProgressBar";
 import { Footer } from "~~/components/Footer";
 import { Header } from "~~/components/Header";
-import { wagmiConfig } from "~~/services/web3/wagmiConfig";
+// import { ProgressBar } from "~~/components/blockexplorer/ProgressBar"; // TODO: Implement ProgressBar
 import { ErrorBoundaryProvider } from "~~/components/errors/ErrorBoundary";
 import { OfflineIndicator } from "~~/components/errors/FallbackComponents";
 import { initSentry } from "~~/lib/monitoring/sentry";
+import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 3,
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
       staleTime: 60 * 1000, // 1 minute
       gcTime: 5 * 60 * 1000, // 5 minutes
       refetchOnWindowFocus: false,
@@ -28,7 +28,7 @@ const queryClient = new QueryClient({
     },
     mutations: {
       retry: 2,
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 10000),
       // Add error handling
       throwOnError: false,
     },
@@ -63,10 +63,7 @@ function RainbowKitProviderWrapper({ children }: { children: React.ReactNode }) 
   }, []);
 
   return (
-    <RainbowKitProvider
-      theme={isMounted && isDarkMode ? darkTheme() : lightTheme()}
-      showRecentTransactions={true}
-    >
+    <RainbowKitProvider theme={isMounted && isDarkMode ? darkTheme() : lightTheme()} showRecentTransactions={true}>
       {children}
     </RainbowKitProvider>
   );
@@ -80,7 +77,7 @@ export function ScaffoldEthApp({ children }: { children: React.ReactNode }) {
         <main className="relative flex flex-col flex-1">{children}</main>
         <Footer />
       </div>
-      <ProgressBar />
+      {/* <ProgressBar /> TODO: Implement ProgressBar */}
       <Toaster
         position="bottom-right"
         toastOptions={{

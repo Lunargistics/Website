@@ -3715,6 +3715,7 @@ __metadata:
     "@rainbow-me/rainbowkit": 2.2.5
     "@react-three/drei": ^10.7.5
     "@react-three/fiber": ^9.3.0
+    "@stripe/stripe-js": ^7.9.0
     "@tailwindcss/postcss": 4.0.15
     "@tanstack/react-query": ~5.59.15
     "@tanstack/react-query-devtools": ^5.17.21
@@ -3736,6 +3737,7 @@ __metadata:
     burner-connector: 0.0.14
     cesium: ^1.133.1
     daisyui: 5.0.9
+    date-fns: ^4.1.0
     eslint: ~9.23.0
     eslint-config-next: ~15.2.3
     eslint-config-prettier: ~10.1.1
@@ -3762,6 +3764,7 @@ __metadata:
     react-hot-toast: ~2.4.0
     resium: ^1.19.0-beta.1
     satellite.js: ^6.0.1
+    stripe: ^18.5.0
     swagger-ui-react: ^5.29.0
     tailwindcss: 4.1.3
     three: ^0.180.0
@@ -3981,6 +3984,13 @@ __metadata:
     "@smithy/types": ^4.3.2
     aws4: ^1.13.2
   checksum: 75dbf9f6407d802ec251062d83ffbfd751845ff4bc28231aa664dbc8e381dcc938a235c53bd24013ec3e743c7beae211d41f474b11056b503f515b3fba38b592
+  languageName: node
+  linkType: hard
+
+"@stripe/stripe-js@npm:^7.9.0":
+  version: 7.9.0
+  resolution: "@stripe/stripe-js@npm:7.9.0"
+  checksum: c2bcde98df5f6aa208f0ad843f2443283c14fc3474a1540e31ebbe08ca5d3b76336e4ab30bcc57810927a23d5aed696656c377f7c584e834018ba8670d3298cd
   languageName: node
   linkType: hard
 
@@ -8800,6 +8810,13 @@ __metadata:
   dependencies:
     "@babel/runtime": ^7.21.0
   checksum: f7be01523282e9bb06c0cd2693d34f245247a29098527d4420628966a2d9aad154bd0e90a6b1cf66d37adcb769cd108cf8a7bd49d76db0fb119af5cdd13644f4
+  languageName: node
+  linkType: hard
+
+"date-fns@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "date-fns@npm:4.1.0"
+  checksum: fb681b242cccabed45494468f64282a7d375ea970e0adbcc5dcc92dcb7aba49b2081c2c9739d41bf71ce89ed68dd73bebfe06ca35129490704775d091895710b
   languageName: node
   linkType: hard
 
@@ -16699,7 +16716,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"qs@npm:^6.9.4":
+"qs@npm:^6.11.0, qs@npm:^6.9.4":
   version: 6.14.0
   resolution: "qs@npm:6.14.0"
   dependencies:
@@ -18659,6 +18676,20 @@ __metadata:
   version: 3.1.1
   resolution: "strip-json-comments@npm:3.1.1"
   checksum: 492f73e27268f9b1c122733f28ecb0e7e8d8a531a6662efbd08e22cccb3f9475e90a1b82cab06a392f6afae6d2de636f977e231296400d0ec5304ba70f166443
+  languageName: node
+  linkType: hard
+
+"stripe@npm:^18.5.0":
+  version: 18.5.0
+  resolution: "stripe@npm:18.5.0"
+  dependencies:
+    qs: ^6.11.0
+  peerDependencies:
+    "@types/node": ">=12.x.x"
+  peerDependenciesMeta:
+    "@types/node":
+      optional: true
+  checksum: e71699e5511fab8cb16f4911f29c0f6b5174e3ee2e4a7213fc37705a947eea91fbd153180dad8d46492f388d035e5ed9784a7d3bb31e1804690ff5b7cbe874c0
   languageName: node
   linkType: hard
 

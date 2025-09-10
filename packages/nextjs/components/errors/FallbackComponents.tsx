@@ -1,17 +1,17 @@
 "use client";
 
 import React from "react";
-import { 
-  AlertCircle, 
-  WifiOff, 
-  CloudOff, 
-  ServerCrash,
-  RefreshCw,
+import {
+  AlertCircle,
   ArrowLeft,
-  Loader2,
-  FileX,
+  CloudOff,
   Database,
-  ShieldAlert
+  FileX,
+  Loader2,
+  RefreshCw,
+  ServerCrash,
+  ShieldAlert,
+  WifiOff,
 } from "lucide-react";
 
 interface FallbackProps {
@@ -28,9 +28,7 @@ export function NetworkErrorFallback({ retry, message }: FallbackProps) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
       <WifiOff className="w-16 h-16 text-gray-400 dark:text-gray-600 mb-4" />
-      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-        Connection Problem
-      </h3>
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Connection Problem</h3>
       <p className="text-gray-600 dark:text-gray-400 text-center max-w-md mb-6">
         {message || "Unable to connect to our servers. Please check your internet connection and try again."}
       </p>
@@ -54,9 +52,7 @@ export function ServiceUnavailableFallback({ retry, message }: FallbackProps) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
       <ServerCrash className="w-16 h-16 text-orange-500 dark:text-orange-400 mb-4" />
-      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-        Service Temporarily Unavailable
-      </h3>
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Service Temporarily Unavailable</h3>
       <p className="text-gray-600 dark:text-gray-400 text-center max-w-md mb-6">
         {message || "Our service is currently undergoing maintenance. Please try again in a few minutes."}
       </p>
@@ -71,7 +67,7 @@ export function ServiceUnavailableFallback({ retry, message }: FallbackProps) {
           </button>
         )}
         <button
-          onClick={() => window.location.href = "/"}
+          onClick={() => (window.location.href = "/")}
           className="px-6 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-lg transition-colors"
         >
           Go Home
@@ -88,9 +84,7 @@ export function DataErrorFallback({ retry, message }: FallbackProps) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[300px] p-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
       <Database className="w-12 h-12 text-red-500 dark:text-red-400 mb-3" />
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-        Failed to Load Data
-      </h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Failed to Load Data</h3>
       <p className="text-gray-600 dark:text-gray-400 text-center max-w-md mb-4">
         {message || "We couldn't load the requested data. This might be temporary."}
       </p>
@@ -114,11 +108,10 @@ export function PermissionDeniedFallback({ goBack, message }: FallbackProps) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
       <ShieldAlert className="w-16 h-16 text-red-500 dark:text-red-400 mb-4" />
-      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-        Access Denied
-      </h3>
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Access Denied</h3>
       <p className="text-gray-600 dark:text-gray-400 text-center max-w-md mb-6">
-        {message || "You don't have permission to access this resource. Please contact your administrator if you believe this is an error."}
+        {message ||
+          "You don't have permission to access this resource. Please contact your administrator if you believe this is an error."}
       </p>
       <div className="flex gap-3">
         {goBack && (
@@ -131,7 +124,7 @@ export function PermissionDeniedFallback({ goBack, message }: FallbackProps) {
           </button>
         )}
         <button
-          onClick={() => window.location.href = "/"}
+          onClick={() => (window.location.href = "/")}
           className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
         >
           Go to Dashboard
@@ -148,9 +141,7 @@ export function FileNotFoundFallback({ retry, goBack, message }: FallbackProps) 
   return (
     <div className="flex flex-col items-center justify-center min-h-[300px] p-6">
       <FileX className="w-12 h-12 text-gray-400 dark:text-gray-600 mb-3" />
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-        File Not Found
-      </h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">File Not Found</h3>
       <p className="text-gray-600 dark:text-gray-400 text-center max-w-md mb-4">
         {message || "The requested file could not be found."}
       </p>
@@ -185,9 +176,7 @@ export function ErrorFallback({ error, retry, goBack, message }: FallbackProps) 
   return (
     <div className="flex flex-col items-center justify-center min-h-[300px] p-6">
       <AlertCircle className="w-12 h-12 text-yellow-500 dark:text-yellow-400 mb-3" />
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-        Something Went Wrong
-      </h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Something Went Wrong</h3>
       <p className="text-gray-600 dark:text-gray-400 text-center max-w-md mb-4">
         {message || error?.message || "An unexpected error occurred. Please try again."}
       </p>
@@ -221,9 +210,7 @@ export function LoadingFallback({ message }: { message?: string }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[200px] p-6">
       <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin mb-3" />
-      <p className="text-gray-600 dark:text-gray-400 text-center">
-        {message || "Loading..."}
-      </p>
+      <p className="text-gray-600 dark:text-gray-400 text-center">{message || "Loading..."}</p>
     </div>
   );
 }
@@ -278,12 +265,12 @@ export function SkeletonList({ items = 3 }: { items?: number }) {
 /**
  * Degraded Feature Component
  */
-export function DegradedFeature({ 
-  feature, 
+export function DegradedFeature({
+  feature,
   reason,
-  alternative 
-}: { 
-  feature: string; 
+  alternative,
+}: {
+  feature: string;
   reason?: string;
   alternative?: string;
 }) {
@@ -292,13 +279,10 @@ export function DegradedFeature({
       <div className="flex items-start gap-3">
         <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5" />
         <div>
-          <h4 className="font-medium text-yellow-900 dark:text-yellow-100 mb-1">
-            Limited Functionality
-          </h4>
+          <h4 className="font-medium text-yellow-900 dark:text-yellow-100 mb-1">Limited Functionality</h4>
           <p className="text-sm text-yellow-700 dark:text-yellow-300">
             {feature} is currently operating with reduced capabilities
-            {reason && ` due to ${reason}`}.
-            {alternative && ` ${alternative}`}
+            {reason && ` due to ${reason}`}.{alternative && ` ${alternative}`}
           </p>
         </div>
       </div>
@@ -310,9 +294,7 @@ export function DegradedFeature({
  * Offline Indicator
  */
 export function OfflineIndicator() {
-  const [isOnline, setIsOnline] = React.useState(
-    typeof window !== "undefined" ? navigator.onLine : true
-  );
+  const [isOnline, setIsOnline] = React.useState(typeof window !== "undefined" ? navigator.onLine : true);
 
   React.useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -334,7 +316,7 @@ export function OfflineIndicator() {
       <div className="bg-gray-900 text-white rounded-lg shadow-lg p-4 flex items-center gap-3">
         <CloudOff className="w-5 h-5" />
         <div>
-          <p className="font-medium">You're offline</p>
+          <p className="font-medium">You&apos;re offline</p>
           <p className="text-sm text-gray-300">Some features may be limited</p>
         </div>
       </div>

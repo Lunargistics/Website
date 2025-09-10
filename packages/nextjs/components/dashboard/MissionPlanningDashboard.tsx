@@ -1,32 +1,50 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { useAccount } from "wagmi";
-import { 
-  PlusCircle, Upload, Download, Save, Play, Pause, Settings, 
-  FileText, Rocket, Globe, Satellite as SatelliteIcon, CheckCircle, 
-  XCircle, AlertCircle, Eye, FileCode, Database, Map
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  CheckCircle,
+  Database,
+  Download,
+  Eye,
+  FileCode,
+  FileText,
+  Globe,
+  Pause,
+  Play,
+  PlusCircle,
+  Rocket,
+  Satellite as SatelliteIcon,
+  Save,
+  Settings,
+  Upload,
+  XCircle,
 } from "lucide-react";
-import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
-import { formatEther, parseEther } from "viem";
+import { useAccount } from "wagmi";
+import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 // Mock types for now
 interface MissionData {
-  id: string;
+  id?: string;
   name: string;
+  type?: string;
   description: string;
+  objectives?: string[];
+  phases?: any[];
+  equipment?: any[];
+  orbit?: OrbitalElements;
+  groundStations?: GroundStation[];
+  requirements?: any[];
+  aitPlan?: any[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface OrbitData {
-  semiMajorAxis: number;
-  eccentricity: number;
-  inclination: number;
-}
-
-interface EquipmentData {
-  id: string;
-  name: string;
-  type: string;
+  semiMajorAxis?: number;
+  eccentricity?: number;
+  inclination?: number;
+  tle?: { line1: string; line2: string };
+  propagatedStates?: any[];
 }
 
 interface OrbitalElements {
@@ -42,6 +60,8 @@ interface GroundStation {
   name: string;
   latitude: number;
   longitude: number;
+  elevation?: number;
+  minElevationAngle?: number;
 }
 
 interface StateVector {
@@ -51,17 +71,53 @@ interface StateVector {
 
 // Mock services
 const pinataService = {
-  uploadMissionData: async (data: any) => ({ cid: "mock-cid" }),
-  getMissionData: async (cid: string) => ({} as MissionData),
+  uploadMissionData: async (_data: any) => ({ cid: "mock-cid" }),
+  getMissionData: async (_cid: string) => ({}) as MissionData,
+  pinMissionData: async (_data: any) => "QmMockIPFSHash123",
+  pinOrbitData: async (_data: any, _name: string) => "QmMockOrbitHash456",
 };
 
 const orbitService = {
-  calculateOrbit: (elements: OrbitalElements) => ({ position: { x: 0, y: 0, z: 0 }, velocity: { x: 0, y: 0, z: 0 } }),
-  propagateOrbit: (state: StateVector, time: number) => state,
+  calculateOrbit: (_elements: OrbitalElements) => ({ position: { x: 0, y: 0, z: 0 }, velocity: { x: 0, y: 0, z: 0 } }),
+  propagateOrbit: (state: StateVector, _time: number) => state,
+  propagateFromTLE: (_line1: string, _line2: string, _date: Date) => ({
+    position: { x: 0, y: 0, z: 0 },
+    velocity: { x: 0, y: 0, z: 0 },
+  }),
+  stateToElements: (_state: StateVector): OrbitalElements => ({
+    semiMajorAxis: 7000,
+    eccentricity: 0.001,
+    inclination: 45,
+    raan: 0,
+    argumentOfPerigee: 0,
+    trueAnomaly: 0,
+  }),
+  parseTLE: (_line1: string, _line2: string) => ({
+    /* satrec mock */
+  }),
+  calculateGroundTrack: (_satrec: any, _startDate: Date, _endDate: Date, _stepMinutes: number) => [],
+  calculateAccess: (
+    _satrec: any,
+    _station: GroundStation,
+    _startDate: Date,
+    _endDate: Date,
+    _elevationCutoff: number,
+  ) => ({ passes: [] }),
+  exportToOEM: (_states: StateVector[], _options: any) => "CCSDS_OEM_VERS = 2.0\n\nMOCK OEM DATA",
+  elementsToState: (_elements: OrbitalElements): StateVector => ({
+    position: { x: 0, y: 0, z: 0 },
+    velocity: { x: 0, y: 0, z: 0 },
+  }),
 };
 
 const documentGenerator = {
-  generateMissionDocument: (data: any) => "# Mission Document\n\nGenerated document content...",
+  generateMissionDocument: (_data: any) => "# Mission Document\n\nGenerated document content...",
+  generatePDR: (_mission: any, _orbit: any, _equipment: any[], _metadata: any) =>
+    "# PDR Document\n\nPreliminary Design Review content...",
+  generateCDR: (_mission: any, _orbit: any, _equipment: any[], _aitTasks: any[], _metadata: any) =>
+    "# CDR Document\n\nCritical Design Review content...",
+  generateFRR: (_mission: any, _launchDate: any, _groundStations: any[], _metadata: any) =>
+    "# FRR Document\n\nFlight Readiness Review content...",
 };
 
 // Mission phases and types
@@ -74,7 +130,7 @@ enum MissionPhase {
   PhaseE = "Phase E",
   PhaseF = "Phase F",
   Completed = "Completed",
-  Cancelled = "Cancelled"
+  Cancelled = "Cancelled",
 }
 
 enum MissionType {
@@ -85,7 +141,7 @@ enum MissionType {
   Technology = "Technology",
   HumanSpaceflight = "Human Spaceflight",
   Exploration = "Exploration",
-  Commercial = "Commercial"
+  Commercial = "Commercial",
 }
 
 interface MissionDesign {
@@ -134,31 +190,33 @@ export const MissionPlanningDashboard = () => {
     groundStations: [],
     requirements: [],
     phase: MissionPhase.PrePhaseA,
-    budget: { total: 0, allocated: 0, spent: 0 }
+    budget: { total: 0, allocated: 0, spent: 0 },
   });
-  
-  const [satellites, setSatellites] = useState<any[]>([]);
-  const [selectedSatelliteId, setSelectedSatelliteId] = useState<string | undefined>();
+
+  // These will be used for satellite tracking features in next update
+  const [_satellites, setSatellites] = useState<any[]>([]);
+  // const [selectedSatelliteId, setSelectedSatelliteId] = useState<string | undefined>();
   const [simulationTime, setSimulationTime] = useState(new Date());
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationSpeed, setSimulationSpeed] = useState(60);
-  
+
   const [tleInput, setTleInput] = useState({ line1: "", line2: "" });
   const [orbitalElements, setOrbitalElements] = useState<OrbitalElements | null>(null);
   const [groundTrack, setGroundTrack] = useState<any[]>([]);
   const [accessWindows, setAccessWindows] = useState<any[]>([]);
-  
+
   const [selectedEquipment, setSelectedEquipment] = useState<Set<number>>(new Set());
   const [aitTasks, setAitTasks] = useState<any[]>([]);
   const [complianceChecklists, setComplianceChecklists] = useState<any[]>([]);
-  
+
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string>("");
 
   // Contract hooks
   const { writeContractAsync: writeMissionRegistry } = useScaffoldWriteContract("MissionRegistry");
-  const { writeContractAsync: writeEquipmentNFT } = useScaffoldWriteContract("SpaceEquipmentNFT");
-  const { writeContractAsync: writeStandardsCompliance } = useScaffoldWriteContract("StandardsCompliance");
+  // These will be used for equipment and compliance features in next update
+  // const { writeContractAsync: writeEquipmentNFT } = useScaffoldWriteContract("SpaceEquipmentNFT");
+  // const { writeContractAsync: writeStandardsCompliance } = useScaffoldWriteContract("StandardsCompliance");
 
   // Simulation loop
   useEffect(() => {
@@ -172,41 +230,37 @@ export const MissionPlanningDashboard = () => {
   // Parse TLE
   const handleTLEParse = useCallback(() => {
     if (!tleInput.line1 || !tleInput.line2) return;
-    
+
     try {
       const state = orbitService.propagateFromTLE(tleInput.line1, tleInput.line2, new Date());
       const elements = orbitService.stateToElements(state);
       setOrbitalElements(elements);
-      
-      setSatellites([{
-        id: "main",
-        name: mission.name || "Satellite",
-        tle: tleInput,
-        color: "#00ff00",
-        showOrbit: true,
-        showGroundTrack: true,
-        showSensorCone: true,
-        sensorFOV: 15
-      }]);
-      
+
+      setSatellites([
+        {
+          id: "main",
+          name: mission.name || "Satellite",
+          tle: tleInput,
+          color: "#00ff00",
+          showOrbit: true,
+          showGroundTrack: true,
+          showSensorCone: true,
+          sensorFOV: 15,
+        },
+      ]);
+
       const satrec = orbitService.parseTLE(tleInput.line1, tleInput.line2);
       const track = orbitService.calculateGroundTrack(
         satrec,
         new Date(),
         new Date(Date.now() + 24 * 60 * 60 * 1000),
-        5
+        5,
       );
       setGroundTrack(track);
-      
+
       if (mission.groundStations.length > 0) {
         const windows = mission.groundStations.flatMap(station =>
-          orbitService.calculateAccess(
-            satrec,
-            station,
-            new Date(),
-            new Date(Date.now() + 24 * 60 * 60 * 1000),
-            10
-          )
+          orbitService.calculateAccess(satrec, station, new Date(), new Date(Date.now() + 24 * 60 * 60 * 1000), 10),
         );
         setAccessWindows(windows);
       }
@@ -221,10 +275,10 @@ export const MissionPlanningDashboard = () => {
       setSaveStatus("Please connect wallet");
       return;
     }
-    
+
     setIsSaving(true);
     setSaveStatus("Saving to IPFS...");
-    
+
     try {
       const missionData: MissionData = {
         name: mission.name,
@@ -235,7 +289,7 @@ export const MissionPlanningDashboard = () => {
           name: phase,
           startDate: mission.launchDate,
           endDate: mission.endDate,
-          status: phase === mission.phase ? "active" : "pending"
+          status: phase === mission.phase ? "active" : "pending",
         })),
         equipment: mission.equipment,
         orbit: orbitalElements || undefined,
@@ -243,12 +297,12 @@ export const MissionPlanningDashboard = () => {
         requirements: mission.requirements,
         aitPlan: aitTasks,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
-      
+
       const ipfsHash = await pinataService.pinMissionData(missionData);
       setSaveStatus("Saved to IPFS! Creating on-chain record...");
-      
+
       let orbitHash = "";
       if (tleInput.line1 && tleInput.line2) {
         const orbitData: OrbitData = {
@@ -256,12 +310,12 @@ export const MissionPlanningDashboard = () => {
           propagatedStates: groundTrack.map(point => ({
             epoch: point.timestamp.toISOString(),
             position: [point.latitude, point.longitude, point.altitude],
-            velocity: [0, 0, 0]
-          }))
+            velocity: [0, 0, 0],
+          })),
         };
         orbitHash = await pinataService.pinOrbitData(orbitData, mission.name);
       }
-      
+
       const tx = await writeMissionRegistry({
         functionName: "createMission",
         args: [
@@ -269,16 +323,16 @@ export const MissionPlanningDashboard = () => {
           Object.values(MissionType).indexOf(mission.type),
           ipfsHash,
           BigInt(new Date(mission.launchDate).getTime() / 1000),
-          BigInt(new Date(mission.endDate).getTime() / 1000)
-        ]
+          BigInt(new Date(mission.endDate).getTime() / 1000),
+        ],
       });
-      
+
       setSaveStatus("Mission created successfully!");
-      
+
       if (orbitHash && tx) {
         await writeMissionRegistry({
           functionName: "updateOrbitData",
-          args: [1n, orbitHash]
+          args: [1n, orbitHash],
         });
       }
     } catch (error) {
@@ -300,34 +354,23 @@ export const MissionPlanningDashboard = () => {
       authors: ["Mission Planning Suite"],
       reviewers: [],
       approvers: [],
-      status: "Draft" as any
+      status: "Draft" as any,
     };
 
     let content = "";
     switch (docType) {
       case "PDR":
-        content = documentGenerator.generatePDR(
-          mission as any,
-          { tle: tleInput } as any,
-          [],
-          metadata
-        );
+        content = documentGenerator.generatePDR(mission as any, { tle: tleInput } as any, [], metadata);
         break;
       case "CDR":
-        content = documentGenerator.generateCDR(
-          mission as any,
-          { tle: tleInput } as any,
-          [],
-          aitTasks,
-          metadata
-        );
+        content = documentGenerator.generateCDR(mission as any, { tle: tleInput } as any, [], aitTasks, metadata);
         break;
       case "FRR":
         content = documentGenerator.generateFRR(
           mission as any,
           new Date(mission.launchDate),
           mission.groundStations,
-          metadata
+          metadata,
         );
         break;
     }
@@ -352,7 +395,7 @@ export const MissionPlanningDashboard = () => {
               <p className="text-sm text-gray-400">End-to-end mission design and analysis</p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             {/* Simulation controls */}
             <div className="flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-2">
@@ -364,7 +407,7 @@ export const MissionPlanningDashboard = () => {
               </button>
               <select
                 value={simulationSpeed}
-                onChange={(e) => setSimulationSpeed(Number(e.target.value))}
+                onChange={e => setSimulationSpeed(Number(e.target.value))}
                 className="bg-transparent text-sm text-white border-0 focus:ring-0"
               >
                 <option value="1">1x</option>
@@ -373,27 +416,19 @@ export const MissionPlanningDashboard = () => {
               </select>
               <span className="text-xs text-gray-400">{simulationTime.toUTCString()}</span>
             </div>
-            
-            <button
-              onClick={handleSaveMission}
-              disabled={isSaving || !mission.name}
-              className="btn btn-sm btn-primary"
-            >
+
+            <button onClick={handleSaveMission} disabled={isSaving || !mission.name} className="btn btn-sm btn-primary">
               <Save className="w-4 h-4 mr-1" />
               {isSaving ? "Saving..." : "Save"}
             </button>
           </div>
         </div>
-        
-        {saveStatus && (
-          <div className="p-2 bg-blue-900 text-blue-300 rounded">
-            {saveStatus}
-          </div>
-        )}
-        
+
+        {saveStatus && <div className="p-2 bg-blue-900 text-blue-300 rounded">{saveStatus}</div>}
+
         {/* Sub-tabs */}
         <div className="flex gap-2 overflow-x-auto">
-          {subTabs.map((tab) => (
+          {subTabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveSubTab(tab.id)}
@@ -419,82 +454,86 @@ export const MissionPlanningDashboard = () => {
               {/* Basic Information */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-white mb-4">Mission Information</h3>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-1">Mission Name</label>
                   <input
                     type="text"
                     value={mission.name}
-                    onChange={(e) => setMission({ ...mission, name: e.target.value })}
+                    onChange={e => setMission({ ...mission, name: e.target.value })}
                     className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
                     placeholder="Enter mission name"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-1">Mission Type</label>
                   <select
                     value={mission.type}
-                    onChange={(e) => setMission({ ...mission, type: e.target.value as MissionType })}
+                    onChange={e => setMission({ ...mission, type: e.target.value as MissionType })}
                     className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
                   >
                     {Object.values(MissionType).map(type => (
-                      <option key={type} value={type}>{type}</option>
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-1">Current Phase</label>
                   <select
                     value={mission.phase}
-                    onChange={(e) => setMission({ ...mission, phase: e.target.value as MissionPhase })}
+                    onChange={e => setMission({ ...mission, phase: e.target.value as MissionPhase })}
                     className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
                   >
                     {Object.values(MissionPhase).map(phase => (
-                      <option key={phase} value={phase}>{phase}</option>
+                      <option key={phase} value={phase}>
+                        {phase}
+                      </option>
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-1">Description</label>
                   <textarea
                     value={mission.description}
-                    onChange={(e) => setMission({ ...mission, description: e.target.value })}
+                    onChange={e => setMission({ ...mission, description: e.target.value })}
                     className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
                     rows={3}
                     placeholder="Mission description"
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-1">Launch Date</label>
                     <input
                       type="datetime-local"
                       value={mission.launchDate}
-                      onChange={(e) => setMission({ ...mission, launchDate: e.target.value })}
+                      onChange={e => setMission({ ...mission, launchDate: e.target.value })}
                       className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-1">End Date</label>
                     <input
                       type="datetime-local"
                       value={mission.endDate}
-                      onChange={(e) => setMission({ ...mission, endDate: e.target.value })}
+                      onChange={e => setMission({ ...mission, endDate: e.target.value })}
                       className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
                     />
                   </div>
                 </div>
               </div>
-              
+
               {/* Mission Objectives */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-white mb-4">Mission Objectives</h3>
-                
+
                 <div className="space-y-2">
                   {mission.objectives.map((obj, i) => (
                     <div key={i} className="flex items-center gap-2">
@@ -512,19 +551,19 @@ export const MissionPlanningDashboard = () => {
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="flex gap-2">
                   <input
                     type="text"
                     placeholder="Add objective"
                     className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
-                    onKeyPress={(e) => {
+                    onKeyPress={e => {
                       if (e.key === "Enter") {
                         const input = e.target as HTMLInputElement;
                         if (input.value) {
-                          setMission({ 
-                            ...mission, 
-                            objectives: [...mission.objectives, input.value]
+                          setMission({
+                            ...mission,
+                            objectives: [...mission.objectives, input.value],
                           });
                           input.value = "";
                         }
@@ -535,7 +574,7 @@ export const MissionPlanningDashboard = () => {
                     <PlusCircle className="w-4 h-4" />
                   </button>
                 </div>
-                
+
                 {/* Budget */}
                 <div className="mt-6">
                   <h4 className="font-medium text-white mb-3">Budget</h4>
@@ -545,10 +584,12 @@ export const MissionPlanningDashboard = () => {
                       <input
                         type="number"
                         value={mission.budget.total}
-                        onChange={(e) => setMission({
-                          ...mission,
-                          budget: { ...mission.budget, total: Number(e.target.value) }
-                        })}
+                        onChange={e =>
+                          setMission({
+                            ...mission,
+                            budget: { ...mission.budget, total: Number(e.target.value) },
+                          })
+                        }
                         className="w-32 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-right"
                         placeholder="0"
                       />
@@ -565,11 +606,11 @@ export const MissionPlanningDashboard = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Ground Stations */}
             <div className="mt-6">
               <h3 className="text-lg font-semibold text-white mb-4">Ground Stations</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 {mission.groundStations.map((station, i) => (
                   <div key={i} className="p-3 bg-gray-700 rounded-lg">
@@ -594,24 +635,27 @@ export const MissionPlanningDashboard = () => {
                   </div>
                 ))}
               </div>
-              
+
               <button
                 onClick={() => {
                   const name = prompt("Station name:");
                   const lat = prompt("Latitude:");
                   const lon = prompt("Longitude:");
                   const elev = prompt("Elevation (m):");
-                  
+
                   if (name && lat && lon && elev) {
                     setMission({
                       ...mission,
-                      groundStations: [...mission.groundStations, {
-                        name,
-                        latitude: Number(lat),
-                        longitude: Number(lon),
-                        elevation: Number(elev),
-                        minElevationAngle: 5
-                      }]
+                      groundStations: [
+                        ...mission.groundStations,
+                        {
+                          name,
+                          latitude: Number(lat),
+                          longitude: Number(lon),
+                          elevation: Number(elev),
+                          minElevationAngle: 5,
+                        },
+                      ],
                     });
                   }
                 }}
@@ -623,7 +667,7 @@ export const MissionPlanningDashboard = () => {
             </div>
           </div>
         )}
-        
+
         {/* Orbit Analysis Tab */}
         {activeSubTab === "orbit" && (
           <div className="p-6">
@@ -631,56 +675,57 @@ export const MissionPlanningDashboard = () => {
               {/* TLE Input */}
               <div>
                 <h3 className="text-lg font-semibold text-white mb-4">TLE Input</h3>
-                
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-1">Line 1</label>
                     <input
                       type="text"
                       value={tleInput.line1}
-                      onChange={(e) => setTleInput({ ...tleInput, line1: e.target.value })}
+                      onChange={e => setTleInput({ ...tleInput, line1: e.target.value })}
                       className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white font-mono text-xs"
                       placeholder="1 25544U 98067A   21321.23456789  .00001234  00000-0  12345-4 0  9999"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-1">Line 2</label>
                     <input
                       type="text"
                       value={tleInput.line2}
-                      onChange={(e) => setTleInput({ ...tleInput, line2: e.target.value })}
+                      onChange={e => setTleInput({ ...tleInput, line2: e.target.value })}
                       className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white font-mono text-xs"
                       placeholder="2 25544  51.6442 123.4567 0001234  45.6789 314.5678 15.48919393123456"
                     />
                   </div>
-                  
-                  <button
-                    onClick={handleTLEParse}
-                    className="btn btn-primary w-full"
-                  >
+
+                  <button onClick={handleTLEParse} className="btn btn-primary w-full">
                     Parse TLE & Calculate Orbit
                   </button>
                 </div>
-                
+
                 {/* Sample TLEs */}
                 <div className="mt-6">
                   <h4 className="font-medium text-white mb-2">Sample TLEs</h4>
                   <div className="space-y-2">
                     <button
-                      onClick={() => setTleInput({
-                        line1: "1 25544U 98067A   21321.23456789  .00001234  00000-0  12345-4 0  9999",
-                        line2: "2 25544  51.6442 123.4567 0001234  45.6789 314.5678 15.48919393123456"
-                      })}
+                      onClick={() =>
+                        setTleInput({
+                          line1: "1 25544U 98067A   21321.23456789  .00001234  00000-0  12345-4 0  9999",
+                          line2: "2 25544  51.6442 123.4567 0001234  45.6789 314.5678 15.48919393123456",
+                        })
+                      }
                       className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded"
                     >
                       ISS
                     </button>
                     <button
-                      onClick={() => setTleInput({
-                        line1: "1 43013U 17073A   21321.23456789  .00000123  00000-0  12345-5 0  9999",
-                        line2: "2 43013  97.4567 123.4567 0001234  90.1234 270.1234 15.20123456789012"
-                      })}
+                      onClick={() =>
+                        setTleInput({
+                          line1: "1 43013U 17073A   21321.23456789  .00000123  00000-0  12345-5 0  9999",
+                          line2: "2 43013  97.4567 123.4567 0001234  90.1234 270.1234 15.20123456789012",
+                        })
+                      }
                       className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded"
                     >
                       Sun-Synchronous
@@ -688,11 +733,11 @@ export const MissionPlanningDashboard = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Orbital Elements */}
               <div>
                 <h3 className="text-lg font-semibold text-white mb-4">Orbital Elements</h3>
-                
+
                 {orbitalElements ? (
                   <div className="space-y-3">
                     <div className="flex justify-between">
@@ -719,32 +764,36 @@ export const MissionPlanningDashboard = () => {
                       <span className="text-sm text-gray-400">True Anomaly:</span>
                       <span className="font-medium text-white">{orbitalElements.trueAnomaly.toFixed(2)}°</span>
                     </div>
-                    
+
                     <div className="pt-3 border-t border-gray-700">
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-400">Altitude:</span>
-                        <span className="font-medium text-white">{(orbitalElements.semiMajorAxis - 6371).toFixed(2)} km</span>
+                        <span className="font-medium text-white">
+                          {(orbitalElements.semiMajorAxis - 6371).toFixed(2)} km
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-400">Period:</span>
                         <span className="font-medium text-white">
-                          {(2 * Math.PI * Math.sqrt(Math.pow(orbitalElements.semiMajorAxis, 3) / 398600.4418) / 60).toFixed(2)} min
+                          {(
+                            (2 * Math.PI * Math.sqrt(Math.pow(orbitalElements.semiMajorAxis, 3) / 398600.4418)) /
+                            60
+                          ).toFixed(2)}{" "}
+                          min
                         </span>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center text-gray-500 py-8">
-                    No orbital elements calculated yet
-                  </div>
+                  <div className="text-center text-gray-500 py-8">No orbital elements calculated yet</div>
                 )}
               </div>
             </div>
-            
+
             {/* Access Windows */}
             <div className="mt-6">
               <h3 className="text-lg font-semibold text-white mb-4">Ground Station Access Windows</h3>
-              
+
               {accessWindows.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -763,7 +812,9 @@ export const MissionPlanningDashboard = () => {
                           <td className="py-2">{window.groundStation}</td>
                           <td className="py-2">{new Date(window.aos).toLocaleString()}</td>
                           <td className="py-2">{new Date(window.los).toLocaleString()}</td>
-                          <td className="py-2">{Math.floor(window.duration / 60)} min {Math.floor(window.duration % 60)} sec</td>
+                          <td className="py-2">
+                            {Math.floor(window.duration / 60)} min {Math.floor(window.duration % 60)} sec
+                          </td>
                           <td className="py-2">{window.maxElevation.toFixed(1)}°</td>
                         </tr>
                       ))}
@@ -780,12 +831,12 @@ export const MissionPlanningDashboard = () => {
             </div>
           </div>
         )}
-        
+
         {/* Equipment Tab */}
         {activeSubTab === "equipment" && (
           <div className="p-6">
             <h3 className="text-lg font-semibold text-white mb-4">Equipment Selection</h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {["Bus", "Payload", "Power System", "Propulsion", "Communication"].map(category => (
                 <div key={category} className="bg-gray-700 rounded-lg p-4">
@@ -796,7 +847,7 @@ export const MissionPlanningDashboard = () => {
                         <input
                           type="checkbox"
                           checked={selectedEquipment.has(i)}
-                          onChange={(e) => {
+                          onChange={e => {
                             const newSelected = new Set(selectedEquipment);
                             if (e.target.checked) {
                               newSelected.add(i);
@@ -814,7 +865,7 @@ export const MissionPlanningDashboard = () => {
                 </div>
               ))}
             </div>
-            
+
             <div className="mt-6 p-4 bg-gray-700 rounded-lg">
               <h4 className="font-medium text-white mb-3">Configuration Summary</h4>
               <div className="grid grid-cols-3 gap-4">
@@ -834,26 +885,29 @@ export const MissionPlanningDashboard = () => {
             </div>
           </div>
         )}
-        
+
         {/* AIT Planning Tab */}
         {activeSubTab === "ait" && (
           <div className="p-6">
             <h3 className="text-lg font-semibold text-white mb-4">Assembly, Integration & Test Planning</h3>
-            
+
             <div className="mb-4">
               <button
                 onClick={() => {
                   const taskName = prompt("Task name:");
                   if (taskName) {
-                    setAitTasks([...aitTasks, {
-                      id: Date.now(),
-                      name: taskName,
-                      type: "Test",
-                      status: "Pending",
-                      startDate: new Date().toISOString(),
-                      duration: 1,
-                      dependencies: []
-                    }]);
+                    setAitTasks([
+                      ...aitTasks,
+                      {
+                        id: Date.now(),
+                        name: taskName,
+                        type: "Test",
+                        status: "Pending",
+                        startDate: new Date().toISOString(),
+                        duration: 1,
+                        dependencies: [],
+                      },
+                    ]);
                   }
                 }}
                 className="btn btn-primary"
@@ -862,7 +916,7 @@ export const MissionPlanningDashboard = () => {
                 Add AIT Task
               </button>
             </div>
-            
+
             {aitTasks.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -877,16 +931,20 @@ export const MissionPlanningDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {aitTasks.map((task) => (
+                    {aitTasks.map(task => (
                       <tr key={task.id} className="text-white border-b border-gray-700">
                         <td className="py-2">{task.name}</td>
                         <td className="py-2">{task.type}</td>
                         <td className="py-2">
-                          <span className={`badge ${
-                            task.status === "Complete" ? "badge-success" :
-                            task.status === "In Progress" ? "badge-warning" :
-                            "badge-ghost"
-                          }`}>
+                          <span
+                            className={`badge ${
+                              task.status === "Complete"
+                                ? "badge-success"
+                                : task.status === "In Progress"
+                                  ? "badge-warning"
+                                  : "badge-ghost"
+                            }`}
+                          >
                             {task.status}
                           </span>
                         </td>
@@ -906,29 +964,30 @@ export const MissionPlanningDashboard = () => {
                 </table>
               </div>
             ) : (
-              <div className="text-center text-gray-500 py-8">
-                No AIT tasks defined yet
-              </div>
+              <div className="text-center text-gray-500 py-8">No AIT tasks defined yet</div>
             )}
           </div>
         )}
-        
+
         {/* Compliance Tab */}
         {activeSubTab === "compliance" && (
           <div className="p-6">
             <h3 className="text-lg font-semibold text-white mb-4">Standards Compliance</h3>
-            
+
             <div className="mb-4">
               <button
                 onClick={() => {
                   const standard = prompt("Standard (e.g., ECSS-E-ST-50C):");
                   if (standard) {
-                    setComplianceChecklists([...complianceChecklists, {
-                      id: Date.now(),
-                      standard: standard,
-                      items: [],
-                      compliance: "Not Assessed"
-                    }]);
+                    setComplianceChecklists([
+                      ...complianceChecklists,
+                      {
+                        id: Date.now(),
+                        standard: standard,
+                        items: [],
+                        compliance: "Not Assessed",
+                      },
+                    ]);
                   }
                 }}
                 className="btn btn-primary"
@@ -937,18 +996,22 @@ export const MissionPlanningDashboard = () => {
                 Add Standard
               </button>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {complianceChecklists.map(checklist => (
                 <div key={checklist.id} className="bg-gray-700 rounded-lg p-4">
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <h4 className="font-medium text-white">{checklist.standard}</h4>
-                      <span className={`badge mt-1 ${
-                        checklist.compliance === "Fully Compliant" ? "badge-success" :
-                        checklist.compliance === "Partially Compliant" ? "badge-warning" :
-                        "badge-ghost"
-                      }`}>
+                      <span
+                        className={`badge mt-1 ${
+                          checklist.compliance === "Fully Compliant"
+                            ? "badge-success"
+                            : checklist.compliance === "Partially Compliant"
+                              ? "badge-warning"
+                              : "badge-ghost"
+                        }`}
+                      >
                         {checklist.compliance}
                       </span>
                     </div>
@@ -959,16 +1022,14 @@ export const MissionPlanningDashboard = () => {
                       <XCircle className="w-4 h-4" />
                     </button>
                   </div>
-                  
-                  <div className="text-sm text-gray-400">
-                    {checklist.items.length} requirements tracked
-                  </div>
+
+                  <div className="text-sm text-gray-400">{checklist.items.length} requirements tracked</div>
                 </div>
               ))}
             </div>
           </div>
         )}
-        
+
         {/* 3D Visualization Tab */}
         {activeSubTab === "visualization" && (
           <div className="h-[600px] bg-gray-900 rounded-lg flex items-center justify-center">
@@ -978,17 +1039,17 @@ export const MissionPlanningDashboard = () => {
             </div>
           </div>
         )}
-        
+
         {/* ICD & Drivers Tab */}
         {activeSubTab === "icd" && (
           <div className="p-6">
             <h3 className="text-lg font-semibold text-white mb-4">Interface Control & Driver Generation</h3>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* ICD Generation Section */}
               <div className="bg-gray-800 rounded-lg p-4">
                 <h4 className="font-medium text-white mb-4">Interface Control Documents</h4>
-                
+
                 <div className="space-y-3">
                   <div>
                     <label className="block text-sm text-gray-400 mb-1">Select Components</label>
@@ -999,7 +1060,7 @@ export const MissionPlanningDashboard = () => {
                       <option>Power System ↔ Bus</option>
                     </select>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm text-gray-400 mb-1">ICD Version</label>
                     <input
@@ -1008,7 +1069,7 @@ export const MissionPlanningDashboard = () => {
                       className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white"
                     />
                   </div>
-                  
+
                   <div className="flex gap-2">
                     <button className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded">
                       Generate ICD
@@ -1017,7 +1078,7 @@ export const MissionPlanningDashboard = () => {
                       View Template
                     </button>
                   </div>
-                  
+
                   <div className="border-t border-gray-700 pt-3">
                     <p className="text-sm text-gray-400 mb-2">Recent ICDs:</p>
                     <div className="space-y-1">
@@ -1033,11 +1094,11 @@ export const MissionPlanningDashboard = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Driver Generation Section */}
               <div className="bg-gray-800 rounded-lg p-4">
                 <h4 className="font-medium text-white mb-4">Driver Generation</h4>
-                
+
                 <div className="space-y-3">
                   <div>
                     <label className="block text-sm text-gray-400 mb-1">Component</label>
@@ -1048,7 +1109,7 @@ export const MissionPlanningDashboard = () => {
                       <option>Reaction Wheel</option>
                     </select>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm text-gray-400 mb-1">Target Language</label>
                     <select className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white">
@@ -1059,7 +1120,7 @@ export const MissionPlanningDashboard = () => {
                       <option>VHDL</option>
                     </select>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm text-gray-400 mb-1">Features</label>
                     <div className="space-y-2">
@@ -1081,14 +1142,14 @@ export const MissionPlanningDashboard = () => {
                       </label>
                     </div>
                   </div>
-                  
+
                   <button className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded">
                     Generate Driver
                   </button>
                 </div>
               </div>
             </div>
-            
+
             {/* Interface Matrix */}
             <div className="mt-6 bg-gray-800 rounded-lg p-4">
               <h4 className="font-medium text-white mb-4">Interface Matrix</h4>
@@ -1137,12 +1198,12 @@ export const MissionPlanningDashboard = () => {
             </div>
           </div>
         )}
-        
+
         {/* Documents Tab */}
         {activeSubTab === "documents" && (
           <div className="p-6">
             <h3 className="text-lg font-semibold text-white mb-4">Document Generation</h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {["PDR", "CDR", "FRR", "Test Report", "Compliance Matrix"].map(docType => (
                 <div key={docType} className="bg-gray-700 rounded-lg p-4">
@@ -1165,28 +1226,32 @@ export const MissionPlanningDashboard = () => {
             </div>
           </div>
         )}
-        
+
         {/* API & Export Tab */}
         {activeSubTab === "api" && (
           <div className="p-6">
             <h3 className="text-lg font-semibold text-white mb-4">API & Export Options</h3>
-            
+
             <div className="space-y-6">
               <div>
                 <h4 className="font-medium text-white mb-3">Export Mission Data</h4>
                 <div className="flex gap-3">
                   <button
                     onClick={() => {
-                      const data = JSON.stringify({
-                        mission,
-                        orbitalElements,
-                        tle: tleInput,
-                        groundTrack,
-                        accessWindows,
-                        equipment: Array.from(selectedEquipment),
-                        aitTasks,
-                        complianceChecklists
-                      }, null, 2);
+                      const data = JSON.stringify(
+                        {
+                          mission,
+                          orbitalElements,
+                          tle: tleInput,
+                          groundTrack,
+                          accessWindows,
+                          equipment: Array.from(selectedEquipment),
+                          aitTasks,
+                          complianceChecklists,
+                        },
+                        null,
+                        2,
+                      );
                       const blob = new Blob([data], { type: "application/json" });
                       const url = URL.createObjectURL(blob);
                       const a = document.createElement("a");
@@ -1199,17 +1264,14 @@ export const MissionPlanningDashboard = () => {
                     <Download className="w-4 h-4 mr-1" />
                     Export JSON
                   </button>
-                  
+
                   <button
                     onClick={() => {
                       if (orbitalElements) {
-                        const oem = orbitService.exportToOEM(
-                          [orbitService.elementsToState(orbitalElements)],
-                          {
-                            objectName: mission.name || "SATELLITE",
-                            objectId: "001"
-                          }
-                        );
+                        const oem = orbitService.exportToOEM([orbitService.elementsToState(orbitalElements)], {
+                          objectName: mission.name || "SATELLITE",
+                          objectId: "001",
+                        });
                         const blob = new Blob([oem], { type: "text/plain" });
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement("a");
@@ -1226,7 +1288,7 @@ export const MissionPlanningDashboard = () => {
                   </button>
                 </div>
               </div>
-              
+
               <div>
                 <h4 className="font-medium text-white mb-3">API Endpoints</h4>
                 <div className="bg-gray-700 rounded-lg p-4 font-mono text-sm">
@@ -1238,7 +1300,7 @@ export const MissionPlanningDashboard = () => {
                   <div className="text-green-400">POST /api/documents/generate</div>
                 </div>
               </div>
-              
+
               <div>
                 <h4 className="font-medium text-white mb-3">Import Data</h4>
                 <label className="btn btn-secondary">
@@ -1247,11 +1309,11 @@ export const MissionPlanningDashboard = () => {
                   <input
                     type="file"
                     accept=".json"
-                    onChange={(e) => {
+                    onChange={e => {
                       const file = e.target.files?.[0];
                       if (file) {
                         const reader = new FileReader();
-                        reader.onload = (ev) => {
+                        reader.onload = ev => {
                           try {
                             const data = JSON.parse(ev.target?.result as string);
                             setMission(data.mission || mission);

@@ -101,7 +101,6 @@ export const SmartWalletCreator = () => {
           BigInt(chainId),
           tokenContract as Address,
           BigInt(tokenId),
-          "0x" as `0x${string}`, // Empty init data
         ],
       });
 

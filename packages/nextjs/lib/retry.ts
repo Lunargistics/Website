@@ -1,3 +1,6 @@
+// Import React for the hook
+import * as React from "react";
+
 /**
  * Retry Logic Utilities
  * Provides comprehensive retry mechanisms with exponential backoff,
@@ -41,12 +44,7 @@ const defaultOptions: Required<Omit<RetryOptions, "circuitBreaker">> = {
   initialDelay: 1000,
   maxDelay: 10000,
   backoffMultiplier: 2,
-  retryableErrors: [
-    "NetworkError",
-    "TimeoutError",
-    "ServiceUnavailable",
-    "TooManyRequests",
-  ],
+  retryableErrors: ["NetworkError", "TimeoutError", "ServiceUnavailable", "TooManyRequests"],
   onRetry: () => {},
   onFailure: () => {},
   timeout: 30000,
@@ -56,10 +54,7 @@ const defaultOptions: Required<Omit<RetryOptions, "circuitBreaker">> = {
 /**
  * Retry with exponential backoff
  */
-export async function retry<T>(
-  fn: () => Promise<T>,
-  options: RetryOptions = {}
-): Promise<T> {
+export async function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
   const opts = { ...defaultOptions, ...options };
   let lastError: Error | null = null;
 
@@ -103,13 +98,7 @@ export async function retry<T>(
       }
 
       // Calculate delay with exponential backoff
-      const delay = calculateDelay(
-        attempt,
-        opts.initialDelay,
-        opts.maxDelay,
-        opts.backoffMultiplier,
-        opts.jitter
-      );
+      const delay = calculateDelay(attempt, opts.initialDelay, opts.maxDelay, opts.backoffMultiplier, opts.jitter);
 
       // Call retry callback
       opts.onRetry(attempt, lastError);
@@ -128,7 +117,7 @@ export async function retry<T>(
 export async function retryWithFallback<T>(
   fn: () => Promise<T>,
   fallback: T | (() => T | Promise<T>),
-  options: RetryOptions = {}
+  options: RetryOptions = {},
 ): Promise<T> {
   try {
     return await retry(fn, options);
@@ -143,13 +132,11 @@ export async function retryWithFallback<T>(
  */
 export async function batchRetry<T>(
   operations: Array<() => Promise<T>>,
-  options: RetryOptions = {}
+  options: RetryOptions = {},
 ): Promise<Array<{ success: boolean; result?: T; error?: Error }>> {
-  const results = await Promise.allSettled(
-    operations.map((op) => retry(op, options))
-  );
+  const results = await Promise.allSettled(operations.map(op => retry(op, options)));
 
-  return results.map((result) => {
+  return results.map(result => {
     if (result.status === "fulfilled") {
       return { success: true, result: result.value };
     } else {
@@ -163,7 +150,7 @@ export async function batchRetry<T>(
  */
 export async function progressiveRetry<T>(
   operations: Array<{ fn: () => Promise<T>; priority: number }>,
-  options: RetryOptions = {}
+  options: RetryOptions = {},
 ): Promise<T | null> {
   // Sort by priority (lower number = higher priority)
   const sorted = [...operations].sort((a, b) => a.priority - b.priority);
@@ -188,7 +175,7 @@ function calculateDelay(
   initialDelay: number,
   maxDelay: number,
   multiplier: number,
-  jitter: boolean
+  jitter: boolean,
 ): number {
   let delay = Math.min(initialDelay * Math.pow(multiplier, attempt - 1), maxDelay);
 
@@ -206,12 +193,12 @@ function calculateDelay(
  */
 function isRetryableError(error: Error, retryableErrors: string[]): boolean {
   // Check error name
-  if (retryableErrors.some((name) => error.name.includes(name))) {
+  if (retryableErrors.some(name => error.name.includes(name))) {
     return true;
   }
 
   // Check error message
-  if (retryableErrors.some((name) => error.message.includes(name))) {
+  if (retryableErrors.some(name => error.message.includes(name))) {
     return true;
   }
 
@@ -234,10 +221,7 @@ function isRetryableError(error: Error, retryableErrors: string[]): boolean {
 /**
  * Circuit breaker management
  */
-function checkCircuitBreaker(
-  key: string,
-  options: CircuitBreakerOptions
-): "closed" | "open" | "half-open" {
+function checkCircuitBreaker(key: string, options: CircuitBreakerOptions): "closed" | "open" | "half-open" {
   const state = circuitBreakers.get(key) || {
     failures: 0,
     lastFailTime: 0,
@@ -245,10 +229,7 @@ function checkCircuitBreaker(
   };
 
   // Check if circuit should be reset
-  if (
-    state.state === "open" &&
-    Date.now() - state.lastFailTime > options.resetTimeout
-  ) {
+  if (state.state === "open" && Date.now() - state.lastFailTime > options.resetTimeout) {
     state.state = "half-open";
     circuitBreakers.set(key, state);
   }
@@ -256,10 +237,7 @@ function checkCircuitBreaker(
   return state.state;
 }
 
-function recordCircuitBreakerFailure(
-  key: string,
-  options: CircuitBreakerOptions
-): void {
+function recordCircuitBreakerFailure(key: string, options: CircuitBreakerOptions): void {
   const state = circuitBreakers.get(key) || {
     failures: 0,
     lastFailTime: 0,
@@ -294,9 +272,7 @@ function resetCircuitBreaker(key: string): void {
 function withTimeout<T>(promise: Promise<T>, timeout: number): Promise<T> {
   return Promise.race([
     promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error("Operation timed out")), timeout)
-    ),
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error("Operation timed out")), timeout)),
   ]);
 }
 
@@ -304,18 +280,14 @@ function withTimeout<T>(promise: Promise<T>, timeout: number): Promise<T> {
  * Sleep utility
  */
 function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 /**
  * Retry decorator for class methods
  */
 export function RetryMethod(options: RetryOptions = {}) {
-  return function (
-    target: any,
-    propertyKey: string,
-    descriptor: PropertyDescriptor
-  ) {
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {
@@ -330,20 +302,17 @@ export function RetryMethod(options: RetryOptions = {}) {
  * Create a retry wrapper for fetch operations
  */
 export function createRetryFetch(options: RetryOptions = {}) {
-  return async function retryFetch(
-    url: string,
-    init?: RequestInit
-  ): Promise<Response> {
+  return async function retryFetch(url: string, init?: RequestInit): Promise<Response> {
     return retry(async () => {
       const response = await fetch(url, init);
-      
+
       // Throw error for non-successful responses
       if (!response.ok) {
         const error = new Error(`HTTP error! status: ${response.status}`);
         error.name = "HTTPError";
         throw error;
       }
-      
+
       return response;
     }, options);
   };
@@ -352,10 +321,7 @@ export function createRetryFetch(options: RetryOptions = {}) {
 /**
  * Hook for React components
  */
-export function useRetry<T>(
-  fn: () => Promise<T>,
-  options: RetryOptions = {}
-) {
+export function useRetry<T>(fn: () => Promise<T>, options: RetryOptions = {}) {
   const [data, setData] = React.useState<T | null>(null);
   const [error, setError] = React.useState<Error | null>(null);
   const [loading, setLoading] = React.useState(false);
@@ -386,6 +352,3 @@ export function useRetry<T>(
 
   return { data, error, loading, attempt, retry: execute };
 }
-
-// Import React for the hook
-import * as React from "react";

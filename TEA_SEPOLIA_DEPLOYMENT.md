@@ -35,20 +35,26 @@
 - **Explorer:** https://testnet.explorer.tea.xyz/address/0x09635F643e140090A9A8Dcd712eD6285858ceBef
 - **Gas Used:** ~18.05 TEA
 
+#### 6. AsteroidCommodityToken
+- **Address:** `0xc5a5C42992dECbae36851359345FE25997F5C42d`
+- **Explorer:** https://testnet.explorer.tea.xyz/address/0xc5a5C42992dECbae36851359345FE25997F5C42d
+- **Gas Used:** ~19.07 TEA
+- **Details:** ERC20 token for asteroid commodity (16-Psyche Iron-Nickel)
+
 ## 💰 Deployment Costs
 
 ### Total TEA Used
 - Initial funding: 25 TEA
 - Second funding: 50 TEA
-- **Total provided:** 75 TEA
-- **Remaining balance:** ~1.27 TEA
-- **Total spent:** ~73.73 TEA
+- Third funding: 20 TEA
+- **Total provided:** 95 TEA
+- **Remaining balance:** ~2.2 TEA
+- **Total spent:** ~92.8 TEA
 
 ### Pending Contracts (Need Additional Funding)
 - StandardsCompliance (needs ~27 TEA)
 - SpaceElementsNFT
 - SpaceElementsMarketplace
-- AsteroidCommodityToken
 - AsteroidDEX
 - AsteroidFutures
 - AsteroidLiquidityPool
@@ -57,11 +63,20 @@
 - ERC6551Registry
 - SpaceSmartWallet
 
+## ✅ Contract Verification Status
+
+All 6 deployed contracts have been verified via RPC calls:
+- **Status:** All contracts contain valid bytecode and are operational
+- **Explorer:** TEA Sepolia explorer temporarily unavailable (DNS issues)
+- **RPC Verification:** ✅ Confirmed via direct blockchain queries
+- **Final Balance:** 2.20 TEA remaining (exact: 2.204995217290976 TEA)
+
 ## 🔧 Configuration
 
 ### Deployer Account
 - **Address:** `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`
 - **Private Key:** (Stored in .env file)
+- **Current Balance:** 2.20 TEA
 
 ### Environment Setup
 ```bash
@@ -133,13 +148,32 @@ TEA Sepolia has relatively high gas costs:
 
 ## ✅ Success Metrics
 
-- ✅ 5 core contracts successfully deployed
-- ✅ All deployed contracts verified on explorer
+- ✅ 6 core contracts successfully deployed and verified
+- ✅ All deployed contracts contain valid bytecode and are operational
+- ✅ RPC connectivity confirmed - contracts ready for integration
 - ✅ Integration ready for frontend
-- ⏳ 11 contracts pending deployment (need additional funding)
+- ✅ Deployment documentation complete
+- ⏳ 10 contracts pending deployment (need additional funding ~200 TEA)
+
+## 📋 Deployment Summary Table
+
+| Contract | Address | Status |
+|----------|---------|--------|
+| YourContract | 0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1 | ✅ Deployed |
+| SpaceActivityManager | 0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44 | ✅ Deployed |
+| MissionRegistry | 0x4A679253410272dd5232B3Ff7cF5dbB88f295319 | ✅ Deployed |
+| SpaceEquipmentNFT | 0x7a2088a1bFc9d81c55368AE168C2C02570cB814F | ✅ Deployed |
+| SpaceDocumentNFT | 0x09635F643e140090A9A8Dcd712eD6285858ceBef | ✅ Deployed |
+| AsteroidCommodityToken | 0xc5a5C42992dECbae36851359345FE25997F5C42d | ✅ Deployed |
+| StandardsCompliance | - | ⏳ Pending |
+| SpaceElementsNFT | - | ⏳ Pending |
+| SpaceElementsMarketplace | - | ⏳ Pending |
+| AsteroidDEX | - | ⏳ Pending |
+| Others (6 contracts) | - | ⏳ Pending |
 
 ---
 
 **Last Updated:** September 10, 2025
-**Deployment Status:** Partial (5/16 contracts deployed)
+**Deployment Status:** Partial (6/16 contracts deployed)
 **Network Status:** Active and operational
+**Action Required:** Additional funding needed to complete deployment (~200 TEA)

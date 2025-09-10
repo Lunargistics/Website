@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Component, ErrorInfo, ReactNode } from "react";
-import { AlertTriangle, RefreshCw, Home, ChevronDown, ChevronUp } from "lucide-react";
+import { AlertTriangle, ChevronDown, ChevronUp, Home, RefreshCw } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -38,7 +38,7 @@ export class ErrorBoundary extends Component<Props, State> {
       errorCount: 0,
       showDetails: false,
     };
-    
+
     if (props.resetKeys) {
       this.previousResetKeys = props.resetKeys;
     }
@@ -85,11 +85,7 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
     // Reset when resetKeys change
-    if (
-      hasError &&
-      resetKeys &&
-      this.previousResetKeys.some((key, idx) => key !== resetKeys[idx])
-    ) {
+    if (hasError && resetKeys && this.previousResetKeys.some((key, idx) => key !== resetKeys[idx])) {
       this.resetErrorBoundary();
       this.previousResetKeys = resetKeys;
     }
@@ -180,19 +176,13 @@ export class ErrorBoundary extends Component<Props, State> {
               <div className="flex-shrink-0">
                 <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
               </div>
-              
+
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-red-900 dark:text-red-100 mb-2">
-                  {level === "page" 
-                    ? "Page Error"
-                    : level === "section"
-                    ? "Section Error"
-                    : "Something went wrong"}
+                  {level === "page" ? "Page Error" : level === "section" ? "Section Error" : "Something went wrong"}
                 </h3>
-                
-                <p className="text-red-700 dark:text-red-300 mb-4">
-                  {this.getErrorMessage(error)}
-                </p>
+
+                <p className="text-red-700 dark:text-red-300 mb-4">{this.getErrorMessage(error)}</p>
 
                 {/* Error details toggle */}
                 {process.env.NODE_ENV === "development" && (
@@ -238,17 +228,17 @@ export class ErrorBoundary extends Component<Props, State> {
                       Try Again
                     </button>
                   )}
-                  
+
                   {level === "page" && (
                     <button
-                      onClick={() => window.location.href = "/"}
+                      onClick={() => (window.location.href = "/")}
                       className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
                     >
                       <Home className="w-4 h-4" />
                       Go Home
                     </button>
                   )}
-                  
+
                   {level !== "page" && (
                     <button
                       onClick={() => window.location.reload()}
@@ -272,11 +262,11 @@ export class ErrorBoundary extends Component<Props, State> {
   private getErrorMessage(error: Error): string {
     // User-friendly error messages
     const errorMessages: Record<string, string> = {
-      "ChunkLoadError": "Failed to load application resources. Please refresh the page.",
-      "NetworkError": "Network connection issue. Please check your internet connection.",
-      "TypeError": "An unexpected error occurred. Our team has been notified.",
-      "ReferenceError": "Application error. Please try refreshing the page.",
-      "SyntaxError": "Application loading error. Please clear your cache and try again.",
+      ChunkLoadError: "Failed to load application resources. Please refresh the page.",
+      NetworkError: "Network connection issue. Please check your internet connection.",
+      TypeError: "An unexpected error occurred. Our team has been notified.",
+      ReferenceError: "Application error. Please try refreshing the page.",
+      SyntaxError: "Application loading error. Please clear your cache and try again.",
     };
 
     // Check for known error types
@@ -311,7 +301,7 @@ export class ErrorBoundary extends Component<Props, State> {
  */
 export function ErrorBoundaryProvider({ children }: { children: ReactNode }) {
   return (
-    <ErrorBoundary 
+    <ErrorBoundary
       level="page"
       onError={(error, errorInfo) => {
         // Global error handler

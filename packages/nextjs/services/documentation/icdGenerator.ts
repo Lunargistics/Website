@@ -3,15 +3,14 @@
  * Generates comprehensive interface documentation for mission components
  * Implements requirement MP-STD-4
  */
-
-import { EquipmentData } from '../ipfs/pinataService';
-import { InterfaceDefinition, CommandDefinition, TelemetryDefinition } from '../drivers/driverGenerator';
+import { CommandDefinition, InterfaceDefinition } from "../drivers/driverGenerator";
+import { EquipmentData } from "../ipfs/pinataService";
 
 export interface ICDMetadata {
   documentNumber: string;
   version: string;
   releaseDate: string;
-  classification: 'PUBLIC' | 'CONFIDENTIAL' | 'SECRET';
+  classification: "PUBLIC" | "CONFIDENTIAL" | "SECRET";
   authors: string[];
   reviewers: string[];
   approvers: string[];
@@ -31,7 +30,7 @@ export interface InterfaceConnection {
   sourceInterface: string;
   targetComponent: string;
   targetInterface: string;
-  connectionType: 'direct' | 'bus' | 'network' | 'wireless';
+  connectionType: "direct" | "bus" | "network" | "wireless";
   protocol: string;
   dataRate: number;
   bidirectional: boolean;
@@ -39,8 +38,8 @@ export interface InterfaceConnection {
 
 export interface SignalDefinition {
   name: string;
-  direction: 'input' | 'output' | 'bidirectional';
-  type: 'digital' | 'analog' | 'differential' | 'power' | 'ground';
+  direction: "input" | "output" | "bidirectional";
+  type: "digital" | "analog" | "differential" | "power" | "ground";
   voltage: { min: number; nominal: number; max: number };
   current?: { min: number; nominal: number; max: number };
   frequency?: number;
@@ -54,8 +53,8 @@ export interface DataPacketDefinition {
   size: number;
   structure: PacketField[];
   frequency: number;
-  priority: 'critical' | 'high' | 'normal' | 'low';
-  errorChecking: 'crc' | 'checksum' | 'parity' | 'none';
+  priority: "critical" | "high" | "normal" | "low";
+  errorChecking: "crc" | "checksum" | "parity" | "none";
 }
 
 export interface PacketField {
@@ -63,7 +62,7 @@ export interface PacketField {
   offset: number;
   size: number;
   type: string;
-  endianness: 'big' | 'little';
+  endianness: "big" | "little";
   description: string;
   validation?: string;
 }
@@ -82,7 +81,7 @@ export interface TimingSignal {
 
 export interface TimingEvent {
   time: number;
-  value: 'high' | 'low' | 'z' | 'x' | number;
+  value: "high" | "low" | "z" | "x" | number;
   duration?: number;
 }
 
@@ -94,7 +93,7 @@ class ICDGeneratorService {
     components: EquipmentData[],
     interfaces: Map<string, InterfaceDefinition>,
     connections: InterfaceConnection[],
-    metadata: ICDMetadata
+    metadata: ICDMetadata,
   ): string {
     let doc = this.generateHeader(metadata);
     doc += this.generateTableOfContents();
@@ -111,7 +110,7 @@ class ICDGeneratorService {
     doc += this.generateErrorHandling(interfaces);
     doc += this.generateTestProcedures(interfaces);
     doc += this.generateAppendices(metadata);
-    
+
     return doc;
   }
 
@@ -132,9 +131,9 @@ class ICDGeneratorService {
 
 | Role | Name | Signature | Date |
 |------|------|-----------|------|
-| Author | ${metadata.authors.join(', ')} | __________ | __________ |
-| Reviewer | ${metadata.reviewers.join(', ')} | __________ | __________ |
-| Approver | ${metadata.approvers.join(', ')} | __________ | __________ |
+| Author | ${metadata.authors.join(", ")} | __________ | __________ |
+| Reviewer | ${metadata.reviewers.join(", ")} | __________ | __________ |
+| Approver | ${metadata.approvers.join(", ")} | __________ | __________ |
 
 ---
 
@@ -142,9 +141,9 @@ class ICDGeneratorService {
 
 | Version | Date | Author | Description |
 |---------|------|--------|-------------|
-${metadata.changeHistory.map(change => 
-  `| ${change.version} | ${change.date} | ${change.author} | ${change.description} |`
-).join('\n')}
+${metadata.changeHistory
+  .map(change => `| ${change.version} | ${change.date} | ${change.author} | ${change.description} |`)
+  .join("\n")}
 
 ---
 
@@ -179,14 +178,14 @@ ${metadata.changeHistory.map(change =>
   /**
    * Generate introduction section
    */
-  private generateIntroduction(components: EquipmentData[], metadata: ICDMetadata): string {
+  private generateIntroduction(components: EquipmentData[], _metadata: ICDMetadata): string {
     return `## 1. Introduction
 
 ### 1.1 Purpose
 
 This Interface Control Document (ICD) defines the interfaces between the following components:
 
-${components.map(c => `- ${c.name} (${c.manufacturer})`).join('\n')}
+${components.map(c => `- ${c.name} (${c.manufacturer})`).join("\n")}
 
 The document serves as the authoritative reference for all hardware and software interfaces, ensuring compatibility and interoperability between system components.
 
@@ -224,19 +223,19 @@ This ICD applies to the interfaces between the following subsystems:
 
 \`\`\`mermaid
 graph TD
-${components.map((c, i) => `    C${i}[${c.name}]`).join('\n')}
-${Array.from(interfaces.entries()).map(([name, def], i) => 
-  `    C0 -->|${def.type}| C${i+1}`
-).join('\n')}
+${components.map((c, i) => `    C${i}[${c.name}]`).join("\n")}
+${Array.from(interfaces.entries())
+  .map(([_name, def], i) => `    C0 -->|${def.type}| C${i + 1}`)
+  .join("\n")}
 \`\`\`
 
 ### 2.2 Interface Types Covered
 
 The following interface types are defined in this document:
 
-${Array.from(new Set(Array.from(interfaces.values()).map(i => i.type))).map(type => 
-  `- **${type.toUpperCase()}**: ${this.getInterfaceTypeDescription(type)}`
-).join('\n')}
+${Array.from(new Set(Array.from(interfaces.values()).map(i => i.type)))
+  .map(type => `- **${type.toUpperCase()}**: ${this.getInterfaceTypeDescription(type)}`)
+  .join("\n")}
 
 ### 2.3 Out of Scope
 
@@ -307,7 +306,7 @@ ${this.generateASCIIDiagram(components, connections)}
 `;
 
     connections.forEach((conn, i) => {
-      overview += `| IF-${String(i+1).padStart(3, '0')} | ${conn.sourceComponent} | ${conn.targetComponent} | ${conn.connectionType} | ${conn.protocol} | ${conn.dataRate} bps | High |\n`;
+      overview += `| IF-${String(i + 1).padStart(3, "0")} | ${conn.sourceComponent} | ${conn.targetComponent} | ${conn.connectionType} | ${conn.protocol} | ${conn.dataRate} bps | High |\n`;
     });
 
     overview += `
@@ -327,8 +326,8 @@ The primary data flows through the system are:
 `;
 
     connections.forEach(conn => {
-      const critical = conn.dataRate > 1000000 ? 'Yes' : 'No';
-      overview += `| ${conn.sourceInterface} | ${critical} | No | ${critical} | ${critical === 'Yes' ? 'Dual' : 'None'} |\n`;
+      const critical = conn.dataRate > 1000000 ? "Yes" : "No";
+      overview += `| ${conn.sourceInterface} | ${critical} | No | ${critical} | ${critical === "Yes" ? "Dual" : "None"} |\n`;
     });
 
     overview += `
@@ -356,7 +355,7 @@ The primary data flows through the system are:
 **Interface Type:** ${iface.type.toUpperCase()}  
 **Protocol:** ${iface.protocol}  
 **Data Rate:** ${iface.dataRate} bps  
-**Voltage:** ${iface.voltage || 'TBD'} V  
+**Voltage:** ${iface.voltage || "TBD"} V  
 
 #### 5.${ifNum}.2 Physical Interface
 
@@ -369,7 +368,7 @@ The primary data flows through the system are:
         iface.pinout.forEach(pin => {
           details += `| ${pin.pin} | ${pin.signal} | ${pin.direction} | ${pin.voltage}V | ${pin.description} |\n`;
         });
-        details += '\n';
+        details += "\n";
       }
 
       details += `#### 5.${ifNum}.3 Commands
@@ -381,11 +380,11 @@ The primary data flows through the system are:
 |---------|--------|------------|----------|-------------|
 `;
         iface.commands.forEach(cmd => {
-          const params = cmd.parameters.map(p => p.name).join(', ') || 'None';
-          const response = cmd.response ? 'Yes' : 'No';
+          const params = cmd.parameters.map(p => p.name).join(", ") || "None";
+          const response = cmd.response ? "Yes" : "No";
           details += `| ${cmd.name} | 0x${cmd.opcode} | ${params} | ${response} | ${cmd.description} |\n`;
         });
-        details += '\n';
+        details += "\n";
       }
 
       details += `#### 5.${ifNum}.4 Telemetry
@@ -400,7 +399,7 @@ The primary data flows through the system are:
           const fields = tlm.fields.length;
           details += `| ${tlm.name} | ${tlm.rate} Hz | ${tlm.size} bytes | ${fields} | ${tlm.name} data |\n`;
         });
-        details += '\n';
+        details += "\n";
       }
 
       details += `#### 5.${ifNum}.5 Timing Requirements
@@ -408,10 +407,10 @@ The primary data flows through the system are:
 `;
 
       if (iface.timing) {
-        details += `- **Setup Time:** ${iface.timing.setupTime || 'N/A'} ns
-- **Hold Time:** ${iface.timing.holdTime || 'N/A'} ns
-- **Clock Frequency:** ${iface.timing.clockFrequency || 'N/A'} Hz
-- **Timeout:** ${iface.timing.timeout || 'N/A'} ms
+        details += `- **Setup Time:** ${iface.timing.setupTime || "N/A"} ns
+- **Hold Time:** ${iface.timing.holdTime || "N/A"} ns
+- **Clock Frequency:** ${iface.timing.clockFrequency || "N/A"} Hz
+- **Timeout:** ${iface.timing.timeout || "N/A"} ms
 
 `;
       }
@@ -431,26 +430,24 @@ The primary data flows through the system are:
       components.add(conn.sourceComponent);
       components.add(conn.targetComponent);
     });
-    
+
     const compArray = Array.from(components);
-    
+
     let matrix = `## 6. Connection Matrix
 
 ### 6.1 Component Interconnection Matrix
 
-|   | ${compArray.join(' | ')} |
-|---|${compArray.map(() => '---').join('|')}|
+|   | ${compArray.join(" | ")} |
+|---|${compArray.map(() => "---").join("|")}|
 `;
 
     compArray.forEach(source => {
       let row = `| ${source} |`;
       compArray.forEach(target => {
-        const conn = connections.find(c => 
-          c.sourceComponent === source && c.targetComponent === target
-        );
-        row += conn ? ` ${conn.connectionType} |` : ' - |';
+        const conn = connections.find(c => c.sourceComponent === source && c.targetComponent === target);
+        row += conn ? ` ${conn.connectionType} |` : " - |";
       });
-      matrix += row + '\n';
+      matrix += row + "\n";
     });
 
     matrix += `
@@ -473,7 +470,7 @@ The primary data flows through the system are:
 `;
 
     connections.forEach((conn, i) => {
-      matrix += `| CBL-${String(i+1).padStart(3, '0')} | ${conn.sourceComponent} | ${conn.targetComponent} | ${conn.protocol} | 1.5m | Yes | 24 |\n`;
+      matrix += `| CBL-${String(i + 1).padStart(3, "0")} | ${conn.sourceComponent} | ${conn.targetComponent} | ${conn.protocol} | 1.5m | Yes | 24 |\n`;
     });
 
     matrix += `
@@ -508,13 +505,13 @@ All data packets follow the CCSDS Space Packet Protocol with the following struc
     interfaces.forEach((iface, name) => {
       if (iface.commands.length > 0) {
         formats += `#### ${name} Commands\n\n`;
-        
+
         iface.commands.forEach(cmd => {
           formats += `**${cmd.name} Command (0x${cmd.opcode})**\n\n`;
           formats += `\`\`\`\n`;
           formats += this.generatePacketDiagram(cmd);
           formats += `\`\`\`\n\n`;
-          
+
           if (cmd.parameters.length > 0) {
             formats += `Parameters:\n`;
             cmd.parameters.forEach(param => {
@@ -522,9 +519,9 @@ All data packets follow the CCSDS Space Packet Protocol with the following struc
               if (param.range) {
                 formats += ` [Range: ${param.range.min}-${param.range.max}]`;
               }
-              formats += '\n';
+              formats += "\n";
             });
-            formats += '\n';
+            formats += "\n";
           }
         });
       }
@@ -537,19 +534,19 @@ All data packets follow the CCSDS Space Packet Protocol with the following struc
     interfaces.forEach((iface, name) => {
       if (iface.telemetry.length > 0) {
         formats += `#### ${name} Telemetry\n\n`;
-        
+
         iface.telemetry.forEach(tlm => {
           formats += `**${tlm.name} Telemetry**\n\n`;
           formats += `- **Rate:** ${tlm.rate} Hz\n`;
           formats += `- **Size:** ${tlm.size} bytes\n\n`;
-          
+
           formats += `| Field | Offset | Size | Type | Unit | Description |\n`;
           formats += `|-------|--------|------|------|------|-------------|\n`;
-          
+
           tlm.fields.forEach(field => {
-            formats += `| ${field.name} | ${field.offset} | ${field.size} | ${field.type} | ${field.unit || '-'} | ${field.description} |\n`;
+            formats += `| ${field.name} | ${field.offset} | ${field.size} | ${field.type} | ${field.unit || "-"} | ${field.description} |\n`;
           });
-          formats += '\n';
+          formats += "\n";
         });
       }
     });
@@ -591,16 +588,20 @@ The system operates with the following timing constraints:
 
 ### 8.2 Interface Timing Specifications
 
-${Array.from(interfaces.entries()).map(([name, iface]) => `
+${Array.from(interfaces.entries())
+  .map(
+    ([name, iface]) => `
 #### ${name}
 
 | Parameter | Min | Typical | Max | Unit |
 |-----------|-----|---------|-----|------|
 | Setup Time | ${iface.timing?.setupTime || 10} | ${(iface.timing?.setupTime || 10) * 1.5} | ${(iface.timing?.setupTime || 10) * 2} | ns |
 | Hold Time | ${iface.timing?.holdTime || 5} | ${(iface.timing?.holdTime || 5) * 1.5} | ${(iface.timing?.holdTime || 5) * 2} | ns |
-| Clock Period | ${iface.timing?.clockFrequency ? 1000000000/iface.timing.clockFrequency : 100} | - | - | ns |
+| Clock Period | ${iface.timing?.clockFrequency ? 1000000000 / iface.timing.clockFrequency : 100} | - | - | ns |
 | Timeout | - | ${iface.timing?.timeout || 1000} | ${(iface.timing?.timeout || 1000) * 2} | ms |
-`).join('\n')}
+`,
+  )
+  .join("\n")}
 
 ### 8.3 Timing Diagrams
 
@@ -631,7 +632,7 @@ Ready   ‾‾‾‾⎴_______________⎴‾‾‾‾‾‾‾
   /**
    * Generate electrical characteristics section
    */
-  private generateElectricalCharacteristics(interfaces: Map<string, InterfaceDefinition>): string {
+  private generateElectricalCharacteristics(_interfaces: Map<string, InterfaceDefinition>): string {
     return `## 9. Electrical Characteristics
 
 ### 9.1 Power Supply Requirements
@@ -709,7 +710,9 @@ Ready   ‾‾‾‾⎴_______________⎴‾‾‾‾‾‾‾
 
 ### 10.2 Protocol State Machines
 
-${Array.from(interfaces.entries()).map(([name, iface]) => `
+${Array.from(interfaces.entries())
+  .map(
+    ([name, _iface]) => `
 #### ${name} Protocol
 
 \`\`\`mermaid
@@ -726,7 +729,9 @@ stateDiagram-v2
     Receiving --> Processing: Data Received
     Processing --> Ready: Process Complete
 \`\`\`
-`).join('\n')}
+`,
+  )
+  .join("\n")}
 
 ### 10.3 Message Sequencing
 
@@ -768,7 +773,7 @@ sequenceDiagram
   /**
    * Generate error handling section
    */
-  private generateErrorHandling(interfaces: Map<string, InterfaceDefinition>): string {
+  private generateErrorHandling(_interfaces: Map<string, InterfaceDefinition>): string {
     return `## 11. Error Handling
 
 ### 11.1 Error Detection Methods
@@ -839,7 +844,7 @@ All errors shall be logged with the following information:
   /**
    * Generate test procedures section
    */
-  private generateTestProcedures(interfaces: Map<string, InterfaceDefinition>): string {
+  private generateTestProcedures(_interfaces: Map<string, InterfaceDefinition>): string {
     return `## 12. Test Procedures
 
 ### 12.1 Interface Verification Test Matrix
@@ -985,7 +990,7 @@ All test data shall be recorded in the following format:
   /**
    * Generate ASCII art diagram
    */
-  private generateASCIIDiagram(components: EquipmentData[], connections: InterfaceConnection[]): string {
+  private generateASCIIDiagram(_components: EquipmentData[], _connections: InterfaceConnection[]): string {
     // Simplified ASCII diagram
     return `
         ┌─────────────┐
@@ -1016,17 +1021,17 @@ All test data shall be recorded in the following format:
 |    Opcode     |    Length     |          Sequence #           |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 `;
-    
+
     if (cmd.parameters.length > 0) {
       diagram += `|                         Parameters                           |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 `;
     }
-    
+
     diagram += `|            CRC-16             |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 `;
-    
+
     return diagram;
   }
 
@@ -1035,29 +1040,29 @@ All test data shall be recorded in the following format:
    */
   private getInterfaceTypeDescription(type: string): string {
     const descriptions: Record<string, string> = {
-      'serial': 'Asynchronous serial communication (UART/RS-232/RS-485)',
-      'spi': 'Serial Peripheral Interface for high-speed synchronous communication',
-      'i2c': 'Inter-Integrated Circuit for low-speed peripheral communication',
-      'ethernet': 'IEEE 802.3 Ethernet for network communication',
-      'spacewire': 'ESA standard for high-speed spacecraft communication',
-      'can': 'Controller Area Network for robust vehicle communication',
-      'rs422': 'Differential serial communication for long distances',
-      'rs485': 'Multi-drop differential serial communication',
-      'custom': 'Proprietary or mission-specific interface'
+      serial: "Asynchronous serial communication (UART/RS-232/RS-485)",
+      spi: "Serial Peripheral Interface for high-speed synchronous communication",
+      i2c: "Inter-Integrated Circuit for low-speed peripheral communication",
+      ethernet: "IEEE 802.3 Ethernet for network communication",
+      spacewire: "ESA standard for high-speed spacecraft communication",
+      can: "Controller Area Network for robust vehicle communication",
+      rs422: "Differential serial communication for long distances",
+      rs485: "Multi-drop differential serial communication",
+      custom: "Proprietary or mission-specific interface",
     };
-    
-    return descriptions[type] || 'Unknown interface type';
+
+    return descriptions[type] || "Unknown interface type";
   }
 
   /**
    * Export ICD to different formats
    */
-  exportICD(content: string, format: 'md' | 'pdf' | 'docx' | 'html' = 'md'): string | Blob {
+  exportICD(content: string, format: "md" | "pdf" | "docx" | "html" = "md"): string | Blob {
     switch (format) {
-      case 'md':
+      case "md":
         return content;
-        
-      case 'html':
+
+      case "html":
         // Convert markdown to HTML
         // In production, use a proper markdown parser
         return `<!DOCTYPE html>
@@ -1075,15 +1080,15 @@ All test data shall be recorded in the following format:
   </style>
 </head>
 <body>
-  ${content.replace(/\n/g, '<br>').replace(/#{1,6}\s(.+)/g, '<h$1>$2</h$1>')}
+  ${content.replace(/\n/g, "<br>").replace(/#{1,6}\s(.+)/g, "<h$1>$2</h$1>")}
 </body>
 </html>`;
-        
-      case 'pdf':
-      case 'docx':
+
+      case "pdf":
+      case "docx":
         // In production, would use proper document generation libraries
-        return new Blob([content], { type: 'application/octet-stream' });
-        
+        return new Blob([content], { type: "application/octet-stream" });
+
       default:
         return content;
     }

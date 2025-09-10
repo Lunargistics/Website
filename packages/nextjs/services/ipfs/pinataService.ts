@@ -1,14 +1,14 @@
-import axios from 'axios';
+import axios from "axios";
 
 /**
  * Pinata IPFS Service for Mission Planning Suite
  * Handles all IPFS storage for mission data, documents, and 3D models
  */
 
-const PINATA_API_KEY = process.env.NEXT_PUBLIC_PINATA_API_KEY || '';
-const PINATA_SECRET_KEY = process.env.NEXT_PUBLIC_PINATA_SECRET_KEY || '';
-const PINATA_JWT = process.env.NEXT_PUBLIC_PINATA_JWT || '';
-const PINATA_GATEWAY = process.env.NEXT_PUBLIC_PINATA_GATEWAY || 'https://gateway.pinata.cloud/ipfs/';
+const PINATA_API_KEY = process.env.NEXT_PUBLIC_PINATA_API_KEY || "";
+const PINATA_SECRET_KEY = process.env.NEXT_PUBLIC_PINATA_SECRET_KEY || "";
+const PINATA_JWT = process.env.NEXT_PUBLIC_PINATA_JWT || "";
+const PINATA_GATEWAY = process.env.NEXT_PUBLIC_PINATA_GATEWAY || "https://gateway.pinata.cloud/ipfs/";
 
 interface PinataMetadata {
   name: string;
@@ -142,13 +142,13 @@ class PinataService {
 
   constructor() {
     this.headers = {
-      'pinata_api_key': PINATA_API_KEY,
-      'pinata_secret_api_key': PINATA_SECRET_KEY,
+      pinata_api_key: PINATA_API_KEY,
+      pinata_secret_api_key: PINATA_SECRET_KEY,
     };
 
     if (PINATA_JWT) {
       this.headers = {
-        'Authorization': `Bearer ${PINATA_JWT}`,
+        Authorization: `Bearer ${PINATA_JWT}`,
       };
     }
   }
@@ -159,16 +159,16 @@ class PinataService {
   async pinJSON(data: any, metadata: PinataMetadata): Promise<string> {
     try {
       const response = await axios.post(
-        'https://api.pinata.cloud/pinning/pinJSONToIPFS',
+        "https://api.pinata.cloud/pinning/pinJSONToIPFS",
         {
           pinataContent: data,
           pinataMetadata: metadata,
         },
-        { headers: this.headers }
+        { headers: this.headers },
       );
       return response.data.IpfsHash;
     } catch (error) {
-      console.error('Error pinning JSON to IPFS:', error);
+      console.error("Error pinning JSON to IPFS:", error);
       throw error;
     }
   }
@@ -179,22 +179,18 @@ class PinataService {
   async pinFile(file: File, metadata: PinataMetadata): Promise<string> {
     try {
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('pinataMetadata', JSON.stringify(metadata));
+      formData.append("file", file);
+      formData.append("pinataMetadata", JSON.stringify(metadata));
 
-      const response = await axios.post(
-        'https://api.pinata.cloud/pinning/pinFileToIPFS',
-        formData,
-        {
-          headers: {
-            ...this.headers,
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
+      const response = await axios.post("https://api.pinata.cloud/pinning/pinFileToIPFS", formData, {
+        headers: {
+          ...this.headers,
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return response.data.IpfsHash;
     } catch (error) {
-      console.error('Error pinning file to IPFS:', error);
+      console.error("Error pinning file to IPFS:", error);
       throw error;
     }
   }
@@ -207,7 +203,7 @@ class PinataService {
       const response = await axios.get(`${PINATA_GATEWAY}${hash}`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching from IPFS:', error);
+      console.error("Error fetching from IPFS:", error);
       throw error;
     }
   }
@@ -219,7 +215,7 @@ class PinataService {
     const metadata: PinataMetadata = {
       name: `mission_${missionData.name}_${Date.now()}`,
       keyvalues: {
-        type: 'mission',
+        type: "mission",
         missionName: missionData.name,
         missionType: missionData.type,
         createdAt: missionData.createdAt,
@@ -235,7 +231,7 @@ class PinataService {
     const metadata: PinataMetadata = {
       name: `orbit_${missionName}_${Date.now()}`,
       keyvalues: {
-        type: 'orbit',
+        type: "orbit",
         missionName: missionName,
         hasTLE: !!orbitData.tle,
         hasOEM: !!orbitData.oem,
@@ -251,7 +247,7 @@ class PinataService {
     const metadata: PinataMetadata = {
       name: `equipment_${equipmentData.name}_${Date.now()}`,
       keyvalues: {
-        type: 'equipment',
+        type: "equipment",
         equipmentName: equipmentData.name,
         manufacturer: equipmentData.manufacturer,
         category: equipmentData.category,
@@ -268,7 +264,7 @@ class PinataService {
     const metadata: PinataMetadata = {
       name: `compliance_${missionName}_${documentType}_${Date.now()}`,
       keyvalues: {
-        type: 'compliance_document',
+        type: "compliance_document",
         missionName: missionName,
         documentType: documentType,
         uploadedAt: new Date().toISOString(),
@@ -284,10 +280,10 @@ class PinataService {
     const metadata: PinataMetadata = {
       name: `3dmodel_${modelName}_${Date.now()}`,
       keyvalues: {
-        type: '3d_model',
+        type: "3d_model",
         modelName: modelName,
         modelType: modelType, // 'equipment', 'spacecraft', 'ground_station'
-        format: file.name.split('.').pop(),
+        format: file.name.split(".").pop(),
       },
     };
     return this.pinFile(file, metadata);
@@ -300,7 +296,7 @@ class PinataService {
     const metadata: PinataMetadata = {
       name: `ait_${missionName}_${testType}_${Date.now()}`,
       keyvalues: {
-        type: 'ait_results',
+        type: "ait_results",
         missionName: missionName,
         testType: testType,
         testDate: new Date().toISOString(),
@@ -316,7 +312,7 @@ class PinataService {
     const metadata: PinataMetadata = {
       name: `driver_${componentName}_${language}_${Date.now()}`,
       keyvalues: {
-        type: 'driver_code',
+        type: "driver_code",
         componentName: componentName,
         language: language,
         generatedAt: new Date().toISOString(),
@@ -330,13 +326,10 @@ class PinataService {
    */
   async unpin(hash: string): Promise<boolean> {
     try {
-      await axios.delete(
-        `https://api.pinata.cloud/pinning/unpin/${hash}`,
-        { headers: this.headers }
-      );
+      await axios.delete(`https://api.pinata.cloud/pinning/unpin/${hash}`, { headers: this.headers });
       return true;
     } catch (error) {
-      console.error('Error unpinning from IPFS:', error);
+      console.error("Error unpinning from IPFS:", error);
       return false;
     }
   }
@@ -359,20 +352,17 @@ class PinataService {
       if (filters?.missionName || filters?.type) {
         params.metadata = {};
         if (filters.missionName) {
-          params.metadata.keyvalues = { missionName: { value: filters.missionName, op: 'eq' } };
+          params.metadata.keyvalues = { missionName: { value: filters.missionName, op: "eq" } };
         }
         if (filters.type) {
-          params.metadata.keyvalues = { ...params.metadata.keyvalues, type: { value: filters.type, op: 'eq' } };
+          params.metadata.keyvalues = { ...params.metadata.keyvalues, type: { value: filters.type, op: "eq" } };
         }
       }
 
-      const response = await axios.get(
-        'https://api.pinata.cloud/data/pinList',
-        { headers: this.headers, params }
-      );
+      const response = await axios.get("https://api.pinata.cloud/data/pinList", { headers: this.headers, params });
       return response.data;
     } catch (error) {
-      console.error('Error listing pins:', error);
+      console.error("Error listing pins:", error);
       throw error;
     }
   }
@@ -399,7 +389,7 @@ class PinataService {
     missionData: MissionData,
     orbitData: OrbitData,
     equipmentList: EquipmentData[],
-    documents: { name: string; hash: string }[]
+    documents: { name: string; hash: string }[],
   ): Promise<{
     snapshotHash: string;
     timestamp: string;
@@ -410,13 +400,13 @@ class PinataService {
       equipment: equipmentList,
       documents: documents,
       timestamp: new Date().toISOString(),
-      version: '1.0.0',
+      version: "1.0.0",
     };
 
     const metadata: PinataMetadata = {
       name: `snapshot_${missionData.name}_${Date.now()}`,
       keyvalues: {
-        type: 'mission_snapshot',
+        type: "mission_snapshot",
         missionName: missionData.name,
         timestamp: snapshot.timestamp,
       },
@@ -435,10 +425,4 @@ const pinataService = new PinataService();
 export default pinataService;
 
 // Export types
-export type {
-  MissionData,
-  OrbitData,
-  EquipmentData,
-  PinataMetadata,
-  PinataOptions,
-};
+export type { MissionData, OrbitData, EquipmentData, PinataMetadata, PinataOptions };
