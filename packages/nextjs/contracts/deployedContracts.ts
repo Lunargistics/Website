@@ -2540,6 +2540,38 @@ const deployedContracts = {
           stateMutability: "nonpayable",
           type: "function",
         },
+        {
+          inputs: [
+            { internalType: "uint256", name: "tokenId", type: "uint256" },
+            { internalType: "address[]", name: "recipients", type: "address[]" },
+            { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
+          ],
+          name: "mintBatch",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "uint256", name: "tokenId", type: "uint256" },
+            { internalType: "address", name: "minter", type: "address" },
+            { internalType: "bool", name: "authorized", type: "bool" },
+          ],
+          name: "authorizeMinter",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "string", name: "metadataURI", type: "string" },
+            { internalType: "string", name: "documentType", type: "string" },
+          ],
+          name: "createDocument",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
       ],
     },
     AsteroidCommodityToken: {
@@ -2594,10 +2626,10 @@ const deployedContracts = {
         {
           inputs: [
             { internalType: "address", name: "implementation", type: "address" },
+            { internalType: "bytes32", name: "salt", type: "bytes32" },
             { internalType: "uint256", name: "chainId", type: "uint256" },
             { internalType: "address", name: "tokenContract", type: "address" },
             { internalType: "uint256", name: "tokenId", type: "uint256" },
-            { internalType: "uint256", name: "salt", type: "uint256" },
             { internalType: "bytes", name: "initData", type: "bytes" },
           ],
           name: "createAccount",
@@ -2608,10 +2640,10 @@ const deployedContracts = {
         {
           inputs: [
             { internalType: "address", name: "implementation", type: "address" },
+            { internalType: "bytes32", name: "salt", type: "bytes32" },
             { internalType: "uint256", name: "chainId", type: "uint256" },
             { internalType: "address", name: "tokenContract", type: "address" },
             { internalType: "uint256", name: "tokenId", type: "uint256" },
-            { internalType: "uint256", name: "salt", type: "uint256" },
           ],
           name: "account",
           outputs: [{ internalType: "address", name: "", type: "address" }],
