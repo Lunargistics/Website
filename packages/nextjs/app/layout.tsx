@@ -16,6 +16,17 @@ export const metadata = getMetadata({
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   return (
     <html suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (typeof global === 'undefined') {
+                window.global = window;
+              }
+            `,
+          }}
+        />
+      </head>
       <body>
         <AuthProvider>
           <ThemeProvider enableSystem>

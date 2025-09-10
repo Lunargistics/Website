@@ -183,7 +183,15 @@ export default function LoginPage() {
 
           <div className="mt-6 space-y-3">
             <button
-              onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+              type="button"
+              onClick={async e => {
+                e.preventDefault();
+                try {
+                  await signIn("google", { callbackUrl: "/dashboard" });
+                } catch (error) {
+                  console.error("Google login error:", error);
+                }
+              }}
               className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition duration-200"
             >
               <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
@@ -208,7 +216,15 @@ export default function LoginPage() {
             </button>
 
             <button
-              onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
+              type="button"
+              onClick={async e => {
+                e.preventDefault();
+                try {
+                  await signIn("github", { callbackUrl: "/dashboard" });
+                } catch (error) {
+                  console.error("GitHub login error:", error);
+                }
+              }}
               className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition duration-200"
             >
               <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
