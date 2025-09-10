@@ -337,7 +337,21 @@ Format the response as a detailed technical document with specific numbers and r
                   return (
                     <button
                       key={step.key}
-                      onClick={() => setCurrentStep(index)}
+                      onClick={() => {
+                        setCurrentStep(index);
+                        // Show the corresponding component when clicking menu items
+                        if (step.key === "tracking") {
+                          setShowVisualization(true);
+                          setShowICDProcessor(false);
+                        } else if (step.key === "icd") {
+                          setShowICDProcessor(true);
+                          setShowVisualization(false);
+                        } else {
+                          // Hide both for other menu items
+                          setShowVisualization(false);
+                          setShowICDProcessor(false);
+                        }
+                      }}
                       className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all ${
                         isActive
                           ? "bg-purple-600 text-white"
@@ -353,12 +367,34 @@ Format the response as a detailed technical document with specific numbers and r
                 })}
               </div>
 
-              {mission && (
-                <>
+              {/* Quick Access Buttons */}
+              <div className="mt-6 space-y-3">
+                <button
+                  onClick={() => {
+                    setShowVisualization(!showVisualization);
+                    setShowICDProcessor(false);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-cyan-700 transition-all"
+                >
+                  <Globe className="w-5 h-5" />
+                  {showVisualization ? "Hide" : "Show"} Space Tracking
+                </button>
+                <button
+                  onClick={() => {
+                    setShowICDProcessor(!showICDProcessor);
+                    setShowVisualization(false);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-4 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all"
+                >
+                  <FileCode className="w-5 h-5" />
+                  {showICDProcessor ? "Hide" : "Show"} ICD Processor
+                </button>
+
+                {mission && (
                   <button
                     onClick={saveMission}
                     disabled={isSaving}
-                    className="w-full mt-6 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-4 rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-4 rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >
                     {isSaving ? (
                       <>
@@ -372,22 +408,8 @@ Format the response as a detailed technical document with specific numbers and r
                       </>
                     )}
                   </button>
-                  <button
-                    onClick={() => setShowVisualization(!showVisualization)}
-                    className="w-full mt-3 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-cyan-700 transition-all"
-                  >
-                    <Globe className="w-5 h-5" />
-                    {showVisualization ? "Hide" : "Show"} Space Tracking
-                  </button>
-                  <button
-                    onClick={() => setShowICDProcessor(!showICDProcessor)}
-                    className="w-full mt-3 flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-4 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all"
-                  >
-                    <FileCode className="w-5 h-5" />
-                    {showICDProcessor ? "Hide" : "Show"} ICD Processor
-                  </button>
-                </>
-              )}
+                )}
+              </div>
             </div>
           </div>
 
