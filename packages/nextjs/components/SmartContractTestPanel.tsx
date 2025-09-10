@@ -134,11 +134,10 @@ const TestPanel = () => {
   };
 
   // Get token balance
-  const getTokenBalance = async (tokenAddress: string, account: string) => {
+  const _getTokenBalance = async (tokenAddress: string, account: string) => {
     // Function is defined but not currently used - suppress warnings
     void tokenAddress;
     void account;
-    void getTokenBalance;
     if (!publicClient) return "0";
 
     try {

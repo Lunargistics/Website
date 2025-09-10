@@ -6,7 +6,6 @@ import Post from "~~/models/Post";
 
 // import User from "~~/models/User";
 
-
 // GET posts (feed)
 export async function GET(request: Request) {
   try {
