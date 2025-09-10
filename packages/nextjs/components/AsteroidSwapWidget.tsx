@@ -12,11 +12,7 @@ interface SwapWidgetProps {
   dexAddress?: string;
 }
 
-export function AsteroidSwapWidget({
-  asteroidId,
-  tokenFactoryAddress,
-  dexAddress,
-}: SwapWidgetProps) {
+export function AsteroidSwapWidget({ asteroidId, tokenFactoryAddress, dexAddress }: SwapWidgetProps) {
   // Suppress unused variable warnings
   void asteroidId;
   void tokenFactoryAddress;

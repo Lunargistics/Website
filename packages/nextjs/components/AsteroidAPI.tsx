@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
@@ -23,7 +23,7 @@ export function AsteroidDataFetcher() {
   const [loading, setLoading] = useState(false);
   const { writeContractAsync: updateOracle } = useScaffoldWriteContract("AsteroidOracle");
 
-  const fetchAsteroidData = async () => {
+  const fetchAsteroidData = useCallback(async () => {
     setLoading(true);
     try {
       // Mock data - replace with actual API call to asterrank.com
@@ -95,12 +95,12 @@ export function AsteroidDataFetcher() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [updateOracle]);
 
   useEffect(() => {
     // Auto-fetch on component mount
     fetchAsteroidData();
-  }, []);
+  }, [fetchAsteroidData]);
 
   return (
     <div className="card bg-base-200 shadow-xl">

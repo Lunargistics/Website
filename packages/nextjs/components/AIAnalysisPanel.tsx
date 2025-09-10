@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ChartBarIcon,
   ExclamationTriangleIcon,
@@ -14,11 +14,7 @@ interface AIAnalysisPanelProps {
   onAnalysisComplete?: (analysis: VeniceAnalysis) => void;
 }
 
-export const AIAnalysisPanel = ({
-  documents = [],
-  missionName,
-  onAnalysisComplete,
-}: AIAnalysisPanelProps) => {
+export const AIAnalysisPanel = ({ documents = [], missionName, onAnalysisComplete }: AIAnalysisPanelProps) => {
   // Suppress unused variable warning
   void missionName;
   const [analysis, setAnalysis] = useState<VeniceAnalysis | null>(null);
@@ -31,7 +27,7 @@ export const AIAnalysisPanel = ({
     }
   }, [documents, analyzeDocuments]);
 
-  const analyzeDocuments = async () => {
+  const analyzeDocuments = useCallback(async () => {
     setIsAnalyzing(true);
     try {
       const result = await veniceAI.analyzeMissionReadiness(
@@ -50,7 +46,7 @@ export const AIAnalysisPanel = ({
     } finally {
       setIsAnalyzing(false);
     }
-  };
+  }, [documents, onAnalysisComplete]);
 
   const getRiskColor = (level: string) => {
     switch (level) {

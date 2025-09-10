@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import toast from "react-hot-toast";
 
 interface Post {
@@ -36,9 +37,9 @@ export default function SocialFeed() {
 
   useEffect(() => {
     fetchPosts();
-  }, [page]);
+  }, [page, fetchPosts]);
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     try {
       const response = await fetch(`/api/posts?page=${page}&limit=10`);
       if (response.ok) {
@@ -56,7 +57,7 @@ export default function SocialFeed() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page]);
 
   const handleCreatePost = async () => {
     if (!newPostContent.trim()) {
@@ -200,9 +201,11 @@ export default function SocialFeed() {
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
                     {post.author.avatar ? (
-                      <img
+                      <Image
                         src={post.author.avatar}
                         alt={post.author.name || post.author.username}
+                        width={40}
+                        height={40}
                         className="w-full h-full rounded-full object-cover"
                       />
                     ) : (
@@ -224,7 +227,7 @@ export default function SocialFeed() {
                 {post.images && post.images.length > 0 && (
                   <div className="mt-3 grid grid-cols-2 gap-2">
                     {post.images.map((image, index) => (
-                      <img key={index} src={image} alt="" className="rounded-lg object-cover w-full h-48" />
+                      <Image key={index} src={image} alt="" width={300} height={192} className="rounded-lg object-cover w-full h-48" />
                     ))}
                   </div>
                 )}

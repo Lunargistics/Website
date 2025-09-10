@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Address } from "viem";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { ShieldCheckIcon, SparklesIcon } from "@heroicons/react/24/outline";
@@ -40,9 +40,9 @@ export const DocumentMinter = () => {
     if (address && documentNFTAddress && publicClient) {
       loadUserDocuments();
     }
-  }, [address, documentNFTAddress, publicClient]);
+  }, [address, documentNFTAddress, publicClient, loadUserDocuments]);
 
-  const loadUserDocuments = async () => {
+  const loadUserDocuments = useCallback(async () => {
     if (!address || !documentNFTAddress || !publicClient) return;
 
     setIsLoading(true);
@@ -80,7 +80,7 @@ export const DocumentMinter = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [address, documentNFTAddress, publicClient]);
 
   const validateAccess = async () => {
     if (!selectedTokenId || !recipientAddress) {

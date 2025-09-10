@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import type { NextPage } from "next";
 import {
   BanknotesIcon,
@@ -250,7 +251,7 @@ const Home: NextPage = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
               <div className="bg-base-100 rounded-2xl p-4 sm:p-6 text-center shadow-lg hover:shadow-xl transition-shadow">
                 <div className="w-24 sm:w-32 h-24 sm:h-32 mx-auto mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-primary/20">
-                  <img src="/team/logan-golema.jpeg" alt="Logan Golema" className="w-full h-full object-cover" />
+                  <Image src="/team/logan-golema.jpeg" alt="Logan Golema" width={128} height={128} className="w-full h-full object-cover" />
                 </div>
                 <h4 className="text-xl font-bold mb-2">Logan Golema</h4>
                 <p className="text-base-content/70 mb-3">Co-founder</p>
@@ -268,7 +269,7 @@ const Home: NextPage = () => {
               </div>
               <div className="bg-base-100 rounded-2xl p-4 sm:p-6 text-center shadow-lg hover:shadow-xl transition-shadow">
                 <div className="w-24 sm:w-32 h-24 sm:h-32 mx-auto mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-primary/20">
-                  <img src="/team/vishal-singh.jpeg" alt="Vishal Singh" className="w-full h-full object-cover" />
+                  <Image src="/team/vishal-singh.jpeg" alt="Vishal Singh" width={128} height={128} className="w-full h-full object-cover" />
                 </div>
                 <h4 className="text-xl font-bold mb-2">Vishal Singh</h4>
                 <p className="text-base-content/70 mb-3">Co-founder</p>
@@ -295,7 +296,7 @@ const Home: NextPage = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
               <div className="bg-base-100 rounded-2xl p-4 sm:p-6 text-center shadow-lg hover:shadow-xl transition-shadow">
                 <div className="w-24 sm:w-32 h-24 sm:h-32 mx-auto mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-secondary/20">
-                  <img src="/team/yasu-yamazaki.jpeg" alt="Yasu Yamazaki" className="w-full h-full object-cover" />
+                  <Image src="/team/yasu-yamazaki.jpeg" alt="Yasu Yamazaki" width={128} height={128} className="w-full h-full object-cover" />
                 </div>
                 <h4 className="text-xl font-bold mb-2">Yasu Yamazaki</h4>
                 <p className="text-base-content/70 mb-3">Co-chair of the Board</p>
@@ -313,7 +314,7 @@ const Home: NextPage = () => {
               </div>
               <div className="bg-base-100 rounded-2xl p-4 sm:p-6 text-center shadow-lg hover:shadow-xl transition-shadow">
                 <div className="w-24 sm:w-32 h-24 sm:h-32 mx-auto mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-secondary/20">
-                  <img src="/team/rachel-lyons.jpeg" alt="Rachel Lyons" className="w-full h-full object-cover" />
+                  <Image src="/team/rachel-lyons.jpeg" alt="Rachel Lyons" width={128} height={128} className="w-full h-full object-cover" />
                 </div>
                 <h4 className="text-xl font-bold mb-2">Rachel Lyons</h4>
                 <p className="text-base-content/70 mb-3">Co-chair of the Board</p>
@@ -340,7 +341,7 @@ const Home: NextPage = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
               <div className="bg-base-100 rounded-2xl p-4 sm:p-6 text-center shadow-lg hover:shadow-xl transition-shadow">
                 <div className="w-24 sm:w-32 h-24 sm:h-32 mx-auto mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-accent/20">
-                  <img src="/team/amos-behana.jpg" alt="Amos Behana" className="w-full h-full object-cover" />
+                  <Image src="/team/amos-behana.jpg" alt="Amos Behana" width={128} height={128} className="w-full h-full object-cover" />
                 </div>
                 <h4 className="text-xl font-bold mb-2">Amos Behana</h4>
                 <p className="text-base-content/70 mb-3">Advisor</p>
@@ -358,9 +359,11 @@ const Home: NextPage = () => {
               </div>
               <div className="bg-base-100 rounded-2xl p-4 sm:p-6 text-center shadow-lg hover:shadow-xl transition-shadow">
                 <div className="w-24 sm:w-32 h-24 sm:h-32 mx-auto mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-accent/20">
-                  <img
+                  <Image
                     src="/team/angelina-bekasova.jpeg"
                     alt="Angelina Bekasova"
+                    width={128}
+                    height={128}
                     className="w-full h-full object-cover"
                   />
                 </div>
