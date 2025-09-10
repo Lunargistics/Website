@@ -14,7 +14,13 @@ interface AIAnalysisPanelProps {
   onAnalysisComplete?: (analysis: VeniceAnalysis) => void;
 }
 
-export const AIAnalysisPanel = ({ documents = [], missionName: _missionName, onAnalysisComplete }: AIAnalysisPanelProps) => {
+export const AIAnalysisPanel = ({
+  documents = [],
+  missionName,
+  onAnalysisComplete,
+}: AIAnalysisPanelProps) => {
+  // Suppress unused variable warning
+  void missionName;
   const [analysis, setAnalysis] = useState<VeniceAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);

@@ -86,7 +86,9 @@ export default function Profile() {
     try {
       // Sign a message to prove wallet ownership
       const message = `Connect wallet to Lunar Gistics account: ${profile?.username}\nTimestamp: ${Date.now()}`;
-      const _signature = await signMessageAsync({ message });
+      const signature = await signMessageAsync({ message });
+      // Suppress unused variable warning
+      void signature;
 
       const response = await fetch("/api/profile", {
         method: "PUT",

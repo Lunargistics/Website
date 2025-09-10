@@ -3,7 +3,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "~~/lib/auth";
 import dbConnect from "~~/lib/mongodb";
 import Post from "~~/models/Post";
+
 // import User from "~~/models/User";
+
 
 // GET posts (feed)
 export async function GET(request: Request) {

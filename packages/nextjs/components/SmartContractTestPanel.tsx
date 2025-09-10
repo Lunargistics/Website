@@ -37,8 +37,6 @@ const TestPanel = () => {
   const [tokenB, setTokenB] = useState("");
   const [amountA, setAmountA] = useState("");
   const [amountB, setAmountB] = useState("");
-  const [, setSwapPath] = useState<string[]>([]);
-  const [, setSwapAmount] = useState("");
 
   // Get deployed contracts
   const contracts = deployedContracts[31337];
@@ -136,7 +134,11 @@ const TestPanel = () => {
   };
 
   // Get token balance
-  const _getTokenBalance = async (tokenAddress: string, account: string) => {
+  const getTokenBalance = async (tokenAddress: string, account: string) => {
+    // Function is defined but not currently used - suppress warnings
+    void tokenAddress;
+    void account;
+    void getTokenBalance;
     if (!publicClient) return "0";
 
     try {

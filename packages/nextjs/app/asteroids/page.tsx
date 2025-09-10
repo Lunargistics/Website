@@ -7,9 +7,10 @@ import { notification } from "~~/utils/scaffold-eth";
 
 export default function AsteroidsPage() {
   const { address, isConnected } = useAccount();
+  // Suppress unused variable warning
+  void address;
   const [selectedAsteroid, setSelectedAsteroid] = useState("");
   const [activeTab, setActiveTab] = useState<"swap" | "liquidity" | "futures" | "portfolio">("swap");
-  const [, setIsLoading] = useState(false);
 
   // Sample asteroid data - in production would fetch from API
   const asteroidData = [
@@ -153,7 +154,9 @@ export default function AsteroidsPage() {
   );
 }
 
-function SwapInterface({ asteroidId: _asteroidId }: { asteroidId: string }) {
+function SwapInterface({ asteroidId }: { asteroidId: string }) {
+  // Suppress unused variable warning
+  void asteroidId;
   const [fromToken, setFromToken] = useState("USDC");
   const [toToken, setToToken] = useState("iron");
   const [amount, setAmount] = useState("");
@@ -318,7 +321,9 @@ function SwapInterface({ asteroidId: _asteroidId }: { asteroidId: string }) {
   );
 }
 
-function LiquidityInterface({ asteroidId: _asteroidId }: { asteroidId: string }) {
+function LiquidityInterface({ asteroidId }: { asteroidId: string }) {
+  // Suppress unused variable warning
+  void asteroidId;
   const [token1, setToken1] = useState("USDC");
   const [token2, setToken2] = useState("iron");
   const [amount1, setAmount1] = useState("");
@@ -432,7 +437,9 @@ function LiquidityInterface({ asteroidId: _asteroidId }: { asteroidId: string })
   );
 }
 
-function FuturesInterface({ asteroidId: _asteroidId }: { asteroidId: string }) {
+function FuturesInterface({ asteroidId }: { asteroidId: string }) {
+  // Suppress unused variable warning
+  void asteroidId;
   const [commodity, setCommodity] = useState("iron");
   const [amount, setAmount] = useState("");
   const [strikePrice, setStrikePrice] = useState("");
@@ -570,7 +577,9 @@ function FuturesInterface({ asteroidId: _asteroidId }: { asteroidId: string }) {
   );
 }
 
-function PortfolioInterface({ asteroidId: _asteroidId }: { asteroidId: string }) {
+function PortfolioInterface({ asteroidId }: { asteroidId: string }) {
+  // Suppress unused variable warning
+  void asteroidId;
   const positions = [
     {
       id: 1,

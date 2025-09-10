@@ -12,7 +12,15 @@ interface SwapWidgetProps {
   dexAddress?: string;
 }
 
-export function AsteroidSwapWidget({ asteroidId: _asteroidId, tokenFactoryAddress: _tokenFactoryAddress, dexAddress: _dexAddress }: SwapWidgetProps) {
+export function AsteroidSwapWidget({
+  asteroidId,
+  tokenFactoryAddress,
+  dexAddress,
+}: SwapWidgetProps) {
+  // Suppress unused variable warnings
+  void asteroidId;
+  void tokenFactoryAddress;
+  void dexAddress;
   const { address } = useAccount();
   const [fromToken, setFromToken] = useState("USDC");
   const [toToken, setToToken] = useState("iron");
