@@ -82,7 +82,7 @@ export async function POST(request: Request) {
     const allTags = [...new Set([...extractedTags.map((tag: string) => tag.slice(1).toLowerCase()), ...(tags || [])])];
 
     const post = await Post.create({
-      author: session.user.id,
+      author: session.user.id as any,
       content: content.trim(),
       images: images || [],
       tags: allTags,

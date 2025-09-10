@@ -21,12 +21,6 @@ export const AIAnalysisPanel = ({ documents = [], missionName, onAnalysisComplet
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  useEffect(() => {
-    if (documents.length > 0) {
-      analyzeDocuments();
-    }
-  }, [documents, analyzeDocuments]);
-
   const analyzeDocuments = useCallback(async () => {
     setIsAnalyzing(true);
     try {
@@ -47,6 +41,12 @@ export const AIAnalysisPanel = ({ documents = [], missionName, onAnalysisComplet
       setIsAnalyzing(false);
     }
   }, [documents, onAnalysisComplete]);
+
+  useEffect(() => {
+    if (documents.length > 0) {
+      analyzeDocuments();
+    }
+  }, [documents, analyzeDocuments]);
 
   const getRiskColor = (level: string) => {
     switch (level) {

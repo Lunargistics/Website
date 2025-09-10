@@ -6,9 +6,17 @@ import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 
 // Dynamically import components to avoid SSR issues
-const SmartWalletCreator = dynamic(() => import("~~/components/SmartWalletCreator"), { ssr: false });
-const DocumentUploadForm = dynamic(() => import("~~/components/DocumentUploadForm"), { ssr: false });
-const DocumentMinter = dynamic(() => import("~~/components/DocumentMinter"), { ssr: false });
+const SmartWalletCreator = dynamic(
+  () => import("~~/components/SmartWalletCreator").then(mod => mod.SmartWalletCreator),
+  { ssr: false },
+);
+const DocumentUploadForm = dynamic(
+  () => import("~~/components/DocumentUploadForm").then(mod => mod.DocumentUploadForm),
+  { ssr: false },
+);
+const DocumentMinter = dynamic(() => import("~~/components/DocumentMinter").then(mod => mod.DocumentMinter), {
+  ssr: false,
+});
 const AsteroidAPI = dynamic(() => import("~~/components/AsteroidAPI").then(mod => mod.AsteroidDataFetcher), {
   ssr: false,
 });
@@ -196,7 +204,7 @@ export default function DashboardPage() {
         <div className="absolute bottom-0 w-full p-4 border-t border-indigo-800">
           <div className={`${!sidebarOpen && "hidden"} mb-4`}>
             <p className="text-sm text-indigo-200">Logged in as:</p>
-            <p className="font-semibold">{session.user.username}</p>
+            <p className="font-semibold">{session.user.email}</p>
           </div>
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}

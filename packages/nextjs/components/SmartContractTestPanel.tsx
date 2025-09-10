@@ -7,8 +7,10 @@ import deployedContracts from "~~/contracts/deployedContracts";
 import { notification } from "~~/utils/scaffold-eth";
 
 // Mock functions for missing scaffold-eth hooks
-const useScaffoldContractWrite = () => ({ writeContractAsync: async () => {} });
-const useScaffoldContractRead = () => ({ data: null, isLoading: false });
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const useScaffoldContractWrite = (config?: any) => ({ writeAsync: async () => {} });
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const useScaffoldContractRead = (config?: any) => ({ data: null, isLoading: false });
 
 const TestPanel = () => {
   const { address: connectedAddress } = useAccount();
@@ -102,7 +104,7 @@ const TestPanel = () => {
         address: tokenAddress as Address,
         abi: contracts.AsteroidCommodityToken.abi,
         functionName: "mint",
-        args: [mintTo || connectedAddress, parseEther(mintAmount)],
+        args: [(mintTo || connectedAddress) as Address, parseEther(mintAmount)],
       });
 
       await publicClient.waitForTransactionReceipt({ hash });
@@ -241,7 +243,7 @@ const TestPanel = () => {
               Create Token
             </button>
 
-            {allTokens && allTokens.length > 0 && (
+            {allTokens && (allTokens as any)?.length > 0 && (
               <div className="mt-4">
                 <h3 className="text-lg font-semibold">Created Tokens:</h3>
                 <div className="overflow-x-auto">
@@ -583,7 +585,7 @@ const TestPanel = () => {
               />
             </div>
 
-            {allTokens && allTokens.length > 0 && (
+            {allTokens && (allTokens as any)?.length > 0 && (
               <div className="mt-4">
                 <h3 className="text-lg font-semibold mb-2">Quick Actions for Deployed Tokens:</h3>
                 <div className="space-y-2">

@@ -35,10 +35,6 @@ export default function SocialFeed() {
   const [shareModalPost, setShareModalPost] = useState<Post | null>(null);
   const [shareContent, setShareContent] = useState("");
 
-  useEffect(() => {
-    fetchPosts();
-  }, [page, fetchPosts]);
-
   const fetchPosts = useCallback(async () => {
     try {
       const response = await fetch(`/api/posts?page=${page}&limit=10`);
@@ -58,6 +54,10 @@ export default function SocialFeed() {
       setLoading(false);
     }
   }, [page]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [page, fetchPosts]);
 
   const handleCreatePost = async () => {
     if (!newPostContent.trim()) {
@@ -227,7 +227,14 @@ export default function SocialFeed() {
                 {post.images && post.images.length > 0 && (
                   <div className="mt-3 grid grid-cols-2 gap-2">
                     {post.images.map((image, index) => (
-                      <Image key={index} src={image} alt="" width={300} height={192} className="rounded-lg object-cover w-full h-48" />
+                      <Image
+                        key={index}
+                        src={image}
+                        alt=""
+                        width={300}
+                        height={192}
+                        className="rounded-lg object-cover w-full h-48"
+                      />
                     ))}
                   </div>
                 )}

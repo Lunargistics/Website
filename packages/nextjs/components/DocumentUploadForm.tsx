@@ -129,9 +129,9 @@ export const DocumentUploadForm = () => {
         args: [metadataURI, formData.documentType],
       });
 
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      const receipt = await publicClient?.waitForTransactionReceipt({ hash });
 
-      const logs = receipt.logs.filter(log => log.address.toLowerCase() === documentNFTAddress.toLowerCase());
+      const logs = receipt?.logs.filter(log => log.address.toLowerCase() === documentNFTAddress.toLowerCase()) || [];
 
       if (logs.length > 0 && logs[0].topics[1]) {
         const newTokenId = BigInt(logs[0].topics[1]).toString();

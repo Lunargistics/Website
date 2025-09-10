@@ -154,7 +154,13 @@ export default function Profile() {
           <div className="flex items-center space-x-4">
             <div className="w-20 h-20 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
               {avatar ? (
-                <Image src={avatar} alt={name || username} width={80} height={80} className="w-full h-full rounded-full object-cover" />
+                <Image
+                  src={avatar}
+                  alt={name || profile.username}
+                  width={80}
+                  height={80}
+                  className="w-full h-full rounded-full object-cover"
+                />
               ) : (
                 profile.username.charAt(0).toUpperCase()
               )}

@@ -1,15 +1,15 @@
-import mongoose, { Document, Model, Schema } from "mongoose";
+import mongoose, { Document, Model, Schema, Types } from "mongoose";
 
 export interface IPost extends Document {
-  author: string;
+  author: Types.ObjectId;
   content: string;
   images?: string[];
-  likes: string[];
+  likes: Types.ObjectId[];
   likeCount: number;
-  shares: string[];
+  shares: Types.ObjectId[];
   shareCount: number;
   comments: {
-    author: string;
+    author: Types.ObjectId;
     content: string;
     createdAt: Date;
   }[];

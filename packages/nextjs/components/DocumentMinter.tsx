@@ -36,12 +36,6 @@ export const DocumentMinter = () => {
 
   const documentNFTAddress = deployedContracts[31337].SpaceDocumentNFT.address as Address;
 
-  useEffect(() => {
-    if (address && documentNFTAddress && publicClient) {
-      loadUserDocuments();
-    }
-  }, [address, documentNFTAddress, publicClient, loadUserDocuments]);
-
   const loadUserDocuments = useCallback(async () => {
     if (!address || !documentNFTAddress || !publicClient) return;
 
@@ -81,6 +75,12 @@ export const DocumentMinter = () => {
       setIsLoading(false);
     }
   }, [address, documentNFTAddress, publicClient]);
+
+  useEffect(() => {
+    if (address && documentNFTAddress && publicClient) {
+      loadUserDocuments();
+    }
+  }, [address, documentNFTAddress, publicClient, loadUserDocuments]);
 
   const validateAccess = async () => {
     if (!selectedTokenId || !recipientAddress) {

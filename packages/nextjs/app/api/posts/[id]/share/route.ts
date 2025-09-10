@@ -5,10 +5,7 @@ import dbConnect from "~~/lib/mongodb";
 import Post from "~~/models/Post";
 
 // POST share post
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
@@ -32,17 +29,17 @@ export async function POST(
     const hasShared = originalPost.shares.some((id: any) => id.toString() === userIdString);
 
     if (!hasShared) {
-      originalPost.shares.push(session.user.id);
+      originalPost.shares.push(session.user.id as any);
       await originalPost.save();
     }
 
     // Create a new post with share content
     const shareContent = content
-      ? `${content}\n\n---\nShared from @${originalPost.author.username}:\n${originalPost.content}`
-      : `Shared from @${originalPost.author.username}:\n${originalPost.content}`;
+      ? `${content}\n\n---\nShared from @${(originalPost.author as any).username}:\n${originalPost.content}`
+      : `Shared from @${(originalPost.author as any).username}:\n${originalPost.content}`;
 
     const sharedPost = await Post.create({
-      author: session.user.id,
+      author: session.user.id as any,
       content: shareContent,
       images: originalPost.images,
       tags: [...(originalPost.tags || []), "shared"],

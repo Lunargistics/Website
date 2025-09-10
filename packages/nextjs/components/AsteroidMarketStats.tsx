@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TrendingDownIcon, TrendingUpIcon } from "@heroicons/react/24/outline";
+import { ArrowTrendingDownIcon, ArrowTrendingUpIcon } from "@heroicons/react/24/outline";
 
 interface MarketStat {
   label: string;
@@ -31,9 +31,9 @@ export function AsteroidMarketStats() {
               }`}
             >
               {stat.trend === "up" ? (
-                <TrendingUpIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                <ArrowTrendingUpIcon className="w-3 h-3 sm:w-4 sm:h-4" />
               ) : (
-                <TrendingDownIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                <ArrowTrendingDownIcon className="w-3 h-3 sm:w-4 sm:h-4" />
               )}
               <span>{Math.abs(stat.change)}%</span>
             </div>

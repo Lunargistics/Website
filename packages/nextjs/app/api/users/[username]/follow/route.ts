@@ -5,10 +5,7 @@ import dbConnect from "~~/lib/mongodb";
 import User from "~~/models/User";
 
 // POST follow user
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ username: string }> }
-) {
+export async function POST(request: Request, { params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
   try {
     const session = await getServerSession(authOptions);
@@ -28,7 +25,7 @@ export async function POST(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (targetUser._id.toString() === session.user.id) {
+    if ((targetUser as any)._id.toString() === session.user.id) {
       return NextResponse.json({ error: "You cannot follow yourself" }, { status: 400 });
     }
 
@@ -40,15 +37,15 @@ export async function POST(
     }
 
     // Check if already following
-    const isFollowing = currentUser.following.includes(targetUser._id);
+    const isFollowing = currentUser.following.includes((targetUser as any)._id);
 
     if (isFollowing) {
       return NextResponse.json({ error: "Already following this user" }, { status: 400 });
     }
 
     // Update both users
-    currentUser.following.push(targetUser._id);
-    targetUser.followers.push(currentUser._id);
+    currentUser.following.push((targetUser as any)._id);
+    targetUser.followers.push((currentUser as any)._id);
 
     await currentUser.save();
     await targetUser.save();
@@ -65,10 +62,7 @@ export async function POST(
 }
 
 // DELETE unfollow user
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ username: string }> }
-) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
   try {
     const session = await getServerSession(authOptions);
@@ -96,7 +90,7 @@ export async function DELETE(
     }
 
     // Check if following
-    const followingIndex = currentUser.following.indexOf(targetUser._id);
+    const followingIndex = currentUser.following.indexOf((targetUser as any)._id);
 
     if (followingIndex === -1) {
       return NextResponse.json({ error: "Not following this user" }, { status: 400 });
@@ -104,7 +98,7 @@ export async function DELETE(
 
     // Update both users
     currentUser.following.splice(followingIndex, 1);
-    const followerIndex = targetUser.followers.indexOf(currentUser._id);
+    const followerIndex = targetUser.followers.indexOf((currentUser as any)._id);
     if (followerIndex > -1) {
       targetUser.followers.splice(followerIndex, 1);
     }
