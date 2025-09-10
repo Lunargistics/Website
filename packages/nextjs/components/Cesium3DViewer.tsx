@@ -7,20 +7,20 @@ import dynamic from "next/dynamic";
 const Cesium3DViewerComponent = () => {
   const cesiumContainer = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<any>(null);
-  
+
   useEffect(() => {
     // Load Cesium dynamically
     const loadCesium = async () => {
       if (typeof window === "undefined") return;
-      
+
       // Import Cesium
       const Cesium = (await import("cesium")).default;
-      
+
       // Set Cesium base URL for assets
       (window as any).CESIUM_BASE_URL = "/cesium/";
-      
+
       if (!cesiumContainer.current || viewerRef.current) return;
-      
+
       // Initialize Cesium Viewer
       const viewer = new Cesium.Viewer(cesiumContainer.current, {
         terrainProvider: await Cesium.createWorldTerrainAsync(),
@@ -34,9 +34,9 @@ const Cesium3DViewerComponent = () => {
         fullscreenButton: false,
         vrButton: false,
       });
-      
+
       viewerRef.current = viewer;
-      
+
       // Add sample satellites
       addSatellite(viewer, Cesium, {
         name: "ISS",
@@ -44,16 +44,16 @@ const Cesium3DViewerComponent = () => {
         tle2: "2 25544  51.6415 208.4057 0002769  35.9667  61.6291 15.50381554436915",
         color: Cesium.Color.YELLOW,
       });
-      
+
       // Add asteroid belt visualization
       addAsteroidBelt(viewer, Cesium);
-      
+
       // Add Moon and Mars
       addCelestialBodies(viewer, Cesium);
     };
-    
+
     loadCesium();
-    
+
     return () => {
       if (viewerRef.current) {
         viewerRef.current.destroy();
@@ -61,44 +61,40 @@ const Cesium3DViewerComponent = () => {
       }
     };
   }, []);
-  
+
   const addSatellite = async (viewer: any, Cesium: any, satelliteData: any) => {
     const satelliteJs = await import("satellite.js");
-    
+
     const satrec = satelliteJs.twoline2satrec(satelliteData.tle1, satelliteData.tle2);
     const totalSeconds = 60 * 60 * 24; // 24 hours
     const timestep = 60; // 1 minute
-    
+
     const start = Cesium.JulianDate.now();
     const stop = Cesium.JulianDate.addSeconds(start, totalSeconds, new Cesium.JulianDate());
-    
+
     viewer.clock.startTime = start.clone();
     viewer.clock.stopTime = stop.clone();
     viewer.clock.currentTime = start.clone();
     viewer.timeline.zoomTo(start, stop);
     viewer.clock.multiplier = 40;
     viewer.clock.clockRange = Cesium.ClockRange.LOOP_STOP;
-    
+
     const positionsOverTime = new Cesium.SampledPositionProperty();
-    
+
     for (let i = 0; i < totalSeconds; i += timestep) {
       const time = Cesium.JulianDate.addSeconds(start, i, new Cesium.JulianDate());
       const jsDate = Cesium.JulianDate.toDate(time);
-      
+
       const positionAndVelocity = satelliteJs.propagate(satrec, jsDate);
-      if (positionAndVelocity.position && typeof positionAndVelocity.position !== "boolean") {
+      if (positionAndVelocity && positionAndVelocity.position && typeof positionAndVelocity.position !== "boolean") {
         const positionEci = positionAndVelocity.position;
-        
-        const position = new Cesium.Cartesian3(
-          positionEci.x * 1000,
-          positionEci.y * 1000,
-          positionEci.z * 1000
-        );
-        
+
+        const position = new Cesium.Cartesian3(positionEci.x * 1000, positionEci.y * 1000, positionEci.z * 1000);
+
         positionsOverTime.addSample(time, position);
       }
     }
-    
+
     const entity = viewer.entities.add({
       name: satelliteData.name,
       availability: new Cesium.TimeIntervalCollection([
@@ -125,19 +121,19 @@ const Cesium3DViewerComponent = () => {
         trailTime: 3600,
       },
     });
-    
+
     viewer.trackedEntity = entity;
   };
-  
+
   const addAsteroidBelt = (viewer: any, Cesium: any) => {
     // Simplified asteroid belt visualization
     const asteroidBeltInner = 2.1 * 149597870.7 * 1000; // 2.1 AU in meters
     const asteroidBeltOuter = 3.3 * 149597870.7 * 1000; // 3.3 AU in meters
-    
+
     for (let i = 0; i < 100; i++) {
       const angle = (i / 100) * 2 * Math.PI;
       const radius = asteroidBeltInner + Math.random() * (asteroidBeltOuter - asteroidBeltInner);
-      
+
       viewer.entities.add({
         name: `Asteroid ${i}`,
         position: Cesium.Cartesian3.fromRadians(angle, 0, radius),
@@ -148,7 +144,7 @@ const Cesium3DViewerComponent = () => {
       });
     }
   };
-  
+
   const addCelestialBodies = (viewer: any, Cesium: any) => {
     // Add Moon
     viewer.entities.add({
@@ -159,7 +155,7 @@ const Cesium3DViewerComponent = () => {
         material: Cesium.Color.LIGHTGRAY,
       },
     });
-    
+
     // Add Mars (simplified position)
     viewer.entities.add({
       name: "Mars",
@@ -170,7 +166,7 @@ const Cesium3DViewerComponent = () => {
       },
     });
   };
-  
+
   return (
     <div className="cesium-viewer-container h-[600px] w-full rounded-lg overflow-hidden">
       <div ref={cesiumContainer} className="h-full w-full" />
