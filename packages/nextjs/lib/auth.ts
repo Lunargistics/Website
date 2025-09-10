@@ -100,6 +100,8 @@ export const authOptions: NextAuthOptions = {
               existingUser.name = user.name;
               await existingUser.save();
             }
+            // Store the user ID for immediate session creation
+            user.id = (existingUser as any)._id.toString();
             return true;
           }
 
@@ -128,6 +130,8 @@ export const authOptions: NextAuthOptions = {
           });
 
           await newUser.save();
+          // Store the user ID for immediate session creation
+          user.id = (newUser as any)._id.toString();
           return true;
         } catch (error) {
           console.error("Social login error:", error);
@@ -137,25 +141,13 @@ export const authOptions: NextAuthOptions = {
 
       return true;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user) {
-        // For OAuth logins, we need to fetch the user from database
-        if (account?.provider === "google" || account?.provider === "github") {
-          await dbConnect();
-          const dbUser = await User.findOne({ emailLower: user.email!.toLowerCase() });
-          if (dbUser) {
-            token.id = (dbUser as any)._id.toString();
-            token.email = dbUser.email;
-            token.name = dbUser.name;
-            token.emailVerified = dbUser.emailVerified;
-          }
-        } else {
-          // For credentials login, user already has the correct structure
-          token.id = user.id;
-          token.email = user.email;
-          token.name = user.name;
-          token.emailVerified = user.emailVerified;
-        }
+        // User object is available on initial sign in
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
+        token.emailVerified = user.emailVerified || true; // OAuth users are pre-verified
       }
       return token;
     },
@@ -173,7 +165,6 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: "/login",
-    error: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
