@@ -6,27 +6,34 @@ const VENICE_API_URL = "https://api.venice.ai/api/v1";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, data } = body;
+    const { action, data, prompt, temperature, max_tokens } = body;
+
+    // Support direct prompt-based requests for Implement Space
+    if (prompt && !action) {
+      return await generateMissionPlan({ prompt, temperature, max_tokens });
+    }
+
+    const { action: requestAction, data: requestData } = body;
 
     if (!VENICE_API_KEY) {
       return NextResponse.json({ error: "Venice AI not configured" }, { status: 500 });
     }
 
-    switch (action) {
+    switch (requestAction || action) {
       case "analyzeDocument":
-        return await analyzeDocument(data);
+        return await analyzeDocument(requestData || data);
 
       case "analyzeMission":
-        return await analyzeMission(data);
+        return await analyzeMission(requestData || data);
 
       case "smartSearch":
-        return await smartSearch(data);
+        return await smartSearch(requestData || data);
 
       case "validateAccess":
-        return await validateAccess(data);
+        return await validateAccess(requestData || data);
 
       case "predictTimeline":
-        return await predictTimeline(data);
+        return await predictTimeline(requestData || data);
 
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });
@@ -198,4 +205,52 @@ async function predictTimeline(data: any) {
   return NextResponse.json({
     prediction: result.choices[0].message.content,
   });
+}
+
+async function generateMissionPlan(data: any) {
+  const { prompt, temperature = 0.7, max_tokens = 2000 } = data;
+
+  if (!VENICE_API_KEY) {
+    return NextResponse.json({ error: "Venice AI not configured" }, { status: 500 });
+  }
+
+  try {
+    const response = await fetch(`${VENICE_API_URL}/chat/completions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${VENICE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an expert space mission planner with deep knowledge of launch vehicles, orbital mechanics, spacecraft design, and mission operations. Provide detailed, technical, and actionable mission plans.",
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        temperature,
+        max_tokens,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error("Venice API error:", error);
+      return NextResponse.json({ error: "Failed to generate mission plan" }, { status: 500 });
+    }
+
+    const result = await response.json();
+    return NextResponse.json({
+      response: result.choices[0].message.content,
+    });
+  } catch (error) {
+    console.error("Mission plan generation error:", error);
+    return NextResponse.json({ error: "Failed to generate mission plan" }, { status: 500 });
+  }
 }

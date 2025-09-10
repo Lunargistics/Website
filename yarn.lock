@@ -4318,6 +4318,7 @@ __metadata:
     graphql: ^16.9.0
     graphql-request: ^7.1.0
     kubo-rpc-client: ~5.0.2
+    lucide-react: ^0.543.0
     mongodb: ^6.19.0
     mongoose: ^8.18.1
     next: ~15.2.3
@@ -13828,6 +13829,15 @@ __metadata:
   version: 0.3.3
   resolution: "lru_map@npm:0.3.3"
   checksum: ca9dd43c65ed7a4f117c548028101c5b6855e10923ea9d1f635af53ad20c5868ff428c364d454a7b57fe391b89c704982275410c3c5099cca5aeee00d76e169a
+  languageName: node
+  linkType: hard
+
+"lucide-react@npm:^0.543.0":
+  version: 0.543.0
+  resolution: "lucide-react@npm:0.543.0"
+  peerDependencies:
+    react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 68907c98c25f2806d36adf10e229ed7a1af7740eb4abafe9e06a43d9c48168be40fcbf8e7432fa3094f59adaa6c58fd43b053dc2bb62cb6ca800276ee3330ac3
   languageName: node
   linkType: hard
 
