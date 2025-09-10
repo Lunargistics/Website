@@ -28,6 +28,11 @@ export const menuLinks: HeaderMenuLink[] = [
     href: "/",
   },
   {
+    label: "Asteroids",
+    href: "/asteroids",
+    icon: <RocketLaunchIcon className="h-4 w-4" />,
+  },
+  {
     label: "Dashboard",
     href: "/dashboard",
     icon: <RocketLaunchIcon className="h-4 w-4" />,

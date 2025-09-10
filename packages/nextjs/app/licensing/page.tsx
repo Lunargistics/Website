@@ -1,118 +1,168 @@
 "use client";
 
 import type { NextPage } from "next";
-import { CogIcon, CubeTransparentIcon, ShieldCheckIcon, ShoppingBagIcon, UsersIcon } from "@heroicons/react/24/outline";
+import { useState } from "react";
+import { useAccount } from "wagmi";
+import { SmartWalletCreator } from "~~/components/SmartWalletCreator";
+import { DocumentUploadForm } from "~~/components/DocumentUploadForm";
+import { DocumentMinter } from "~~/components/DocumentMinter";
+import { AIAnalysisPanel } from "~~/components/AIAnalysisPanel";
+import { AIComplianceDashboard } from "~~/components/AIComplianceDashboard";
+import { 
+  RocketLaunchIcon, 
+  DocumentTextIcon, 
+  WalletIcon,
+  ShieldCheckIcon,
+  ArrowRightIcon
+} from "@heroicons/react/24/outline";
 
 const LicensingPage: NextPage = () => {
-  const programFeatures = [
+  const { isConnected } = useAccount();
+  const [activeTab, setActiveTab] = useState<"wallet" | "upload" | "mint">("wallet");
+  const [userDocuments, setUserDocuments] = useState<any[]>([]);
+
+  const steps = [
     {
-      name: "LunarStation Platform",
-      description:
-        "Access our powerful, secure, and compliant platform for managing all your space-related activities and documentation.",
-      icon: CubeTransparentIcon,
+      id: "wallet",
+      name: "Create Digital Vault",
+      description: "Set up a secure digital container for your mission documents",
+      icon: WalletIcon,
     },
     {
-      name: "Ransomware-Proof Documentation",
-      description:
-        "Utilize our cutting-edge, blockchain-secured system for document storage and verification, ensuring integrity and resistance to tampering.",
-      icon: ShieldCheckIcon,
+      id: "upload",
+      name: "Upload Documents",
+      description: "Store your launch licenses and compliance documents securely",
+      icon: DocumentTextIcon,
     },
     {
-      name: "Customization SDK",
-      description:
-        "Leverage our Software Development Kit to tailor the platform experience to your brand and operational guidelines, ensuring seamless integration.",
-      icon: CogIcon,
-    },
-    {
-      name: "RideShare & Vendor Network Access",
-      description:
-        "Gain entry to our exclusive RideShare program and connect with a network of Interconnected Vendors for all your mission needs.",
-      icon: UsersIcon,
-    },
-    {
-      name: "Display Merchandising Solutions",
-      description:
-        "Enhance your brand presence with our display merchandising options to create your ideal Lunargistics experience for your clients and stakeholders.",
-      icon: ShoppingBagIcon,
+      id: "mint",
+      name: "Share Access",
+      description: "Grant verified access to regulatory bodies and partners",
+      icon: RocketLaunchIcon,
     },
   ];
 
   return (
     <div className="min-h-screen bg-base-100 text-base-content py-10 px-4 sm:px-6 lg:px-8">
       <div className="container mx-auto">
-        <header className="mb-12 text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold text-primary mb-4">LunarLicensing Program</h1>
-          <p className="text-lg sm:text-xl text-base-content/80 max-w-3xl mx-auto">
-            Empowering your space ventures with a comprehensive suite of tools and services designed for compliance,
-            security, and operational excellence.
+        <header className="mb-8 sm:mb-12 text-center px-4">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary mb-4">
+            Space Mission Licensing Portal
+          </h1>
+          <p className="text-base sm:text-lg lg:text-xl text-base-content/80 max-w-3xl mx-auto">
+            Secure digital vault for your mission-critical documents and licenses
           </p>
         </header>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {programFeatures.map(feature => (
-            <div
-              key={feature.name}
-              className="bg-base-200 p-6 rounded-lg shadow-lg flex flex-col items-center text-center"
-            >
-              <feature.icon className="h-12 w-12 text-accent mb-4" />
-              <h2 className="text-2xl font-semibold text-secondary mb-2">{feature.name}</h2>
-              <p className="text-base-content/70 flex-grow">{feature.description}</p>
+        {!isConnected ? (
+          <div className="text-center py-20">
+            <div className="card bg-base-200 max-w-md mx-auto p-8">
+              <ShieldCheckIcon className="h-16 w-16 text-primary mx-auto mb-4" />
+              <h2 className="text-2xl font-bold mb-4">Connect Your Account</h2>
+              <p className="text-base-content/70 mb-6">
+                Please connect your account to access the licensing portal
+              </p>
             </div>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <>
+            <div className="flex justify-center mb-8 overflow-x-auto">
+              <div className="flex items-center space-x-2 sm:space-x-4 px-4">
+                {steps.map((step, index) => (
+                  <div key={step.id} className="flex items-center">
+                    <button
+                      onClick={() => setActiveTab(step.id as any)}
+                      className={`flex flex-col items-center p-2 sm:p-4 rounded-lg transition-all min-w-[80px] sm:min-w-[120px] ${
+                        activeTab === step.id
+                          ? "bg-primary text-primary-content scale-105"
+                          : "bg-base-200 hover:bg-base-300"
+                      }`}
+                    >
+                      <step.icon className="h-6 w-6 sm:h-8 sm:w-8 mb-1 sm:mb-2" />
+                      <span className="text-xs sm:text-sm font-semibold text-center">{step.name}</span>
+                    </button>
+                    {index < steps.length - 1 && (
+                      <ArrowRightIcon className="h-4 w-4 sm:h-5 sm:w-5 mx-1 sm:mx-2 text-base-content/50 flex-shrink-0" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
 
-        <section className="mt-16 text-center bg-base-200 p-8 rounded-lg shadow-xl">
-          <h2 className="text-3xl font-bold text-primary mb-6">Get Started with LunarLicensing</h2>
-          <p className="text-lg text-base-content/80 mb-8 max-w-2xl mx-auto">
-            Join the forefront of space commerce. Our licensing program is built to streamline your path to space,
-            ensuring every mission is built on a foundation of trust and cutting-edge technology.
-          </p>
-          <button
-            onClick={() => {
-              const subject = encodeURIComponent("Licensing Program Inquiry - Lunargistics");
-              const body = encodeURIComponent(`Dear Logan,
+            <div className="max-w-6xl mx-auto">
+              {/* AI Compliance Dashboard - Shows overall mission status */}
+              <div className="mb-6">
+                <AIComplianceDashboard />
+              </div>
+              
+              {/* AI Analysis Panel - Shows mission readiness */}
+              <AIAnalysisPanel 
+                documents={userDocuments}
+                missionName="Current Mission"
+                onAnalysisComplete={(analysis) => {
+                  console.log('Mission analysis:', analysis);
+                }}
+              />
+              
+              <div className="mb-6 text-center">
+                <h2 className="text-2xl font-bold mb-2">
+                  {steps.find(s => s.id === activeTab)?.name}
+                </h2>
+                <p className="text-base-content/70">
+                  {steps.find(s => s.id === activeTab)?.description}
+                </p>
+              </div>
 
-I am interested in learning more about the LunarLicensing Program.
+              {activeTab === "wallet" && <SmartWalletCreator />}
+              {activeTab === "upload" && <DocumentUploadForm />}
+              {activeTab === "mint" && <DocumentMinter />}
+            </div>
 
-Contact Information:
-Organization: [Your Organization Name]
-Name: [Your Name]
-Email: [Your Email]
-Phone: [Your Phone Number]
+            <div className="mt-8 sm:mt-16 bg-base-200 p-4 sm:p-8 rounded-lg">
+              <h3 className="text-xl sm:text-2xl font-bold mb-4">How It Works</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="badge badge-primary">1</div>
+                    <h4 className="font-semibold">Create Your Vault</h4>
+                  </div>
+                  <p className="text-sm text-base-content/70">
+                    Initialize a secure digital container that will hold all your mission documentation
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="badge badge-primary">2</div>
+                    <h4 className="font-semibold">Upload Documents</h4>
+                  </div>
+                  <p className="text-sm text-base-content/70">
+                    Store launch licenses, safety reports, and compliance documents in your secure vault
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="badge badge-primary">3</div>
+                    <h4 className="font-semibold">Control Access</h4>
+                  </div>
+                  <p className="text-sm text-base-content/70">
+                    Grant verified access to FAA, NASA, and mission partners as needed
+                  </p>
+                </div>
+              </div>
+            </div>
 
-Current Operations:
-- [ ] Satellite Operations
-- [ ] Launch Services
-- [ ] Space Tourism
-- [ ] Research & Development
-- [ ] Manufacturing
-- [ ] Other: [Please specify]
-
-Specific Interests:
-- [ ] LunarStation Platform Access
-- [ ] Ransomware-Proof Documentation System
-- [ ] Customization SDK
-- [ ] RideShare Program
-- [ ] Vendor Network Access
-- [ ] Display Merchandising Solutions
-
-Questions/Requirements:
-[Please describe your specific needs or questions about the licensing program]
-
-Preferred follow-up method:
-- [ ] Email
-- [ ] Phone Call
-- [ ] Video Conference
-
-Best regards,
-[Your Name]`);
-              window.location.href = `mailto:logan@lunargistics.com?subject=${subject}&body=${body}`;
-            }}
-            className="btn btn-primary btn-lg hover:bg-primary-focus transition-colors"
-          >
-            Contact Us to Learn More
-          </button>
-        </section>
+            <div className="mt-8 text-center">
+              <div className="alert alert-info max-w-2xl mx-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div>
+                  <span className="font-semibold">Secure Storage:</span> Documents are stored on distributed secure storage. Add your Pinata JWT to .env.local to enable uploads.
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

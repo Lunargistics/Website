@@ -3,6 +3,8 @@ import { Toaster } from "react-hot-toast";
 import { ScaffoldEthAppWithProviders } from "~~/components/ScaffoldEthAppWithProviders";
 import { ThemeProvider } from "~~/components/ThemeProvider";
 import { UserActivityProvider } from "~~/contexts/UserActivityContext";
+import { MobileBottomNav } from "~~/components/MobileBottomNav";
+import AuthProvider from "~~/components/AuthProvider";
 import "~~/styles/globals.css";
 import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 
@@ -15,11 +17,16 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   return (
     <html suppressHydrationWarning>
       <body>
-        <ThemeProvider enableSystem>
-          <ScaffoldEthAppWithProviders>
-            <UserActivityProvider>{children}</UserActivityProvider>
-          </ScaffoldEthAppWithProviders>
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider enableSystem>
+            <ScaffoldEthAppWithProviders>
+              <UserActivityProvider>
+                {children}
+                <MobileBottomNav />
+              </UserActivityProvider>
+            </ScaffoldEthAppWithProviders>
+          </ThemeProvider>
+        </AuthProvider>
         <Toaster
           position="top-center"
           toastOptions={{
