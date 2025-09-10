@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
@@ -38,8 +38,8 @@ export function AsteroidDataFetcher() {
             nickel: 25,
             cobalt: 15,
             platinum: 10,
-            gold: 5
-          }
+            gold: 5,
+          },
         },
         {
           id: "433-eros",
@@ -51,8 +51,8 @@ export function AsteroidDataFetcher() {
             nickel: 20,
             cobalt: 20,
             platinum: 20,
-            gold: 10
-          }
+            gold: 10,
+          },
         },
         {
           id: "3554-amun",
@@ -64,32 +64,27 @@ export function AsteroidDataFetcher() {
             nickel: 30,
             cobalt: 15,
             platinum: 10,
-            gold: 5
-          }
-        }
+            gold: 5,
+          },
+        },
       ];
 
       setAsteroids(mockAsteroids);
-      
+
       // Update oracle with fetched data
       for (const asteroid of mockAsteroids) {
         await updateOracle({
           functionName: "updateAsteroidData",
-          args: [
-            asteroid.id,
-            asteroid.name,
-            BigInt(asteroid.estimated_value),
-            BigInt(asteroid.diameter)
-          ]
+          args: [asteroid.id, asteroid.name, BigInt(asteroid.estimated_value), BigInt(asteroid.diameter)],
         });
 
         // Update composition
         const commodities = Object.keys(asteroid.composition);
         const percentages = Object.values(asteroid.composition).map(v => BigInt(v * 100));
-        
+
         await updateOracle({
           functionName: "batchUpdateComposition",
-          args: [asteroid.id, commodities, percentages]
+          args: [asteroid.id, commodities, percentages],
         });
       }
 
@@ -111,7 +106,7 @@ export function AsteroidDataFetcher() {
     <div className="card bg-base-200 shadow-xl">
       <div className="card-body">
         <h2 className="card-title">Asteroid Data Oracle</h2>
-        
+
         <div className="overflow-x-auto">
           <table className="table table-zebra">
             <thead>
@@ -123,7 +118,7 @@ export function AsteroidDataFetcher() {
               </tr>
             </thead>
             <tbody>
-              {asteroids.map((asteroid) => (
+              {asteroids.map(asteroid => (
                 <tr key={asteroid.id}>
                   <td>
                     <div>
@@ -149,7 +144,7 @@ export function AsteroidDataFetcher() {
         </div>
 
         <div className="card-actions justify-end">
-          <button 
+          <button
             className={`btn btn-primary ${loading ? "loading" : ""}`}
             onClick={fetchAsteroidData}
             disabled={loading}

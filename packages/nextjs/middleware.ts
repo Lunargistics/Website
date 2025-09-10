@@ -1,5 +1,5 @@
-import { withAuth } from 'next-auth/middleware';
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
+import { withAuth } from "next-auth/middleware";
 
 export default withAuth(
   function middleware(req) {
@@ -10,11 +10,11 @@ export default withAuth(
       authorized: ({ token }) => !!token,
     },
     pages: {
-      signIn: '/login',
+      signIn: "/login",
     },
-  }
+  },
 );
 
 export const config = {
-  matcher: ['/dashboard/:path*'],
+  matcher: ["/dashboard/:path*"],
 };

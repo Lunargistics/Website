@@ -27,27 +27,27 @@ export const DocumentSearchPanel = ({ documents, onDocumentSelect }: DocumentSea
     }
 
     setIsSearching(true);
-    
+
     try {
       if (useAISearch) {
         // AI-powered semantic search
-        const response = await fetch('/api/venice', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("/api/venice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            action: 'smartSearch',
+            action: "smartSearch",
             data: {
               query: searchQuery,
               documents: documents.map(d => ({
                 id: d.id,
                 type: d.type,
                 title: d.title,
-                date: d.date
-              }))
-            }
-          })
+                date: d.date,
+              })),
+            },
+          }),
         });
-        
+
         if (response.ok) {
           const result = await response.json();
           // Parse AI response to get matching document IDs
@@ -58,20 +58,20 @@ export const DocumentSearchPanel = ({ documents, onDocumentSelect }: DocumentSea
       } else {
         // Traditional keyword search
         const query = searchQuery.toLowerCase();
-        const matches = documents.filter(doc => 
-          doc.title.toLowerCase().includes(query) ||
-          doc.type.toLowerCase().includes(query) ||
-          doc.status.toLowerCase().includes(query)
+        const matches = documents.filter(
+          doc =>
+            doc.title.toLowerCase().includes(query) ||
+            doc.type.toLowerCase().includes(query) ||
+            doc.status.toLowerCase().includes(query),
         );
         setSearchResults(matches);
       }
     } catch (error) {
-      console.error('Search error:', error);
+      console.error("Search error:", error);
       // Fallback to keyword search
       const query = searchQuery.toLowerCase();
-      const matches = documents.filter(doc => 
-        doc.title.toLowerCase().includes(query) ||
-        doc.type.toLowerCase().includes(query)
+      const matches = documents.filter(
+        doc => doc.title.toLowerCase().includes(query) || doc.type.toLowerCase().includes(query),
       );
       setSearchResults(matches);
     } finally {
@@ -100,18 +100,18 @@ export const DocumentSearchPanel = ({ documents, onDocumentSelect }: DocumentSea
           <MagnifyingGlassIcon className="h-5 w-5" />
           Document Search
         </h3>
-        
+
         <div className="form-control">
           <label className="label cursor-pointer">
             <span className="label-text flex items-center gap-2">
               <SparklesIcon className="h-4 w-4 text-primary" />
               AI-Powered Search
             </span>
-            <input 
-              type="checkbox" 
-              className="toggle toggle-primary" 
+            <input
+              type="checkbox"
+              className="toggle toggle-primary"
               checked={useAISearch}
-              onChange={(e) => setUseAISearch(e.target.checked)}
+              onChange={e => setUseAISearch(e.target.checked)}
             />
           </label>
         </div>
@@ -122,15 +122,15 @@ export const DocumentSearchPanel = ({ documents, onDocumentSelect }: DocumentSea
             placeholder={useAISearch ? "Ask about your documents..." : "Search by keyword..."}
             className="input input-bordered join-item flex-1"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+            onChange={e => setSearchQuery(e.target.value)}
+            onKeyPress={e => e.key === "Enter" && handleSearch()}
           />
           <button
-            className={`btn btn-primary join-item ${isSearching ? 'loading' : ''}`}
+            className={`btn btn-primary join-item ${isSearching ? "loading" : ""}`}
             onClick={handleSearch}
             disabled={isSearching}
           >
-            {isSearching ? '' : <MagnifyingGlassIcon className="h-5 w-5" />}
+            {isSearching ? "" : <MagnifyingGlassIcon className="h-5 w-5" />}
             Search
           </button>
         </div>
@@ -144,10 +144,10 @@ export const DocumentSearchPanel = ({ documents, onDocumentSelect }: DocumentSea
         {searchResults.length > 0 && (
           <div className="mt-4 space-y-2">
             <p className="text-sm font-semibold">
-              Found {searchResults.length} document{searchResults.length !== 1 ? 's' : ''}
+              Found {searchResults.length} document{searchResults.length !== 1 ? "s" : ""}
             </p>
             <div className="max-h-60 overflow-y-auto space-y-2">
-              {searchResults.map((doc) => (
+              {searchResults.map(doc => (
                 <div
                   key={doc.id}
                   className="p-3 bg-base-200 rounded hover:bg-base-300 cursor-pointer transition-colors"
@@ -156,13 +156,19 @@ export const DocumentSearchPanel = ({ documents, onDocumentSelect }: DocumentSea
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium text-sm">{doc.title}</p>
-                      <p className="text-xs opacity-70">{doc.type} • {doc.date}</p>
+                      <p className="text-xs opacity-70">
+                        {doc.type} • {doc.date}
+                      </p>
                     </div>
-                    <div className={`badge badge-sm ${
-                      doc.status === 'Active' ? 'badge-success' : 
-                      doc.status === 'Pending' ? 'badge-warning' : 
-                      'badge-ghost'
-                    }`}>
+                    <div
+                      className={`badge badge-sm ${
+                        doc.status === "Active"
+                          ? "badge-success"
+                          : doc.status === "Pending"
+                            ? "badge-warning"
+                            : "badge-ghost"
+                      }`}
+                    >
                       {doc.status}
                     </div>
                   </div>

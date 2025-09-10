@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface PricePoint {
   time: string;
@@ -17,16 +17,16 @@ export function AsteroidPriceChart({ commodity }: { commodity: string }) {
       const points = 24;
       const basePrice = 100;
       const data: PricePoint[] = [];
-      
+
       for (let i = 0; i < points; i++) {
-        const time = new Date(Date.now() - (points - i) * 3600000).toLocaleTimeString([], { 
-          hour: '2-digit', 
-          minute: '2-digit' 
+        const time = new Date(Date.now() - (points - i) * 3600000).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
         });
         const price = basePrice + (Math.random() - 0.5) * 20;
         data.push({ time, price });
       }
-      
+
       setPriceData(data);
     };
 
@@ -36,9 +36,7 @@ export function AsteroidPriceChart({ commodity }: { commodity: string }) {
   const minPrice = Math.min(...priceData.map(d => d.price));
   const maxPrice = Math.max(...priceData.map(d => d.price));
   const currentPrice = priceData[priceData.length - 1]?.price || 0;
-  const priceChange = priceData.length > 1 
-    ? ((currentPrice - priceData[0].price) / priceData[0].price) * 100
-    : 0;
+  const priceChange = priceData.length > 1 ? ((currentPrice - priceData[0].price) / priceData[0].price) * 100 : 0;
 
   return (
     <div className="card bg-base-100 shadow-xl">
@@ -48,17 +46,18 @@ export function AsteroidPriceChart({ commodity }: { commodity: string }) {
             <h3 className="text-lg font-bold capitalize">{commodity} Price</h3>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-bold">${currentPrice.toFixed(2)}</span>
-              <span className={`text-sm ${priceChange >= 0 ? 'text-success' : 'text-error'}`}>
-                {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}%
+              <span className={`text-sm ${priceChange >= 0 ? "text-success" : "text-error"}`}>
+                {priceChange >= 0 ? "+" : ""}
+                {priceChange.toFixed(2)}%
               </span>
             </div>
           </div>
-          
+
           <div className="join join-horizontal">
             {(["1H", "1D", "1W", "1M"] as const).map(tf => (
               <button
                 key={tf}
-                className={`join-item btn btn-xs ${timeframe === tf ? 'btn-active' : ''}`}
+                className={`join-item btn btn-xs ${timeframe === tf ? "btn-active" : ""}`}
                 onClick={() => setTimeframe(tf)}
               >
                 {tf}
@@ -75,26 +74,30 @@ export function AsteroidPriceChart({ commodity }: { commodity: string }) {
               stroke="currentColor"
               strokeWidth="0.5"
               className="text-primary"
-              points={priceData.map((point, i) => {
-                const x = (i / (priceData.length - 1)) * 100;
-                const y = 100 - ((point.price - minPrice) / (maxPrice - minPrice)) * 100;
-                return `${x},${y}`;
-              }).join(' ')}
+              points={priceData
+                .map((point, i) => {
+                  const x = (i / (priceData.length - 1)) * 100;
+                  const y = 100 - ((point.price - minPrice) / (maxPrice - minPrice)) * 100;
+                  return `${x},${y}`;
+                })
+                .join(" ")}
             />
-            
+
             {/* Area under the line */}
             <polygon
               fill="currentColor"
               fillOpacity="0.1"
               className="text-primary"
-              points={`0,100 ${priceData.map((point, i) => {
-                const x = (i / (priceData.length - 1)) * 100;
-                const y = 100 - ((point.price - minPrice) / (maxPrice - minPrice)) * 100;
-                return `${x},${y}`;
-              }).join(' ')} 100,100`}
+              points={`0,100 ${priceData
+                .map((point, i) => {
+                  const x = (i / (priceData.length - 1)) * 100;
+                  const y = 100 - ((point.price - minPrice) / (maxPrice - minPrice)) * 100;
+                  return `${x},${y}`;
+                })
+                .join(" ")} 100,100`}
             />
           </svg>
-          
+
           {/* Y-axis labels */}
           <div className="absolute left-0 top-0 flex flex-col justify-between h-full text-xs text-base-content/50">
             <span>${maxPrice.toFixed(0)}</span>

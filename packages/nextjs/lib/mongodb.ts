@@ -1,9 +1,9 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/lunargistics';
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/lunargistics";
 
 if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable');
+  throw new Error("Please define the MONGODB_URI environment variable");
 }
 
 interface Cached {
@@ -12,6 +12,7 @@ interface Cached {
 }
 
 declare global {
+  // eslint-disable-next-line no-var
   var mongoose: Cached | undefined;
 }
 
@@ -31,7 +32,7 @@ async function dbConnect() {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then(mongoose => {
       return mongoose;
     });
   }

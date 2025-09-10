@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { TrendingUpIcon, TrendingDownIcon } from "@heroicons/react/24/outline";
+import { useEffect, useState } from "react";
+import { TrendingDownIcon, TrendingUpIcon } from "@heroicons/react/24/outline";
 
 interface MarketStat {
   label: string;
@@ -25,9 +25,11 @@ export function AsteroidMarketStats() {
           <div className="card-body p-3 sm:p-4">
             <p className="text-xs sm:text-sm text-base-content/70">{stat.label}</p>
             <p className="text-lg sm:text-2xl font-bold">{stat.value}</p>
-            <div className={`flex items-center gap-1 text-xs sm:text-sm ${
-              stat.trend === "up" ? "text-success" : "text-error"
-            }`}>
+            <div
+              className={`flex items-center gap-1 text-xs sm:text-sm ${
+                stat.trend === "up" ? "text-success" : "text-error"
+              }`}
+            >
               {stat.trend === "up" ? (
                 <TrendingUpIcon className="w-3 h-3 sm:w-4 sm:h-4" />
               ) : (

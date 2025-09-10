@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { RocketLaunchIcon, CurrencyDollarIcon, ChartBarIcon } from "@heroicons/react/24/outline";
+import { ChartBarIcon, CurrencyDollarIcon, RocketLaunchIcon } from "@heroicons/react/24/outline";
 
 export function AsteroidHero() {
   const router = useRouter();
@@ -14,21 +14,15 @@ export function AsteroidHero() {
             Asteroid Commodities Exchange
           </h1>
           <p className="text-lg sm:text-xl mb-8 text-base-content/80">
-            Trade tokenized space resources from verified asteroids. 
-            Access the $700 quintillion space economy today.
+            Trade tokenized space resources from verified asteroids. Access the $700 quintillion space economy today.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <button 
-              className="btn btn-primary btn-lg"
-              onClick={() => router.push("/asteroids")}
-            >
+            <button className="btn btn-primary btn-lg" onClick={() => router.push("/asteroids")}>
               Start Trading
               <RocketLaunchIcon className="w-5 h-5 ml-2" />
             </button>
-            <button className="btn btn-outline btn-lg">
-              Learn More
-            </button>
+            <button className="btn btn-outline btn-lg">Learn More</button>
           </div>
 
           {/* Feature Cards */}
@@ -37,29 +31,23 @@ export function AsteroidHero() {
               <div className="card-body p-4">
                 <CurrencyDollarIcon className="w-8 h-8 mx-auto text-primary mb-2" />
                 <h3 className="font-bold text-sm">Instant Swaps</h3>
-                <p className="text-xs text-base-content/70">
-                  Trade asteroid commodities with deep liquidity
-                </p>
+                <p className="text-xs text-base-content/70">Trade asteroid commodities with deep liquidity</p>
               </div>
             </div>
-            
+
             <div className="card bg-base-200/50 backdrop-blur">
               <div className="card-body p-4">
                 <ChartBarIcon className="w-8 h-8 mx-auto text-secondary mb-2" />
                 <h3 className="font-bold text-sm">Futures Trading</h3>
-                <p className="text-xs text-base-content/70">
-                  Long or short asteroid resources with leverage
-                </p>
+                <p className="text-xs text-base-content/70">Long or short asteroid resources with leverage</p>
               </div>
             </div>
-            
+
             <div className="card bg-base-200/50 backdrop-blur">
               <div className="card-body p-4">
                 <RocketLaunchIcon className="w-8 h-8 mx-auto text-accent mb-2" />
                 <h3 className="font-bold text-sm">Real Data</h3>
-                <p className="text-xs text-base-content/70">
-                  Verified asteroid data from NASA & partners
-                </p>
+                <p className="text-xs text-base-content/70">Verified asteroid data from NASA & partners</p>
               </div>
             </div>
           </div>

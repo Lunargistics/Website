@@ -3,11 +3,11 @@
 import Link from "next/link";
 import type { NextPage } from "next";
 import {
-  DocumentDuplicateIcon,
-  RocketLaunchIcon,
   BanknotesIcon,
   ChartBarIcon,
+  DocumentDuplicateIcon,
   GlobeAltIcon,
+  RocketLaunchIcon,
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 
@@ -72,19 +72,19 @@ const Home: NextPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-base-100 to-base-200">
       {/* Hero Section */}
-      <section 
+      <section
         className="relative min-h-[75vh] sm:min-h-[85vh] flex flex-col items-center justify-center px-4 py-12 sm:py-20"
         style={{
           backgroundImage: 'url("/LunarBkg1.png")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center top',
-          backgroundRepeat: 'no-repeat',
-          backgroundAttachment: 'fixed'
+          backgroundSize: "cover",
+          backgroundPosition: "center top",
+          backgroundRepeat: "no-repeat",
+          backgroundAttachment: "fixed",
         }}
       >
         {/* Dark overlay for better text readability */}
         <div className="absolute inset-0 bg-black/40 z-0"></div>
-        
+
         <div className="max-w-6xl mx-auto text-center relative z-10 px-2">
           <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-8 text-white drop-shadow-2xl">
             Space Launch Simplified™
@@ -112,7 +112,9 @@ const Home: NextPage = () => {
       {/* Compliance Launch Mediator Section */}
       <section className="py-12 sm:py-20 px-4 bg-base-200/50">
         <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 text-primary">Compliance Launch Mediator</h2>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 text-primary">
+            Compliance Launch Mediator
+          </h2>
           <div className="space-y-2">
             <p className="text-lg sm:text-xl text-base-content/80 font-medium">Automating the Space Regulator</p>
             <p className="text-base sm:text-lg text-base-content/70">Peer to Peer Regulatory Framework</p>
@@ -181,9 +183,11 @@ const Home: NextPage = () => {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 items-center">
             <div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">Blockchain-Powered Infrastructure</h2>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">
+                Blockchain-Powered Infrastructure
+              </h2>
               <p className="text-base sm:text-lg text-base-content/70 mb-4">
-                Our platform leverages Web3 technology to create immutable records, transparent transactions, and 
+                Our platform leverages Web3 technology to create immutable records, transparent transactions, and
                 decentralized verification systems for all space operations.
               </p>
               <ul className="space-y-3 text-base-content/70">
@@ -237,18 +241,16 @@ const Home: NextPage = () => {
       <section className="py-12 sm:py-20 px-4 bg-base-200/50">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-8 sm:mb-16">Our Team</h2>
-          
+
           {/* Co-founders */}
           <div className="mb-12 sm:mb-16">
-            <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-6 sm:mb-10 text-primary">Co-founders</h3>
+            <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-6 sm:mb-10 text-primary">
+              Co-founders
+            </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
               <div className="bg-base-100 rounded-2xl p-4 sm:p-6 text-center shadow-lg hover:shadow-xl transition-shadow">
                 <div className="w-24 sm:w-32 h-24 sm:h-32 mx-auto mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-primary/20">
-                  <img
-                    src="/team/logan-golema.jpeg"
-                    alt="Logan Golema"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src="/team/logan-golema.jpeg" alt="Logan Golema" className="w-full h-full object-cover" />
                 </div>
                 <h4 className="text-xl font-bold mb-2">Logan Golema</h4>
                 <p className="text-base-content/70 mb-3">Co-founder</p>
@@ -259,18 +261,14 @@ const Home: NextPage = () => {
                   className="inline-flex items-center gap-2 text-primary hover:text-primary-focus transition-colors"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
                   </svg>
                   LinkedIn
                 </a>
               </div>
               <div className="bg-base-100 rounded-2xl p-4 sm:p-6 text-center shadow-lg hover:shadow-xl transition-shadow">
                 <div className="w-24 sm:w-32 h-24 sm:h-32 mx-auto mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-primary/20">
-                  <img
-                    src="/team/vishal-singh.jpeg"
-                    alt="Vishal Singh"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src="/team/vishal-singh.jpeg" alt="Vishal Singh" className="w-full h-full object-cover" />
                 </div>
                 <h4 className="text-xl font-bold mb-2">Vishal Singh</h4>
                 <p className="text-base-content/70 mb-3">Co-founder</p>
@@ -281,7 +279,7 @@ const Home: NextPage = () => {
                   className="inline-flex items-center gap-2 text-primary hover:text-primary-focus transition-colors"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
                   </svg>
                   LinkedIn
                 </a>
@@ -291,15 +289,13 @@ const Home: NextPage = () => {
 
           {/* Co-chairs of the Board */}
           <div className="mb-12 sm:mb-16">
-            <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-6 sm:mb-10 text-primary">Co-chairs of the Board</h3>
+            <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-6 sm:mb-10 text-primary">
+              Co-chairs of the Board
+            </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
               <div className="bg-base-100 rounded-2xl p-4 sm:p-6 text-center shadow-lg hover:shadow-xl transition-shadow">
                 <div className="w-24 sm:w-32 h-24 sm:h-32 mx-auto mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-secondary/20">
-                  <img
-                    src="/team/yasu-yamazaki.jpeg"
-                    alt="Yasu Yamazaki"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src="/team/yasu-yamazaki.jpeg" alt="Yasu Yamazaki" className="w-full h-full object-cover" />
                 </div>
                 <h4 className="text-xl font-bold mb-2">Yasu Yamazaki</h4>
                 <p className="text-base-content/70 mb-3">Co-chair of the Board</p>
@@ -310,18 +306,14 @@ const Home: NextPage = () => {
                   className="inline-flex items-center gap-2 text-primary hover:text-primary-focus transition-colors"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
                   </svg>
                   LinkedIn
                 </a>
               </div>
               <div className="bg-base-100 rounded-2xl p-4 sm:p-6 text-center shadow-lg hover:shadow-xl transition-shadow">
                 <div className="w-24 sm:w-32 h-24 sm:h-32 mx-auto mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-secondary/20">
-                  <img
-                    src="/team/rachel-lyons.jpeg"
-                    alt="Rachel Lyons"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src="/team/rachel-lyons.jpeg" alt="Rachel Lyons" className="w-full h-full object-cover" />
                 </div>
                 <h4 className="text-xl font-bold mb-2">Rachel Lyons</h4>
                 <p className="text-base-content/70 mb-3">Co-chair of the Board</p>
@@ -332,7 +324,7 @@ const Home: NextPage = () => {
                   className="inline-flex items-center gap-2 text-primary hover:text-primary-focus transition-colors"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
                   </svg>
                   LinkedIn
                 </a>
@@ -342,15 +334,13 @@ const Home: NextPage = () => {
 
           {/* Advisors */}
           <div>
-            <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-6 sm:mb-10 text-primary">Advisors</h3>
+            <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-6 sm:mb-10 text-primary">
+              Advisors
+            </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
               <div className="bg-base-100 rounded-2xl p-4 sm:p-6 text-center shadow-lg hover:shadow-xl transition-shadow">
                 <div className="w-24 sm:w-32 h-24 sm:h-32 mx-auto mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-accent/20">
-                  <img
-                    src="/team/amos-behana.jpg"
-                    alt="Amos Behana"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src="/team/amos-behana.jpg" alt="Amos Behana" className="w-full h-full object-cover" />
                 </div>
                 <h4 className="text-xl font-bold mb-2">Amos Behana</h4>
                 <p className="text-base-content/70 mb-3">Advisor</p>
@@ -361,7 +351,7 @@ const Home: NextPage = () => {
                   className="inline-flex items-center gap-2 text-primary hover:text-primary-focus transition-colors"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
                   </svg>
                   LinkedIn
                 </a>
@@ -383,7 +373,7 @@ const Home: NextPage = () => {
                   className="inline-flex items-center gap-2 text-primary hover:text-primary-focus transition-colors"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
                   </svg>
                   LinkedIn
                 </a>
@@ -397,9 +387,7 @@ const Home: NextPage = () => {
       <section className="py-12 sm:py-20 px-4 bg-base-100">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-8">Get in Touch</h2>
-          <p className="text-lg sm:text-xl text-base-content/80 mb-2">
-            Partnerships@lunargistics.com
-          </p>
+          <p className="text-lg sm:text-xl text-base-content/80 mb-2">Partnerships@lunargistics.com</p>
           <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6 sm:mt-8">
             <Link href="/activities/new" className="btn btn-primary w-full sm:w-auto">
               Start Application

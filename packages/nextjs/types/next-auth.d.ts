@@ -1,15 +1,19 @@
-import NextAuth from 'next-auth';
+import NextAuth from "next-auth";
 
-declare module 'next-auth' {
+declare module "next-auth" {
   interface Session {
     user: {
       id: string;
-      username: string;
+      email: string;
+      name: string;
+      emailVerified: boolean;
     };
   }
 
   interface User {
     id: string;
-    username: string;
+    email: string;
+    name: string;
+    emailVerified: boolean;
   }
 }

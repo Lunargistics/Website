@@ -44,9 +44,7 @@ export const Footer = () => {
       <div className="w-full">
         <ul className="menu menu-horizontal w-full">
           <div className="flex justify-center items-center gap-4 text-sm w-full text-base-content/70">
-            <div className="text-center">
-              © {new Date().getFullYear()} Lunargistics Corp. All rights reserved.
-            </div>
+            <div className="text-center">© {new Date().getFullYear()} Lunargistics Corp. All rights reserved.</div>
             <span>·</span>
             <div className="text-center">
               <a href="mailto:partnerships@lunargistics.com" className="link hover:text-primary">

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { formatEther, formatUnits, parseEther, parseUnits } from "viem";
 import { useAccount, useBalance } from "wagmi";
+import { ArrowPathIcon, ArrowsUpDownIcon, ChevronDownIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
-import { formatEther, parseEther, formatUnits, parseUnits } from "viem";
 import { notification } from "~~/utils/scaffold-eth";
-import { ArrowPathIcon, ChevronDownIcon, PlusIcon, ArrowsUpDownIcon } from "@heroicons/react/24/outline";
 
 export default function AsteroidsPage() {
   const { address, isConnected } = useAccount();
@@ -15,29 +15,29 @@ export default function AsteroidsPage() {
 
   // Sample asteroid data - in production would fetch from API
   const asteroidData = [
-    { 
-      id: "16-psyche", 
-      name: "16 Psyche", 
-      value: "$10,000T", 
+    {
+      id: "16-psyche",
+      name: "16 Psyche",
+      value: "$10,000T",
       commodities: ["iron", "nickel", "platinum"],
       description: "Metal-rich asteroid worth quadrillions",
-      distance: "2.9 AU"
+      distance: "2.9 AU",
     },
-    { 
-      id: "433-eros", 
-      name: "433 Eros", 
-      value: "$20T", 
+    {
+      id: "433-eros",
+      name: "433 Eros",
+      value: "$20T",
       commodities: ["gold", "platinum", "cobalt"],
       description: "Near-Earth asteroid with precious metals",
-      distance: "1.4 AU"
+      distance: "1.4 AU",
     },
-    { 
-      id: "3554-amun", 
-      name: "3554 Amun", 
-      value: "$8T", 
+    {
+      id: "3554-amun",
+      name: "3554 Amun",
+      value: "$8T",
       commodities: ["cobalt", "nickel", "iron"],
       description: "Small metallic asteroid",
-      distance: "1.0 AU"
+      distance: "1.0 AU",
     },
   ];
 
@@ -69,12 +69,8 @@ export default function AsteroidsPage() {
     <div className="flex flex-col gap-4 sm:gap-6 lg:gap-8 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
       {/* Header Section */}
       <div className="text-center">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">
-          Asteroid Commodities
-        </h1>
-        <p className="text-base sm:text-lg text-base-content/70 px-4">
-          Trade tokenized asteroid resources on-chain
-        </p>
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">Asteroid Commodities</h1>
+        <p className="text-base sm:text-lg text-base-content/70 px-4">Trade tokenized asteroid resources on-chain</p>
       </div>
 
       {/* Asteroid Selection Grid */}
@@ -82,7 +78,7 @@ export default function AsteroidsPage() {
         <div className="card-body p-4 sm:p-6">
           <h2 className="card-title text-lg sm:text-xl mb-4">Select Asteroid</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {asteroidData.map((asteroid) => (
+            {asteroidData.map(asteroid => (
               <button
                 key={asteroid.id}
                 className={`card bg-base-100 hover:shadow-lg transition-all text-left ${
@@ -98,11 +94,8 @@ export default function AsteroidsPage() {
                     <span className="text-xs text-base-content/50">{asteroid.distance}</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
-                    {asteroid.commodities.map((commodity) => (
-                      <span
-                        key={commodity}
-                        className={`badge badge-sm ${commodityColors[commodity]} text-white`}
-                      >
+                    {asteroid.commodities.map(commodity => (
+                      <span key={commodity} className={`badge badge-sm ${commodityColors[commodity]} text-white`}>
                         {commodity}
                       </span>
                     ))}
@@ -212,7 +205,7 @@ function SwapInterface({ asteroidId }: { asteroidId: string }) {
   return (
     <div className="space-y-4 max-w-md mx-auto w-full">
       <h3 className="text-lg sm:text-xl font-bold">Swap Tokens</h3>
-      
+
       {/* From Token */}
       <div className="form-control">
         <label className="label">
@@ -225,14 +218,10 @@ function SwapInterface({ asteroidId }: { asteroidId: string }) {
             placeholder="0.0"
             className="input input-bordered join-item flex-1 text-lg"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={e => setAmount(e.target.value)}
             disabled={isSwapping}
           />
-          <button
-            className="btn join-item"
-            onClick={() => setShowTokenSelect("from")}
-            disabled={isSwapping}
-          >
+          <button className="btn join-item" onClick={() => setShowTokenSelect("from")} disabled={isSwapping}>
             {fromToken}
             <ChevronDownIcon className="w-4 h-4 ml-1" />
           </button>
@@ -241,11 +230,7 @@ function SwapInterface({ asteroidId }: { asteroidId: string }) {
 
       {/* Switch Button */}
       <div className="flex justify-center">
-        <button 
-          className="btn btn-circle btn-sm"
-          onClick={switchTokens}
-          disabled={isSwapping}
-        >
+        <button className="btn btn-circle btn-sm" onClick={switchTokens} disabled={isSwapping}>
           <ArrowsUpDownIcon className="w-4 h-4" />
         </button>
       </div>
@@ -264,11 +249,7 @@ function SwapInterface({ asteroidId }: { asteroidId: string }) {
             value={estimatedOutput}
             readOnly
           />
-          <button
-            className="btn join-item"
-            onClick={() => setShowTokenSelect("to")}
-            disabled={isSwapping}
-          >
+          <button className="btn join-item" onClick={() => setShowTokenSelect("to")} disabled={isSwapping}>
             {toToken}
             <ChevronDownIcon className="w-4 h-4 ml-1" />
           </button>
@@ -279,15 +260,19 @@ function SwapInterface({ asteroidId }: { asteroidId: string }) {
       {amount && parseFloat(amount) > 0 && (
         <div className="alert alert-info py-2 px-3">
           <div className="text-xs">
-            <p>1 {fromToken} = {(parseFloat(estimatedOutput) / parseFloat(amount)).toFixed(4)} {toToken}</p>
+            <p>
+              1 {fromToken} = {(parseFloat(estimatedOutput) / parseFloat(amount)).toFixed(4)} {toToken}
+            </p>
             <p>Price impact: ~0.5%</p>
-            <p>Min received: {(parseFloat(estimatedOutput) * 0.995).toFixed(4)} {toToken}</p>
+            <p>
+              Min received: {(parseFloat(estimatedOutput) * 0.995).toFixed(4)} {toToken}
+            </p>
           </div>
         </div>
       )}
 
       {/* Swap Button */}
-      <button 
+      <button
         className={`btn btn-primary w-full ${isSwapping ? "loading" : ""}`}
         onClick={handleSwap}
         disabled={!amount || parseFloat(amount) <= 0 || isSwapping}
@@ -313,15 +298,19 @@ function SwapInterface({ asteroidId }: { asteroidId: string }) {
                     }
                     setShowTokenSelect(null);
                   }}
-                  disabled={(showTokenSelect === "from" && token === toToken) || 
-                           (showTokenSelect === "to" && token === fromToken)}
+                  disabled={
+                    (showTokenSelect === "from" && token === toToken) ||
+                    (showTokenSelect === "to" && token === fromToken)
+                  }
                 >
                   <span className="font-semibold">{token}</span>
                 </button>
               ))}
             </div>
             <div className="modal-action">
-              <button className="btn" onClick={() => setShowTokenSelect(null)}>Close</button>
+              <button className="btn" onClick={() => setShowTokenSelect(null)}>
+                Close
+              </button>
             </div>
           </div>
           <div className="modal-backdrop" onClick={() => setShowTokenSelect(null)}></div>
@@ -367,7 +356,7 @@ function LiquidityInterface({ asteroidId }: { asteroidId: string }) {
   return (
     <div className="space-y-4 max-w-md mx-auto w-full">
       <h3 className="text-lg sm:text-xl font-bold">Add Liquidity</h3>
-      
+
       <div className="form-control">
         <label className="label">
           <span className="label-text text-sm">Token 1</span>
@@ -379,13 +368,13 @@ function LiquidityInterface({ asteroidId }: { asteroidId: string }) {
             placeholder="0.0"
             className="input input-bordered join-item flex-1"
             value={amount1}
-            onChange={(e) => setAmount1(e.target.value)}
+            onChange={e => setAmount1(e.target.value)}
             disabled={isAdding}
           />
           <select
             className="select select-bordered join-item"
             value={token1}
-            onChange={(e) => setToken1(e.target.value)}
+            onChange={e => setToken1(e.target.value)}
             disabled={isAdding}
           >
             <option value="USDC">USDC</option>
@@ -410,13 +399,13 @@ function LiquidityInterface({ asteroidId }: { asteroidId: string }) {
             placeholder="0.0"
             className="input input-bordered join-item flex-1"
             value={amount2}
-            onChange={(e) => setAmount2(e.target.value)}
+            onChange={e => setAmount2(e.target.value)}
             disabled={isAdding}
           />
           <select
             className="select select-bordered join-item"
             value={token2}
-            onChange={(e) => setToken2(e.target.value)}
+            onChange={e => setToken2(e.target.value)}
             disabled={isAdding}
           >
             <option value="iron">Iron</option>
@@ -434,7 +423,7 @@ function LiquidityInterface({ asteroidId }: { asteroidId: string }) {
         </div>
       </div>
 
-      <button 
+      <button
         className={`btn btn-primary w-full ${isAdding ? "loading" : ""}`}
         onClick={handleAddLiquidity}
         disabled={!amount1 || !amount2 || isAdding}
@@ -472,14 +461,13 @@ function FuturesInterface({ asteroidId }: { asteroidId: string }) {
     }
   };
 
-  const requiredCollateral = amount && strikePrice 
-    ? (parseFloat(amount) * parseFloat(strikePrice) * 1.5).toFixed(2)
-    : "0.00";
+  const requiredCollateral =
+    amount && strikePrice ? (parseFloat(amount) * parseFloat(strikePrice) * 1.5).toFixed(2) : "0.00";
 
   return (
     <div className="space-y-4 max-w-md mx-auto w-full">
       <h3 className="text-lg sm:text-xl font-bold">Create Future Position</h3>
-      
+
       <div className="form-control">
         <label className="label">
           <span className="label-text text-sm">Commodity</span>
@@ -487,7 +475,7 @@ function FuturesInterface({ asteroidId }: { asteroidId: string }) {
         <select
           className="select select-bordered w-full"
           value={commodity}
-          onChange={(e) => setCommodity(e.target.value)}
+          onChange={e => setCommodity(e.target.value)}
           disabled={isCreating}
         >
           <option value="iron">Iron</option>
@@ -507,7 +495,7 @@ function FuturesInterface({ asteroidId }: { asteroidId: string }) {
             placeholder="0.0"
             className="input input-bordered"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={e => setAmount(e.target.value)}
             disabled={isCreating}
           />
         </div>
@@ -521,7 +509,7 @@ function FuturesInterface({ asteroidId }: { asteroidId: string }) {
             placeholder="0.0"
             className="input input-bordered"
             value={strikePrice}
-            onChange={(e) => setStrikePrice(e.target.value)}
+            onChange={e => setStrikePrice(e.target.value)}
             disabled={isCreating}
           />
         </div>
@@ -534,7 +522,7 @@ function FuturesInterface({ asteroidId }: { asteroidId: string }) {
         <select
           className="select select-bordered w-full"
           value={expiry}
-          onChange={(e) => setExpiry(e.target.value)}
+          onChange={e => setExpiry(e.target.value)}
           disabled={isCreating}
         >
           <option value="7">7 days</option>
@@ -573,7 +561,7 @@ function FuturesInterface({ asteroidId }: { asteroidId: string }) {
         </div>
       </div>
 
-      <button 
+      <button
         className={`btn btn-primary w-full ${isCreating ? "loading" : ""}`}
         onClick={handleCreateFuture}
         disabled={!amount || !strikePrice || isCreating}
@@ -586,30 +574,30 @@ function FuturesInterface({ asteroidId }: { asteroidId: string }) {
 
 function PortfolioInterface({ asteroidId }: { asteroidId: string }) {
   const positions = [
-    { 
-      id: 1, 
-      type: "LP", 
-      pair: "USDC/Iron", 
-      value: "$1,234.56", 
+    {
+      id: 1,
+      type: "LP",
+      pair: "USDC/Iron",
+      value: "$1,234.56",
       share: "0.5%",
-      rewards: "$12.34"
+      rewards: "$12.34",
     },
-    { 
-      id: 2, 
-      type: "Future", 
-      commodity: "Platinum", 
-      position: "Long", 
-      strike: "$100", 
+    {
+      id: 2,
+      type: "Future",
+      commodity: "Platinum",
+      position: "Long",
+      strike: "$100",
       expiry: "25 days",
       pnl: "+$234.56",
-      pnlPercent: "+23.4%"
+      pnlPercent: "+23.4%",
     },
   ];
 
   return (
     <div className="space-y-4 w-full">
       <h3 className="text-lg sm:text-xl font-bold">Your Positions</h3>
-      
+
       {positions.length === 0 ? (
         <div className="text-center py-8 text-base-content/50">
           <p>No positions yet</p>
@@ -617,7 +605,7 @@ function PortfolioInterface({ asteroidId }: { asteroidId: string }) {
         </div>
       ) : (
         <div className="space-y-3">
-          {positions.map((position) => (
+          {positions.map(position => (
             <div key={position.id} className="card bg-base-100 shadow">
               <div className="card-body p-4">
                 {position.type === "LP" ? (
@@ -643,13 +631,15 @@ function PortfolioInterface({ asteroidId }: { asteroidId: string }) {
                       <div>
                         <span className="badge badge-secondary badge-sm">Future</span>
                         <h4 className="font-semibold mt-1">{position.commodity}</h4>
-                        <p className="text-xs text-base-content/50">{position.position} @ {position.strike}</p>
+                        <p className="text-xs text-base-content/50">
+                          {position.position} @ {position.strike}
+                        </p>
                       </div>
                       <div className="text-right">
-                        <p className={`font-bold ${position.pnl?.startsWith('+') ? 'text-success' : 'text-error'}`}>
+                        <p className={`font-bold ${position.pnl?.startsWith("+") ? "text-success" : "text-error"}`}>
                           {position.pnl}
                         </p>
-                        <p className={`text-xs ${position.pnl?.startsWith('+') ? 'text-success' : 'text-error'}`}>
+                        <p className={`text-xs ${position.pnl?.startsWith("+") ? "text-success" : "text-error"}`}>
                           {position.pnlPercent}
                         </p>
                       </div>
@@ -668,22 +658,22 @@ function PortfolioInterface({ asteroidId }: { asteroidId: string }) {
           ))}
         </div>
       )}
-      
+
       <div className="divider"></div>
-      
+
       <div className="stats stats-vertical sm:stats-horizontal shadow w-full">
         <div className="stat p-4">
           <div className="stat-title text-xs">Total Value</div>
           <div className="stat-value text-xl sm:text-2xl">$1,469</div>
           <div className="stat-desc text-xs">+12.5% today</div>
         </div>
-        
+
         <div className="stat p-4">
           <div className="stat-title text-xs">Total P&L</div>
           <div className="stat-value text-xl sm:text-2xl text-success">+$234</div>
           <div className="stat-desc text-xs">All time</div>
         </div>
-        
+
         <div className="stat p-4">
           <div className="stat-title text-xs">Active Positions</div>
           <div className="stat-value text-xl sm:text-2xl">2</div>

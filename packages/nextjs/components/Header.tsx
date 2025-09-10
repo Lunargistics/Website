@@ -8,6 +8,7 @@ import { hardhat } from "viem/chains";
 import { useAccount } from "wagmi";
 import {
   Bars3Icon,
+  BeakerIcon,
   ClipboardDocumentListIcon,
   DocumentTextIcon,
   GlobeAltIcon,
@@ -51,6 +52,11 @@ export const menuLinks: HeaderMenuLink[] = [
     label: "Logistics",
     href: "/logistics",
     icon: <GlobeAltIcon className="h-4 w-4" />,
+  },
+  {
+    label: "Test Panel",
+    href: "/test-panel",
+    icon: <BeakerIcon className="h-4 w-4" />,
   },
   // Debug Contracts temporarily removed
 ];

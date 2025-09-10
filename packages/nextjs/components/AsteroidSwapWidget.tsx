@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { parseEther, formatEther } from "viem";
-import { useAccount, useBalance, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { useScaffoldWriteContract, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
-import { notification } from "~~/utils/scaffold-eth";
+import { formatEther, parseEther } from "viem";
+import { useAccount, useBalance, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { ArrowsUpDownIcon } from "@heroicons/react/24/outline";
+import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { notification } from "~~/utils/scaffold-eth";
 
 interface SwapWidgetProps {
   asteroidId: string;
@@ -75,10 +75,10 @@ export function AsteroidSwapWidget({ asteroidId, tokenFactoryAddress, dexAddress
     try {
       const amountIn = parseEther(amount);
       const path = [fromTokenAddress, toTokenAddress];
-      
+
       // Calculate minimum amount out with slippage
       const expectedOut = calculateOutputAmount(amountIn, reserves);
-      const minAmountOut = expectedOut * BigInt(Math.floor((100 - slippage) * 10)) / BigInt(1000);
+      const minAmountOut = (expectedOut * BigInt(Math.floor((100 - slippage) * 10))) / BigInt(1000);
 
       await executeSwap({
         functionName: "swapExactTokensForTokens",
@@ -96,11 +96,11 @@ export function AsteroidSwapWidget({ asteroidId, tokenFactoryAddress, dexAddress
   const calculateOutputAmount = (amountIn: bigint, reserves: any) => {
     if (!reserves) return BigInt(0);
     const [reserve0, reserve1] = reserves;
-    
+
     // Simple constant product formula
     const amountInWithFee = amountIn * BigInt(997);
     const numerator = amountInWithFee * reserve1;
-    const denominator = (reserve0 * BigInt(1000)) + amountInWithFee;
+    const denominator = reserve0 * BigInt(1000) + amountInWithFee;
     return numerator / denominator;
   };
 
@@ -110,15 +110,14 @@ export function AsteroidSwapWidget({ asteroidId, tokenFactoryAddress, dexAddress
     setAmount("");
   };
 
-  const estimatedOutput = reserves && amount
-    ? formatEther(calculateOutputAmount(parseEther(amount || "0"), reserves))
-    : "0.0";
+  const estimatedOutput =
+    reserves && amount ? formatEther(calculateOutputAmount(parseEther(amount || "0"), reserves)) : "0.0";
 
   return (
     <div className="card bg-base-100 shadow-xl max-w-md mx-auto">
       <div className="card-body p-4 sm:p-6">
         <h2 className="card-title text-lg sm:text-xl mb-4">Swap</h2>
-        
+
         {/* From Input */}
         <div className="form-control">
           <label className="label">
@@ -133,12 +132,12 @@ export function AsteroidSwapWidget({ asteroidId, tokenFactoryAddress, dexAddress
               placeholder="0.0"
               className="input input-bordered join-item flex-1"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={e => setAmount(e.target.value)}
             />
-            <select 
+            <select
               className="select select-bordered join-item"
               value={fromToken}
-              onChange={(e) => setFromToken(e.target.value)}
+              onChange={e => setFromToken(e.target.value)}
             >
               <option value="USDC">USDC</option>
               <option value="iron">Iron</option>
@@ -150,10 +149,7 @@ export function AsteroidSwapWidget({ asteroidId, tokenFactoryAddress, dexAddress
 
         {/* Switch Button */}
         <div className="flex justify-center my-2">
-          <button 
-            className="btn btn-circle btn-sm btn-ghost"
-            onClick={switchTokens}
-          >
+          <button className="btn btn-circle btn-sm btn-ghost" onClick={switchTokens}>
             <ArrowsUpDownIcon className="w-5 h-5" />
           </button>
         </div>
@@ -174,10 +170,10 @@ export function AsteroidSwapWidget({ asteroidId, tokenFactoryAddress, dexAddress
               value={estimatedOutput}
               readOnly
             />
-            <select 
+            <select
               className="select select-bordered join-item"
               value={toToken}
-              onChange={(e) => setToToken(e.target.value)}
+              onChange={e => setToToken(e.target.value)}
             >
               <option value="iron">Iron</option>
               <option value="nickel">Nickel</option>
@@ -190,9 +186,7 @@ export function AsteroidSwapWidget({ asteroidId, tokenFactoryAddress, dexAddress
         {/* Slippage Settings */}
         <div className="collapse collapse-arrow bg-base-200">
           <input type="checkbox" />
-          <div className="collapse-title text-sm font-medium">
-            Advanced Settings
-          </div>
+          <div className="collapse-title text-sm font-medium">Advanced Settings</div>
           <div className="collapse-content">
             <div className="form-control">
               <label className="label">
@@ -213,7 +207,7 @@ export function AsteroidSwapWidget({ asteroidId, tokenFactoryAddress, dexAddress
                   className="input input-bordered input-xs join-item w-20"
                   placeholder="Custom"
                   value={slippage}
-                  onChange={(e) => setSlippage(parseFloat(e.target.value))}
+                  onChange={e => setSlippage(parseFloat(e.target.value))}
                 />
               </div>
             </div>
@@ -225,13 +219,15 @@ export function AsteroidSwapWidget({ asteroidId, tokenFactoryAddress, dexAddress
           <div className="alert alert-warning py-2">
             <div className="text-xs">
               <p>Price Impact: ~0.5%</p>
-              <p>Min Received: {(parseFloat(estimatedOutput) * (1 - slippage/100)).toFixed(4)} {toToken}</p>
+              <p>
+                Min Received: {(parseFloat(estimatedOutput) * (1 - slippage / 100)).toFixed(4)} {toToken}
+              </p>
             </div>
           </div>
         )}
 
         {/* Swap Button */}
-        <button 
+        <button
           className="btn btn-primary w-full"
           onClick={handleSwap}
           disabled={!amount || parseFloat(amount) <= 0 || !poolAddress}

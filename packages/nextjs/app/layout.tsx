@@ -1,10 +1,10 @@
 import "@rainbow-me/rainbowkit/styles.css";
 import { Toaster } from "react-hot-toast";
+import AuthProvider from "~~/components/AuthProvider";
+import { MobileBottomNav } from "~~/components/MobileBottomNav";
 import { ScaffoldEthAppWithProviders } from "~~/components/ScaffoldEthAppWithProviders";
 import { ThemeProvider } from "~~/components/ThemeProvider";
 import { UserActivityProvider } from "~~/contexts/UserActivityContext";
-import { MobileBottomNav } from "~~/components/MobileBottomNav";
-import AuthProvider from "~~/components/AuthProvider";
 import "~~/styles/globals.css";
 import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 

@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useAccount, useWalletClient, usePublicClient } from "wagmi";
-import { Address } from "viem";
 import { PinataSDK } from "pinata-web3";
-import { notification } from "~~/utils/scaffold-eth";
+import { Address } from "viem";
+import { useAccount, usePublicClient, useWalletClient } from "wagmi";
+import { SparklesIcon } from "@heroicons/react/24/outline";
 import deployedContracts from "~~/contracts/deployedContracts";
 import { veniceAI } from "~~/services/veniceAI";
-import { SparklesIcon } from "@heroicons/react/24/outline";
+import { notification } from "~~/utils/scaffold-eth";
 
 const DOCUMENT_NFT_ABI = deployedContracts[31337].SpaceDocumentNFT.abi;
 
@@ -23,7 +23,7 @@ export const DocumentUploadForm = () => {
   const { address } = useAccount();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
-  
+
   const [isUploading, setIsUploading] = useState(false);
   const [tokenId, setTokenId] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -74,7 +74,7 @@ export const DocumentUploadForm = () => {
 
     setIsUploading(true);
     setIsAnalyzing(true);
-    
+
     try {
       // AI Analysis of document before upload
       if (formData.file) {
@@ -82,21 +82,21 @@ export const DocumentUploadForm = () => {
         const analysis = await veniceAI.analyzeDocument(
           fileContent.substring(0, 5000), // Analyze first 5000 chars
           formData.documentType,
-          formData.missionName
+          formData.missionName,
         );
-        
+
         setAiInsights(analysis.summary);
-        
+
         if (analysis.expiryRisk) {
           notification.warning("AI Alert: Document may have expiry concerns");
         }
-        
+
         if (analysis.missingFields.length > 0) {
           notification.info(`AI suggests checking: ${analysis.missingFields.join(", ")}`);
         }
       }
       setIsAnalyzing(false);
-      
+
       const pinata = new PinataSDK({ pinataJwt: pinataJWT });
 
       // Upload file to IPFS
@@ -130,18 +130,16 @@ export const DocumentUploadForm = () => {
       });
 
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
-      
-      const logs = receipt.logs.filter(log => 
-        log.address.toLowerCase() === documentNFTAddress.toLowerCase()
-      );
-      
+
+      const logs = receipt.logs.filter(log => log.address.toLowerCase() === documentNFTAddress.toLowerCase());
+
       if (logs.length > 0 && logs[0].topics[1]) {
         const newTokenId = BigInt(logs[0].topics[1]).toString();
         setTokenId(newTokenId);
       }
 
       notification.success("Document uploaded and secured successfully!");
-      
+
       setFormData({
         title: "",
         description: "",
@@ -163,9 +161,7 @@ export const DocumentUploadForm = () => {
     <div className="card bg-base-100 shadow-xl w-full">
       <div className="card-body p-4 sm:p-6">
         <h2 className="card-title text-lg sm:text-xl">Upload Mission Document</h2>
-        <p className="text-xs sm:text-sm opacity-70">
-          Securely store your launch licenses and compliance documents
-        </p>
+        <p className="text-xs sm:text-sm opacity-70">Securely store your launch licenses and compliance documents</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="form-control">
@@ -289,7 +285,9 @@ export const DocumentUploadForm = () => {
           <button
             className={`btn btn-primary btn-sm sm:btn-md ${isUploading || isAnalyzing ? "loading" : ""}`}
             onClick={uploadToIPFS}
-            disabled={isUploading || !formData.file || !formData.title || !formData.missionName || !formData.responsibleEntity}
+            disabled={
+              isUploading || !formData.file || !formData.title || !formData.missionName || !formData.responsibleEntity
+            }
           >
             {isAnalyzing ? "Analyzing..." : isUploading ? "Uploading..." : "Upload & Secure"}
           </button>

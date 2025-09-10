@@ -1,19 +1,13 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { 
-  HomeIcon, 
-  ArrowsUpDownIcon, 
-  ChartBarIcon, 
-  WalletIcon,
-  Squares2X2Icon 
-} from "@heroicons/react/24/outline";
+import { ArrowsUpDownIcon, ChartBarIcon, HomeIcon, Squares2X2Icon, WalletIcon } from "@heroicons/react/24/outline";
 import {
-  HomeIcon as HomeIconSolid,
   ArrowsUpDownIcon as ArrowsUpDownIconSolid,
   ChartBarIcon as ChartBarIconSolid,
+  HomeIcon as HomeIconSolid,
+  Squares2X2Icon as Squares2X2IconSolid,
   WalletIcon as WalletIconSolid,
-  Squares2X2Icon as Squares2X2IconSolid
 } from "@heroicons/react/24/solid";
 
 export function MobileBottomNav() {
@@ -21,56 +15,56 @@ export function MobileBottomNav() {
   const router = useRouter();
 
   const navItems = [
-    { 
-      path: "/", 
-      label: "Home", 
+    {
+      path: "/",
+      label: "Home",
       icon: HomeIcon,
-      iconActive: HomeIconSolid
+      iconActive: HomeIconSolid,
     },
-    { 
-      path: "/asteroids", 
-      label: "Trade", 
+    {
+      path: "/asteroids",
+      label: "Trade",
       icon: ArrowsUpDownIcon,
-      iconActive: ArrowsUpDownIconSolid
+      iconActive: ArrowsUpDownIconSolid,
     },
-    { 
-      path: "/asteroids#futures", 
-      label: "Futures", 
+    {
+      path: "/asteroids#futures",
+      label: "Futures",
       icon: ChartBarIcon,
-      iconActive: ChartBarIconSolid
+      iconActive: ChartBarIconSolid,
     },
-    { 
-      path: "/asteroids#portfolio", 
-      label: "Portfolio", 
+    {
+      path: "/asteroids#portfolio",
+      label: "Portfolio",
       icon: WalletIcon,
-      iconActive: WalletIconSolid
+      iconActive: WalletIconSolid,
     },
-    { 
-      path: "/dashboard", 
-      label: "More", 
+    {
+      path: "/dashboard",
+      label: "More",
       icon: Squares2X2Icon,
-      iconActive: Squares2X2IconSolid
+      iconActive: Squares2X2IconSolid,
     },
   ];
 
   // Only show on mobile
   return (
     <div className="btm-nav btm-nav-sm lg:hidden bg-base-100 border-t border-base-300">
-      {navItems.map((item) => {
-        const isActive = pathname === item.path || 
-                        (item.path.includes('#') && pathname.includes(item.path.split('#')[0]));
+      {navItems.map(item => {
+        const isActive =
+          pathname === item.path || (item.path.includes("#") && pathname.includes(item.path.split("#")[0]));
         const Icon = isActive ? item.iconActive : item.icon;
-        
+
         return (
           <button
             key={item.path}
             className={isActive ? "active text-primary" : ""}
             onClick={() => {
-              if (item.path.includes('#')) {
-                const [path, hash] = item.path.split('#');
+              if (item.path.includes("#")) {
+                const [path, hash] = item.path.split("#");
                 router.push(path);
                 setTimeout(() => {
-                  document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth' });
+                  document.getElementById(hash)?.scrollIntoView({ behavior: "smooth" });
                 }, 100);
               } else {
                 router.push(item.path);

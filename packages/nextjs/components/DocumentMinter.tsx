@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { useAccount, useWalletClient, usePublicClient } from "wagmi";
+import { useEffect, useState } from "react";
 import { Address } from "viem";
-import { notification } from "~~/utils/scaffold-eth";
+import { useAccount, usePublicClient, useWalletClient } from "wagmi";
+import { ShieldCheckIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import deployedContracts from "~~/contracts/deployedContracts";
-import { SparklesIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
+import { notification } from "~~/utils/scaffold-eth";
 
 const DOCUMENT_NFT_ABI = deployedContracts[31337].SpaceDocumentNFT.abi;
 
@@ -20,7 +20,7 @@ export const DocumentMinter = () => {
   const { address } = useAccount();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
-  
+
   const [userDocuments, setUserDocuments] = useState<Document[]>([]);
   const [selectedTokenId, setSelectedTokenId] = useState("");
   const [recipientAddress, setRecipientAddress] = useState("");
@@ -44,25 +44,25 @@ export const DocumentMinter = () => {
 
   const loadUserDocuments = async () => {
     if (!address || !documentNFTAddress || !publicClient) return;
-    
+
     setIsLoading(true);
     try {
-      const tokenIds = await publicClient.readContract({
+      const tokenIds = (await publicClient.readContract({
         address: documentNFTAddress,
         abi: DOCUMENT_NFT_ABI,
         functionName: "getUserDocuments",
         args: [address],
-      }) as bigint[];
+      })) as bigint[];
 
       const documents = await Promise.all(
-        tokenIds.map(async (tokenId) => {
-          const doc = await publicClient.readContract({
+        tokenIds.map(async tokenId => {
+          const doc = (await publicClient.readContract({
             address: documentNFTAddress,
             abi: DOCUMENT_NFT_ABI,
             functionName: "getDocument",
             args: [tokenId],
-          }) as any;
-          
+          })) as any;
+
           return {
             tokenId: tokenId.toString(),
             metadataURI: doc.metadataURI,
@@ -71,7 +71,7 @@ export const DocumentMinter = () => {
             timestamp: doc.timestamp.toString(),
             active: doc.active,
           };
-        })
+        }),
       );
 
       setUserDocuments(documents);
@@ -90,26 +90,26 @@ export const DocumentMinter = () => {
 
     setIsValidating(true);
     try {
-      const response = await fetch('/api/venice', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/venice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: 'validateAccess',
+          action: "validateAccess",
           data: {
             documentId: selectedTokenId,
             recipient: recipientAddress,
-            documentType: userDocuments.find(d => d.tokenId === selectedTokenId)?.documentType
-          }
-        })
+            documentType: userDocuments.find(d => d.tokenId === selectedTokenId)?.documentType,
+          },
+        }),
       });
-      
+
       const result = await response.json();
       if (result.analysis) {
         setValidationStatus(result.analysis);
         notification.info("AI validation complete");
       }
     } catch (error) {
-      console.error('Validation error:', error);
+      console.error("Validation error:", error);
       setValidationStatus("Validation complete - Manual review recommended");
     } finally {
       setIsValidating(false);
@@ -138,7 +138,7 @@ export const DocumentMinter = () => {
 
       await publicClient?.waitForTransactionReceipt({ hash });
       notification.success("Document NFT minted successfully!");
-      
+
       setRecipientAddress("");
       setMintAmount("1");
     } catch (error) {
@@ -179,7 +179,7 @@ export const DocumentMinter = () => {
 
       await publicClient?.waitForTransactionReceipt({ hash });
       notification.success("Batch mint successful!");
-      
+
       setBatchRecipients("");
       setBatchAmounts("");
     } catch (error) {
@@ -212,7 +212,7 @@ export const DocumentMinter = () => {
 
       await publicClient?.waitForTransactionReceipt({ hash });
       notification.success(`Minter ${authorized ? "authorized" : "revoked"} successfully!`);
-      
+
       setAuthorizedAddress("");
     } catch (error) {
       console.error("Error authorizing minter:", error);
@@ -226,9 +226,7 @@ export const DocumentMinter = () => {
     <div className="card bg-base-100 shadow-xl w-full">
       <div className="card-body p-4 sm:p-6">
         <h2 className="card-title text-lg sm:text-xl">Share Document Access</h2>
-        <p className="text-xs sm:text-sm opacity-70">
-          Grant verified access to regulatory bodies and mission partners
-        </p>
+        <p className="text-xs sm:text-sm opacity-70">Grant verified access to regulatory bodies and mission partners</p>
 
         {isLoading ? (
           <div className="loading loading-spinner loading-lg mx-auto"></div>
@@ -241,10 +239,10 @@ export const DocumentMinter = () => {
               <select
                 className="select select-bordered"
                 value={selectedTokenId}
-                onChange={(e) => setSelectedTokenId(e.target.value)}
+                onChange={e => setSelectedTokenId(e.target.value)}
               >
                 <option value="">Select a document</option>
-                {userDocuments.map((doc) => (
+                {userDocuments.map(doc => (
                   <option key={doc.tokenId} value={doc.tokenId}>
                     Document #{doc.tokenId} - {doc.documentType}
                   </option>
@@ -255,7 +253,7 @@ export const DocumentMinter = () => {
             {selectedTokenId && (
               <>
                 <div className="divider">Grant Single Access</div>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div className="form-control">
                     <label className="label">
@@ -266,7 +264,7 @@ export const DocumentMinter = () => {
                       placeholder="Enter organization identifier"
                       className="input input-bordered"
                       value={recipientAddress}
-                      onChange={(e) => setRecipientAddress(e.target.value)}
+                      onChange={e => setRecipientAddress(e.target.value)}
                     />
                   </div>
 
@@ -279,7 +277,7 @@ export const DocumentMinter = () => {
                       placeholder="1"
                       className="input input-bordered"
                       value={mintAmount}
-                      onChange={(e) => setMintAmount(e.target.value)}
+                      onChange={e => setMintAmount(e.target.value)}
                       min="1"
                     />
                   </div>
@@ -321,7 +319,7 @@ export const DocumentMinter = () => {
                     placeholder="NASA, FAA, SpaceX"
                     className="input input-bordered"
                     value={batchRecipients}
-                    onChange={(e) => setBatchRecipients(e.target.value)}
+                    onChange={e => setBatchRecipients(e.target.value)}
                   />
                 </div>
 
@@ -334,7 +332,7 @@ export const DocumentMinter = () => {
                     placeholder="1, 2, 3"
                     className="input input-bordered"
                     value={batchAmounts}
-                    onChange={(e) => setBatchAmounts(e.target.value)}
+                    onChange={e => setBatchAmounts(e.target.value)}
                   />
                 </div>
 
@@ -357,7 +355,7 @@ export const DocumentMinter = () => {
                     placeholder="Enter organization to delegate to"
                     className="input input-bordered"
                     value={authorizedAddress}
-                    onChange={(e) => setAuthorizedAddress(e.target.value)}
+                    onChange={e => setAuthorizedAddress(e.target.value)}
                   />
                 </div>
 

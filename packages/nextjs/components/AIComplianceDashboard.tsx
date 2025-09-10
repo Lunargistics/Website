@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
-import { 
+import {
   ChartBarIcon,
+  CheckCircleIcon,
+  ClockIcon,
   DocumentCheckIcon,
   ExclamationTriangleIcon,
-  ClockIcon,
-  CheckCircleIcon,
   ShieldCheckIcon,
-  SparklesIcon
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 
 interface ComplianceMetrics {
@@ -40,66 +40,64 @@ export const AIComplianceDashboard = () => {
     setIsLoading(true);
     try {
       // Simulate AI analysis
-      const response = await fetch('/api/venice', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/venice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: 'analyzeMission',
+          action: "analyzeMission",
           data: {
-            documents: [
-              { type: 'License', status: 'Active', uploadDate: new Date().toISOString() }
-            ]
-          }
-        })
+            documents: [{ type: "License", status: "Active", uploadDate: new Date().toISOString() }],
+          },
+        }),
       });
 
       const result = await response.json();
-      
+
       // Mock metrics with AI insights
       setMetrics({
         overallScore: 85,
         documentsCompliant: 7,
         documentsTotal: 10,
         expiringDocuments: 2,
-        missingDocuments: ['Environmental Impact Assessment', 'Radio Frequency Authorization'],
+        missingDocuments: ["Environmental Impact Assessment", "Radio Frequency Authorization"],
         upcomingDeadlines: [
-          { document: 'Launch License', deadline: '2025-03-15', daysRemaining: 45 },
-          { document: 'Insurance Certificate', deadline: '2025-02-28', daysRemaining: 30 }
+          { document: "Launch License", deadline: "2025-03-15", daysRemaining: 45 },
+          { document: "Insurance Certificate", deadline: "2025-02-28", daysRemaining: 30 },
         ],
-        recommendations: result.analysis ? [result.analysis] : ['Complete all required documentation']
+        recommendations: result.analysis ? [result.analysis] : ["Complete all required documentation"],
       });
 
       // Get timeline prediction
-      const timelineResponse = await fetch('/api/venice', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const timelineResponse = await fetch("/api/venice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: 'predictTimeline',
-          data: { currentProgress: 70 }
-        })
+          action: "predictTimeline",
+          data: { currentProgress: 70 },
+        }),
       });
-      
+
       if (timelineResponse.ok) {
         const timelineData = await timelineResponse.json();
-        setTimelinePredict(timelineData.prediction || 'Launch readiness: 6-8 weeks');
+        setTimelinePredict(timelineData.prediction || "Launch readiness: 6-8 weeks");
       }
     } catch (error) {
-      console.error('Error loading compliance metrics:', error);
+      console.error("Error loading compliance metrics:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-success';
-    if (score >= 70) return 'text-warning';
-    return 'text-error';
+    if (score >= 90) return "text-success";
+    if (score >= 70) return "text-warning";
+    return "text-error";
   };
 
   const getScoreBadge = (score: number) => {
-    if (score >= 90) return 'badge-success';
-    if (score >= 70) return 'badge-warning';
-    return 'badge-error';
+    if (score >= 90) return "badge-success";
+    if (score >= 70) return "badge-warning";
+    return "badge-error";
   };
 
   if (!address) {
@@ -141,11 +139,9 @@ export const AIComplianceDashboard = () => {
               </div>
             </div>
             <div className="text-center">
-              <div className={`text-4xl font-bold ${getScoreColor(metrics.overallScore)}`}>
-                {metrics.overallScore}%
-              </div>
+              <div className={`text-4xl font-bold ${getScoreColor(metrics.overallScore)}`}>{metrics.overallScore}%</div>
               <div className={`badge ${getScoreBadge(metrics.overallScore)} mt-2`}>
-                {metrics.overallScore >= 90 ? 'Excellent' : metrics.overallScore >= 70 ? 'Good' : 'Needs Attention'}
+                {metrics.overallScore >= 90 ? "Excellent" : metrics.overallScore >= 70 ? "Good" : "Needs Attention"}
               </div>
             </div>
           </div>
@@ -173,9 +169,9 @@ export const AIComplianceDashboard = () => {
                 </p>
               </div>
             </div>
-            <progress 
-              className="progress progress-primary w-full" 
-              value={metrics.documentsCompliant} 
+            <progress
+              className="progress progress-primary w-full"
+              value={metrics.documentsCompliant}
               max={metrics.documentsTotal}
             ></progress>
           </div>
@@ -185,7 +181,9 @@ export const AIComplianceDashboard = () => {
         <div className="card bg-base-100 shadow">
           <div className="card-body compact">
             <div className="flex items-center gap-3">
-              <ExclamationTriangleIcon className={`h-6 w-6 ${metrics.expiringDocuments > 0 ? 'text-warning' : 'text-success'}`} />
+              <ExclamationTriangleIcon
+                className={`h-6 w-6 ${metrics.expiringDocuments > 0 ? "text-warning" : "text-success"}`}
+              />
               <div>
                 <p className="text-xs opacity-70">Expiring Soon</p>
                 <p className="text-lg font-semibold">{metrics.expiringDocuments} documents</p>
@@ -198,7 +196,9 @@ export const AIComplianceDashboard = () => {
         <div className="card bg-base-100 shadow">
           <div className="card-body compact">
             <div className="flex items-center gap-3">
-              <ShieldCheckIcon className={`h-6 w-6 ${metrics.missingDocuments.length > 0 ? 'text-error' : 'text-success'}`} />
+              <ShieldCheckIcon
+                className={`h-6 w-6 ${metrics.missingDocuments.length > 0 ? "text-error" : "text-success"}`}
+              />
               <div>
                 <p className="text-xs opacity-70">Missing Documents</p>
                 <p className="text-lg font-semibold">{metrics.missingDocuments.length} required</p>
@@ -222,7 +222,7 @@ export const AIComplianceDashboard = () => {
                   <span className="text-sm font-medium">{deadline.document}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs opacity-70">{deadline.deadline}</span>
-                    <div className={`badge badge-sm ${deadline.daysRemaining <= 30 ? 'badge-warning' : 'badge-info'}`}>
+                    <div className={`badge badge-sm ${deadline.daysRemaining <= 30 ? "badge-warning" : "badge-info"}`}>
                       {deadline.daysRemaining} days
                     </div>
                   </div>
@@ -275,11 +275,7 @@ export const AIComplianceDashboard = () => {
 
       {/* Refresh Button */}
       <div className="flex justify-end">
-        <button 
-          className="btn btn-primary btn-sm"
-          onClick={loadComplianceMetrics}
-          disabled={isLoading}
-        >
+        <button className="btn btn-primary btn-sm" onClick={loadComplianceMetrics} disabled={isLoading}>
           <SparklesIcon className="h-4 w-4" />
           Refresh Analysis
         </button>

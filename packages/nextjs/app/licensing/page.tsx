@@ -1,20 +1,20 @@
 "use client";
 
-import type { NextPage } from "next";
 import { useState } from "react";
+import type { NextPage } from "next";
 import { useAccount } from "wagmi";
-import { SmartWalletCreator } from "~~/components/SmartWalletCreator";
-import { DocumentUploadForm } from "~~/components/DocumentUploadForm";
-import { DocumentMinter } from "~~/components/DocumentMinter";
+import {
+  ArrowRightIcon,
+  DocumentTextIcon,
+  RocketLaunchIcon,
+  ShieldCheckIcon,
+  WalletIcon,
+} from "@heroicons/react/24/outline";
 import { AIAnalysisPanel } from "~~/components/AIAnalysisPanel";
 import { AIComplianceDashboard } from "~~/components/AIComplianceDashboard";
-import { 
-  RocketLaunchIcon, 
-  DocumentTextIcon, 
-  WalletIcon,
-  ShieldCheckIcon,
-  ArrowRightIcon
-} from "@heroicons/react/24/outline";
+import { DocumentMinter } from "~~/components/DocumentMinter";
+import { DocumentUploadForm } from "~~/components/DocumentUploadForm";
+import { SmartWalletCreator } from "~~/components/SmartWalletCreator";
 
 const LicensingPage: NextPage = () => {
   const { isConnected } = useAccount();
@@ -59,9 +59,7 @@ const LicensingPage: NextPage = () => {
             <div className="card bg-base-200 max-w-md mx-auto p-8">
               <ShieldCheckIcon className="h-16 w-16 text-primary mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-4">Connect Your Account</h2>
-              <p className="text-base-content/70 mb-6">
-                Please connect your account to access the licensing portal
-              </p>
+              <p className="text-base-content/70 mb-6">Please connect your account to access the licensing portal</p>
             </div>
           </div>
         ) : (
@@ -94,23 +92,19 @@ const LicensingPage: NextPage = () => {
               <div className="mb-6">
                 <AIComplianceDashboard />
               </div>
-              
+
               {/* AI Analysis Panel - Shows mission readiness */}
-              <AIAnalysisPanel 
+              <AIAnalysisPanel
                 documents={userDocuments}
                 missionName="Current Mission"
-                onAnalysisComplete={(analysis) => {
-                  console.log('Mission analysis:', analysis);
+                onAnalysisComplete={analysis => {
+                  console.log("Mission analysis:", analysis);
                 }}
               />
-              
+
               <div className="mb-6 text-center">
-                <h2 className="text-2xl font-bold mb-2">
-                  {steps.find(s => s.id === activeTab)?.name}
-                </h2>
-                <p className="text-base-content/70">
-                  {steps.find(s => s.id === activeTab)?.description}
-                </p>
+                <h2 className="text-2xl font-bold mb-2">{steps.find(s => s.id === activeTab)?.name}</h2>
+                <p className="text-base-content/70">{steps.find(s => s.id === activeTab)?.description}</p>
               </div>
 
               {activeTab === "wallet" && <SmartWalletCreator />}
@@ -153,11 +147,22 @@ const LicensingPage: NextPage = () => {
 
             <div className="mt-8 text-center">
               <div className="alert alert-info max-w-2xl mx-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  className="stroke-current shrink-0 w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
                 </svg>
                 <div>
-                  <span className="font-semibold">Secure Storage:</span> Documents are stored on distributed secure storage. Add your Pinata JWT to .env.local to enable uploads.
+                  <span className="font-semibold">Secure Storage:</span> Documents are stored on distributed secure
+                  storage. Add your Pinata JWT to .env.local to enable uploads.
                 </div>
               </div>
             </div>
