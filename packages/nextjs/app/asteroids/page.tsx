@@ -66,12 +66,6 @@ export default function AsteroidsPage() {
 
   return (
     <div className="flex flex-col gap-4 sm:gap-6 lg:gap-8 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-      {/* Header Section */}
-      <div className="text-center">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">Asteroid Commodities</h1>
-        <p className="text-base sm:text-lg text-base-content/70 px-4">Trade tokenized asteroid resources on-chain</p>
-      </div>
-
       {/* Asteroid Selection Grid */}
       <div className="card bg-base-200 shadow-xl">
         <div className="card-body p-4 sm:p-6">

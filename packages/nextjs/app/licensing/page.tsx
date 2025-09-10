@@ -45,15 +45,6 @@ const LicensingPage: NextPage = () => {
   return (
     <div className="min-h-screen bg-base-100 text-base-content py-10 px-4 sm:px-6 lg:px-8">
       <div className="container mx-auto">
-        <header className="mb-8 sm:mb-12 text-center px-4">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary mb-4">
-            Space Mission Licensing Portal
-          </h1>
-          <p className="text-base sm:text-lg lg:text-xl text-base-content/80 max-w-3xl mx-auto">
-            Secure digital vault for your mission-critical documents and licenses
-          </p>
-        </header>
-
         {!isConnected ? (
           <div className="text-center py-20">
             <div className="card bg-base-200 max-w-md mx-auto p-8">

@@ -22,6 +22,7 @@ const AsteroidAPI = dynamic(() => import("~~/components/AsteroidAPI").then(mod =
 });
 const Profile = dynamic(() => import("~~/components/Profile"), { ssr: false });
 const SocialFeed = dynamic(() => import("~~/components/SocialFeed"), { ssr: false });
+const SmartContractTestPanel = dynamic(() => import("~~/components/SmartContractTestPanel"), { ssr: false });
 
 const menuItems = [
   { id: "overview", label: "Overview", icon: "🏠" },
@@ -35,6 +36,7 @@ const menuItems = [
   { id: "launches", label: "Launches", icon: "🚀" },
   { id: "activities", label: "Activities", icon: "📊" },
   { id: "logistics", label: "Logistics", icon: "📦" },
+  { id: "test-panel", label: "Test Panel", icon: "🧪" },
 ];
 
 export default function DashboardPage() {
@@ -151,6 +153,13 @@ export default function DashboardPage() {
           <div className="space-y-6">
             <h2 className="text-3xl font-bold text-gray-800">Logistics</h2>
             <iframe src="/logistics" className="w-full h-[800px] border-0 rounded-lg" title="Logistics" />
+          </div>
+        );
+      case "test-panel":
+        return (
+          <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-white">Smart Contract Test Panel</h2>
+            <SmartContractTestPanel />
           </div>
         );
       default:

@@ -6,14 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { hardhat } from "viem/chains";
 import { useAccount } from "wagmi";
-import {
-  Bars3Icon,
-  BeakerIcon,
-  ClipboardDocumentListIcon,
-  DocumentTextIcon,
-  GlobeAltIcon,
-  RocketLaunchIcon,
-} from "@heroicons/react/24/outline";
+import { Bars3Icon, RocketLaunchIcon } from "@heroicons/react/24/outline";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
 
@@ -29,36 +22,10 @@ export const menuLinks: HeaderMenuLink[] = [
     href: "/",
   },
   {
-    label: "Asteroids",
-    href: "/asteroids",
-    icon: <RocketLaunchIcon className="h-4 w-4" />,
-  },
-  {
     label: "Dashboard",
     href: "/dashboard",
     icon: <RocketLaunchIcon className="h-4 w-4" />,
   },
-  {
-    label: "My Activities",
-    href: "/activities",
-    icon: <ClipboardDocumentListIcon className="h-4 w-4" />,
-  },
-  {
-    label: "Licensing",
-    href: "/licensing",
-    icon: <DocumentTextIcon className="h-4 w-4" />,
-  },
-  {
-    label: "Logistics",
-    href: "/logistics",
-    icon: <GlobeAltIcon className="h-4 w-4" />,
-  },
-  {
-    label: "Test Panel",
-    href: "/test-panel",
-    icon: <BeakerIcon className="h-4 w-4" />,
-  },
-  // Debug Contracts temporarily removed
 ];
 
 export const HeaderMenuLinks = () => {

@@ -53,14 +53,6 @@ const LogisticsPage: NextPage = () => {
   return (
     <div className="min-h-screen bg-base-100 text-base-content py-10 px-4 sm:px-6 lg:px-8">
       <div className="container mx-auto">
-        <header className="mb-12 text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold text-primary mb-4">Lunargistics Program</h1>
-          <p className="text-lg sm:text-xl text-base-content/80 max-w-3xl mx-auto">
-            Optimizing your space supply chain with state-of-the-art tracking, PNT services, and customizable asset
-            management solutions.
-          </p>
-        </header>
-
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {programFeatures.map(feature => (
             <div

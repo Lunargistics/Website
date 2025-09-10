@@ -139,7 +139,6 @@ const MyActivitiesPage: NextPage = () => {
     <div className="min-h-screen bg-base-100 text-base-content py-10 px-4 sm:px-6 lg:px-8">
       <div className="container mx-auto">
         <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
-          <h1 className="text-3xl sm:text-4xl font-bold text-primary">My Space Activities</h1>
           <div className="flex gap-2 items-center">
             <button onClick={handleRefresh} className="btn btn-sm btn-outline btn-neutral">
               <ArrowPathIcon className="h-4 w-4 mr-1" /> Refresh List
