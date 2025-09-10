@@ -1,41 +1,43 @@
-require("dotenv").config({ path: ".env.local" });
 const mongoose = require("mongoose");
-const User = require("../models/User.ts");
 
-async function testDBConnection() {
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/lunargistics";
+
+async function testConnection() {
   try {
-    console.log("Connecting to MongoDB...");
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log("Connected to MongoDB successfully!");
+    console.log("Testing MongoDB connection...");
+    console.log("URI:", MONGODB_URI.replace(/\/\/.*@/, "//***:***@")); // Hide credentials
 
-    // Test User creation
-    console.log("Testing User model...");
-    const testUser = new User({
-      email: "test@example.com",
-      emailLower: "test@example.com",
-      password: "TestPassword123!",
-      name: "Test User",
-      emailVerified: false,
+    await mongoose.connect(MONGODB_URI, {
+      bufferCommands: false,
     });
 
-    await testUser.save();
-    console.log("Test user created successfully!");
+    console.log("✅ Successfully connected to MongoDB");
 
-    // Test password comparison
-    const isValid = await testUser.comparePassword("TestPassword123!");
-    console.log("Password comparison test:", isValid ? "PASSED" : "FAILED");
+    // Test creating a document
+    const testSchema = new mongoose.Schema({
+      test: String,
+      timestamp: { type: Date, default: Date.now },
+    });
 
-    // Clean up test user
-    await User.deleteOne({ email: "test@example.com" });
-    console.log("Test user cleaned up successfully!");
+    const TestModel = mongoose.models.Test || mongoose.model("Test", testSchema);
 
-    console.log("All database tests passed!");
-  } catch (error) {
-    console.error("Database test failed:", error);
-  } finally {
+    const testDoc = await TestModel.create({
+      test: "Database connection test",
+    });
+
+    console.log("✅ Successfully created test document:", testDoc._id);
+
+    // Clean up
+    await TestModel.deleteOne({ _id: testDoc._id });
+    console.log("✅ Successfully deleted test document");
+
     await mongoose.disconnect();
-    console.log("Disconnected from MongoDB");
+    console.log("✅ Disconnected from MongoDB");
+  } catch (error) {
+    console.error("❌ Database connection failed:", error.message);
+    console.error("Full error:", error);
+    process.exit(1);
   }
 }
 
-testDBConnection();
+testConnection();

@@ -48,29 +48,89 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
+      console.log("Unauthorized access attempt to /api/outputs");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (parseError) {
+      console.error("Invalid JSON in request body:", parseError);
+      return NextResponse.json({ error: "Invalid JSON in request body" }, { status: 400 });
+    }
+
     const { type, prompt, output, metadata } = body;
 
     if (!type || !prompt || !output) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      console.error("Missing required fields:", { type: !!type, prompt: !!prompt, output: !!output });
+      return NextResponse.json(
+        {
+          error: "Missing required fields",
+          details: { type: !!type, prompt: !!prompt, output: !!output },
+        },
+        { status: 400 },
+      );
     }
 
+    // Validate type enum
+    const validTypes = ["mission_plan", "icd_driver", "test_case", "orbital_analysis"];
+    if (!validTypes.includes(type)) {
+      console.error("Invalid type:", type, "Valid types:", validTypes);
+      return NextResponse.json(
+        {
+          error: "Invalid type",
+          validTypes,
+        },
+        { status: 400 },
+      );
+    }
+
+    console.log("Connecting to database...");
     await dbConnect();
 
+    console.log("Creating output for user:", session.user.email, "type:", type);
     const generatedOutput = await GeneratedOutput.create({
       userId: session.user.email,
       type,
       prompt,
       output,
-      metadata,
+      metadata: metadata || {},
     });
 
+    console.log("Output created successfully:", generatedOutput._id);
     return NextResponse.json(generatedOutput, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating output:", error);
-    return NextResponse.json({ error: "Failed to create output" }, { status: 500 });
+
+    // Provide more specific error information
+    if (error?.name === "ValidationError") {
+      return NextResponse.json(
+        {
+          error: "Validation error",
+          details: error.message,
+        },
+        { status: 400 },
+      );
+    }
+
+    if (error?.name === "MongoError" || error?.name === "MongooseError") {
+      console.error("Database error:", error.message);
+      return NextResponse.json(
+        {
+          error: "Database connection error",
+          details: process.env.NODE_ENV === "development" ? error.message : "Database unavailable",
+        },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json(
+      {
+        error: "Internal server error",
+        details: process.env.NODE_ENV === "development" ? error.message : "An unexpected error occurred",
+      },
+      { status: 500 },
+    );
   }
 }

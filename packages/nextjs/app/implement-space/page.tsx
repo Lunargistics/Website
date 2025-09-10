@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { FileCode, Globe, MapPin, Package, Rocket, Satellite, Save, Send, Sparkles, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import ICDProcessor from "~~/components/ICDProcessor";
+import SpaceEquipmentSuppliers from "~~/components/SpaceEquipmentSuppliers";
 import SpaceVisualization from "~~/components/SpaceVisualization";
 
 // Dynamic import for Cesium component
@@ -63,13 +64,14 @@ export default function ImplementSpacePage() {
   const [viewMode, setViewMode] = useState<"2d" | "3d">("2d");
   const [showOrbitalCalculator, setShowOrbitalCalculator] = useState(false);
   const [showICDProcessor, setShowICDProcessor] = useState(false);
+  const [showEquipmentMarketplace, setShowEquipmentMarketplace] = useState(false);
 
   const missionSteps = [
     { icon: Rocket, label: "Mission Overview", key: "overview" },
     { icon: Satellite, label: "Payload Design", key: "payload" },
     { icon: Users, label: "Crew Requirements", key: "crew" },
     { icon: MapPin, label: "Trajectory Planning", key: "trajectory" },
-    { icon: Package, label: "Resource Allocation", key: "resources" },
+    { icon: Package, label: "Equipment Marketplace", key: "equipment" },
     { icon: Globe, label: "Space Tracking", key: "tracking" },
     { icon: FileCode, label: "ICD Processing", key: "icd" },
   ];
@@ -343,13 +345,20 @@ Format the response as a detailed technical document with specific numbers and r
                         if (step.key === "tracking") {
                           setShowVisualization(true);
                           setShowICDProcessor(false);
+                          setShowEquipmentMarketplace(false);
                         } else if (step.key === "icd") {
                           setShowICDProcessor(true);
                           setShowVisualization(false);
-                        } else {
-                          // Hide both for other menu items
+                          setShowEquipmentMarketplace(false);
+                        } else if (step.key === "equipment") {
+                          setShowEquipmentMarketplace(true);
                           setShowVisualization(false);
                           setShowICDProcessor(false);
+                        } else {
+                          // Hide all for other menu items
+                          setShowVisualization(false);
+                          setShowICDProcessor(false);
+                          setShowEquipmentMarketplace(false);
                         }
                       }}
                       className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all ${
@@ -371,8 +380,20 @@ Format the response as a detailed technical document with specific numbers and r
               <div className="mt-6 space-y-3">
                 <button
                   onClick={() => {
+                    setShowEquipmentMarketplace(!showEquipmentMarketplace);
+                    setShowVisualization(false);
+                    setShowICDProcessor(false);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white py-3 px-4 rounded-lg hover:from-orange-700 hover:to-amber-700 transition-all"
+                >
+                  <Package className="w-5 h-5" />
+                  {showEquipmentMarketplace ? "Hide" : "Show"} Equipment Marketplace
+                </button>
+                <button
+                  onClick={() => {
                     setShowVisualization(!showVisualization);
                     setShowICDProcessor(false);
+                    setShowEquipmentMarketplace(false);
                   }}
                   className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-cyan-700 transition-all"
                 >
@@ -383,6 +404,7 @@ Format the response as a detailed technical document with specific numbers and r
                   onClick={() => {
                     setShowICDProcessor(!showICDProcessor);
                     setShowVisualization(false);
+                    setShowEquipmentMarketplace(false);
                   }}
                   className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-4 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all"
                 >
@@ -612,6 +634,15 @@ Format the response as a detailed technical document with specific numbers and r
           <div className="mt-8 max-w-7xl mx-auto">
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-purple-500/20 p-6">
               <ICDProcessor />
+            </div>
+          </div>
+        )}
+
+        {/* Equipment Marketplace Section */}
+        {showEquipmentMarketplace && (
+          <div className="mt-8 max-w-7xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-purple-500/20 p-6">
+              <SpaceEquipmentSuppliers />
             </div>
           </div>
         )}
