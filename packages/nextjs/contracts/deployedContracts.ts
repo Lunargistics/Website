@@ -2482,6 +2482,172 @@ const deployedContracts = {
         transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
       },
     },
+    SpaceDocumentNFT: {
+      address: "0x0000000000000000000000000000000000000000",
+      abi: [
+        {
+          inputs: [
+            { internalType: "uint256", name: "tokenId", type: "uint256" },
+            { internalType: "address", name: "recipient", type: "address" },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+          ],
+          name: "mintDocument",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
+          name: "tokenURI",
+          outputs: [{ internalType: "string", name: "", type: "string" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "totalSupply",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [{ internalType: "address", name: "user", type: "address" }],
+          name: "getUserDocuments",
+          outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
+          name: "getDocument",
+          outputs: [
+            { internalType: "string", name: "uri", type: "string" },
+            { internalType: "string", name: "docType", type: "string" },
+            { internalType: "string", name: "classification", type: "string" },
+            { internalType: "uint256", name: "timestamp", type: "uint256" },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "string", name: "uri", type: "string" },
+            { internalType: "string", name: "docType", type: "string" },
+            { internalType: "string", name: "classification", type: "string" },
+          ],
+          name: "mintDocument",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+      ],
+    },
+    AsteroidCommodityToken: {
+      address: "0x0000000000000000000000000000000000000000",
+      abi: [
+        {
+          inputs: [
+            { internalType: "address", name: "to", type: "address" },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+          ],
+          name: "mint",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [{ internalType: "uint256", name: "amount", type: "uint256" }],
+          name: "burn",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "to", type: "address" },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+          ],
+          name: "transfer",
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [{ internalType: "address", name: "account", type: "address" }],
+          name: "balanceOf",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "totalSupply",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+          stateMutability: "view",
+          type: "function",
+        },
+      ],
+    },
+    ERC6551Registry: {
+      address: "0x0000000000000000000000000000000000000000",
+      abi: [
+        {
+          inputs: [
+            { internalType: "address", name: "implementation", type: "address" },
+            { internalType: "uint256", name: "chainId", type: "uint256" },
+            { internalType: "address", name: "tokenContract", type: "address" },
+            { internalType: "uint256", name: "tokenId", type: "uint256" },
+            { internalType: "uint256", name: "salt", type: "uint256" },
+            { internalType: "bytes", name: "initData", type: "bytes" },
+          ],
+          name: "createAccount",
+          outputs: [{ internalType: "address", name: "", type: "address" }],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "implementation", type: "address" },
+            { internalType: "uint256", name: "chainId", type: "uint256" },
+            { internalType: "address", name: "tokenContract", type: "address" },
+            { internalType: "uint256", name: "tokenId", type: "uint256" },
+            { internalType: "uint256", name: "salt", type: "uint256" },
+          ],
+          name: "account",
+          outputs: [{ internalType: "address", name: "", type: "address" }],
+          stateMutability: "view",
+          type: "function",
+        },
+      ],
+    },
+    SpaceSmartWallet: {
+      address: "0x0000000000000000000000000000000000000000",
+      abi: [
+        {
+          inputs: [
+            { internalType: "address", name: "to", type: "address" },
+            { internalType: "uint256", name: "value", type: "uint256" },
+            { internalType: "bytes", name: "data", type: "bytes" },
+            { internalType: "uint256", name: "operation", type: "uint256" },
+          ],
+          name: "execute",
+          outputs: [{ internalType: "bytes", name: "", type: "bytes" }],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "token",
+          outputs: [
+            { internalType: "uint256", name: "chainId", type: "uint256" },
+            { internalType: "address", name: "tokenContract", type: "address" },
+            { internalType: "uint256", name: "tokenId", type: "uint256" },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+      ],
+    },
   },
 } as const;
 
