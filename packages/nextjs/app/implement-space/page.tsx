@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Globe, MapPin, Package, Rocket, Satellite, Save, Send, Sparkles, Users } from "lucide-react";
+import { FileCode, Globe, MapPin, Package, Rocket, Satellite, Save, Send, Sparkles, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import SpaceVisualization from "~~/components/SpaceVisualization";
+import ICDProcessor from "~~/components/ICDProcessor";
 
 // Dynamic import for Cesium component
 const Cesium3DViewer = dynamic(() => import("~~/components/Cesium3DViewer"), {
@@ -61,6 +62,7 @@ export default function ImplementSpacePage() {
   const [showVisualization, setShowVisualization] = useState(false);
   const [viewMode, setViewMode] = useState<"2d" | "3d">("2d");
   const [showOrbitalCalculator, setShowOrbitalCalculator] = useState(false);
+  const [showICDProcessor, setShowICDProcessor] = useState(false);
   
   const missionSteps = [
     { icon: Rocket, label: "Mission Overview", key: "overview" },
@@ -69,6 +71,7 @@ export default function ImplementSpacePage() {
     { icon: MapPin, label: "Trajectory Planning", key: "trajectory" },
     { icon: Package, label: "Resource Allocation", key: "resources" },
     { icon: Globe, label: "Space Tracking", key: "tracking" },
+    { icon: FileCode, label: "ICD Processing", key: "icd" },
   ];
 
   useEffect(() => {
@@ -352,6 +355,13 @@ Format the response as a detailed technical document with specific numbers and r
                     <Globe className="w-5 h-5" />
                     {showVisualization ? "Hide" : "Show"} Space Tracking
                   </button>
+                  <button
+                    onClick={() => setShowICDProcessor(!showICDProcessor)}
+                    className="w-full mt-3 flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-4 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all"
+                  >
+                    <FileCode className="w-5 h-5" />
+                    {showICDProcessor ? "Hide" : "Show"} ICD Processor
+                  </button>
                 </>
               )}
             </div>
@@ -551,6 +561,15 @@ Format the response as a detailed technical document with specific numbers and r
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+        
+        {/* ICD Processor Section */}
+        {showICDProcessor && (
+          <div className="mt-8 max-w-7xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-purple-500/20 p-6">
+              <ICDProcessor />
             </div>
           </div>
         )}
