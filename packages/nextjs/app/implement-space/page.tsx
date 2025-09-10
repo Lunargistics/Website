@@ -32,7 +32,19 @@ export default function ImplementSpacePage() {
   const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
+  const [typingMessageIndex, setTypingMessageIndex] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Rotating messages for typing indicator
+  const typingMessages = [
+    "Analyzing mission requirements...",
+    "Calculating orbital mechanics...",
+    "Selecting optimal launch vehicles...",
+    "Designing payload specifications...",
+    "Planning mission timeline...",
+    "Evaluating risk factors...",
+    "Optimizing resource allocation...",
+  ];
 
   const missionSteps = [
     { icon: Rocket, label: "Mission Overview", key: "overview" },
@@ -52,8 +64,28 @@ export default function ImplementSpacePage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Rotate typing messages when generating
+  useEffect(() => {
+    if (isGenerating) {
+      const interval = setInterval(() => {
+        setTypingMessageIndex(prev => (prev + 1) % typingMessages.length);
+      }, 2000);
+      return () => clearInterval(interval);
+    } else {
+      setTypingMessageIndex(0);
+    }
+  }, [isGenerating, typingMessages.length]);
+
   const generateMissionElements = async (userPrompt: string) => {
     setIsGenerating(true);
+
+    // Immediately add user message to show activity
+    setMessages(prev => [...prev, { role: "user", content: userPrompt }]);
+
+    // Force immediate scroll to show the new message
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
 
     try {
       const response = await fetch("/api/venice", {
@@ -104,16 +136,13 @@ Format the response as a detailed technical document with specific numbers and r
       };
 
       setMission(newMission);
-      setMessages(prev => [
-        ...prev,
-        { role: "user", content: userPrompt },
-        { role: "assistant", content: data.response },
-      ]);
+      // Only add assistant response since user message was already added
+      setMessages(prev => [...prev, { role: "assistant", content: data.response }]);
     } catch (error) {
       console.error("Error generating mission:", error);
+      // Only add error response since user message was already added
       setMessages(prev => [
         ...prev,
-        { role: "user", content: userPrompt },
         {
           role: "assistant",
           content: `Error: ${error instanceof Error ? error.message : "Failed to generate mission plan"}`,
@@ -244,7 +273,9 @@ Format the response as a detailed technical document with specific numbers and r
             <Rocket className="w-10 h-10 text-purple-400" />
             Implement Space
           </h1>
-          <p className="text-xl text-purple-200">AI-Driven Mission Planning Dashboard - Prompt Your Way to Space!</p>
+          <p className="text-xl text-purple-200">
+            ConfidentialAI-Driven Mission Planning Dashboard - Prompt Your Way to Space!
+          </p>
         </div>
 
         {/* Main Interface */}
@@ -359,10 +390,30 @@ Format the response as a detailed technical document with specific numbers and r
                     ))}
                     {isGenerating && (
                       <div className="flex justify-start">
-                        <div className="bg-white/10 border border-purple-500/20 p-4 rounded-2xl">
-                          <div className="flex items-center gap-2">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-400"></div>
-                            <span className="text-purple-200">Generating mission plan...</span>
+                        <div className="bg-white/10 text-purple-100 border border-purple-500/20 p-4 rounded-2xl max-w-[80%]">
+                          <div className="flex items-start gap-3">
+                            <div className="flex gap-1 items-center">
+                              <span
+                                className="animate-bounce inline-block w-2 h-2 bg-purple-400 rounded-full"
+                                style={{ animationDelay: "0ms" }}
+                              ></span>
+                              <span
+                                className="animate-bounce inline-block w-2 h-2 bg-purple-400 rounded-full"
+                                style={{ animationDelay: "150ms" }}
+                              ></span>
+                              <span
+                                className="animate-bounce inline-block w-2 h-2 bg-purple-400 rounded-full"
+                                style={{ animationDelay: "300ms" }}
+                              ></span>
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-purple-200 font-medium transition-all duration-500">
+                                {typingMessages[typingMessageIndex]}
+                              </p>
+                              <p className="text-xs text-purple-300 mt-2 opacity-70">
+                                Generating comprehensive mission plan with technical specifications
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>
