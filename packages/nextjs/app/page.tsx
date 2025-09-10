@@ -262,7 +262,7 @@ const Home: NextPage = () => {
                 <h4 className="text-xl font-bold mb-2">Logan Golema</h4>
                 <p className="text-base-content/70 mb-3">Co-founder</p>
                 <a
-                  href="https://linkedin.com/futjr"
+                  href="https://linkedin.com/in/futjr"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-primary hover:text-primary-focus transition-colors"
