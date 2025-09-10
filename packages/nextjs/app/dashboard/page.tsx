@@ -44,6 +44,7 @@ const menuItems = [
   { id: "overview", label: "Overview", icon: "🏠" },
   { id: "feed", label: "Social Feed", icon: "🌐" },
   { id: "profile", label: "Profile", icon: "👤" },
+  { id: "outputs", label: "My Outputs", icon: "📊" },
   { id: "smart-wallets", label: "Smart Wallets", icon: "💳" },
   { id: "document-upload", label: "Document Upload", icon: "📄" },
   { id: "document-minter", label: "Document Minter", icon: "🎫" },
@@ -120,6 +121,9 @@ export default function DashboardPage() {
         );
       case "profile":
         return <Profile />;
+      case "outputs":
+        const UserOutputHistory = dynamic(() => import("~~/components/UserOutputHistory"), { ssr: false });
+        return <UserOutputHistory />;
       case "smart-wallets":
         return <SmartWalletCreator />;
       case "document-upload":

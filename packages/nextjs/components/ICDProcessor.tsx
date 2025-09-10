@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
-import { Upload, FileText, CheckCircle, AlertCircle, Code, TestTube, Cpu, Shield } from "lucide-react";
+import React, { useCallback, useState } from "react";
+import { AlertCircle, CheckCircle, Code, Cpu, FileText, Shield, TestTube, Upload } from "lucide-react";
 
 // ECSS-E-ST-10-24C compliant ICD processor
 interface ICDProtocol {
@@ -86,151 +86,197 @@ export default function ICDProcessor() {
   const [compatibilityResults, setCompatibilityResults] = useState<any[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Parse ICD document (PDF, XML, JSON)
-  const parseICD = useCallback(async (file: File) => {
-    setIsProcessing(true);
-    
-    // Simulate ICD parsing - in real implementation, use pdf.js or xml parser
-    const mockProtocols: ICDProtocol[] = [
-      {
-        id: "CAN_BUS_1",
-        name: "Main CAN Bus",
-        type: "CAN",
-        dataRate: "1Mbps",
-        messages: [
-          {
-            id: "0x100",
-            name: "TELEMETRY_PACKET",
-            direction: "TX",
-            periodicity: 100,
-            size: 8,
-            criticality: "ESSENTIAL",
-            fields: [
-              {
-                name: "temperature",
-                type: "INT16",
-                offset: 0,
-                size: 2,
-                unit: "°C",
-                range: { min: -40, max: 85 },
-                description: "System temperature",
-              },
-              {
-                name: "voltage",
-                type: "UINT16",
-                offset: 2,
-                size: 2,
-                unit: "mV",
-                range: { min: 0, max: 5000 },
-                description: "Supply voltage",
-              },
-              {
-                name: "status",
-                type: "UINT32",
-                offset: 4,
-                size: 4,
-                description: "System status flags",
-              },
-            ],
-          },
-          {
-            id: "0x200",
-            name: "COMMAND_PACKET",
-            direction: "RX",
-            periodicity: 0,
-            size: 4,
-            criticality: "CRITICAL",
-            fields: [
-              {
-                name: "command_id",
-                type: "UINT16",
-                offset: 0,
-                size: 2,
-                description: "Command identifier",
-              },
-              {
-                name: "parameter",
-                type: "UINT16",
-                offset: 2,
-                size: 2,
-                description: "Command parameter",
-              },
-            ],
-          },
-        ],
-        timing: {
-          maxLatency: 10,
-          jitter: 1,
-          timeout: 100,
+  // Save generated outputs to database
+  const saveOutput = async (type: string, prompt: string, output: string, metadata?: any) => {
+    try {
+      await fetch("/api/outputs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        errorHandling: {
-          retryCount: 3,
-          errorDetection: "CRC",
-          errorCorrection: "ARQ",
-        },
-      },
-      {
-        id: "SPACEWIRE_1",
-        name: "SpaceWire Interface",
-        type: "SpaceWire",
-        dataRate: "200Mbps",
-        messages: [
-          {
-            id: "0x01",
-            name: "IMAGE_DATA",
-            direction: "TX",
-            periodicity: 1000,
-            size: 1024,
-            criticality: "NON_ESSENTIAL",
-            fields: [
-              {
-                name: "header",
-                type: "UINT32",
-                offset: 0,
-                size: 4,
-                description: "Packet header",
-              },
-              {
-                name: "payload",
-                type: "UINT8",
-                offset: 4,
-                size: 1020,
-                description: "Image data payload",
-              },
-            ],
-          },
-        ],
-        timing: {
-          maxLatency: 5,
-          jitter: 0.5,
-          timeout: 50,
-        },
-        errorHandling: {
-          retryCount: 2,
-          errorDetection: "CRC",
-          errorCorrection: "FEC",
-        },
-      },
-    ];
-
-    setProtocols(mockProtocols);
-    
-    // Generate drivers automatically
-    for (const protocol of mockProtocols) {
-      const driver = generateDriver(protocol);
-      setGeneratedDrivers(prev => new Map(prev).set(protocol.id, driver));
+        body: JSON.stringify({
+          type,
+          prompt,
+          output,
+          metadata,
+        }),
+      });
+    } catch (error) {
+      console.error("Error saving output:", error);
     }
+  };
 
-    // Generate test cases
-    const tests = generateTestCases(mockProtocols);
-    setTestCases(tests);
+  // Parse ICD document (PDF, XML, JSON)
+  const parseICD = useCallback(
+    async () => {
+      setIsProcessing(true);
 
-    // Check OBC compatibility
-    const compatibility = checkCompatibility(mockProtocols, obcConfig);
-    setCompatibilityResults(compatibility);
+      // Simulate ICD parsing - in real implementation, use pdf.js or xml parser
+      // TODO: Parse actual file content using pdf.js, xml parser, etc.
+      const mockProtocols: ICDProtocol[] = [
+        {
+          id: "CAN_BUS_1",
+          name: "Main CAN Bus",
+          type: "CAN",
+          dataRate: "1Mbps",
+          messages: [
+            {
+              id: "0x100",
+              name: "TELEMETRY_PACKET",
+              direction: "TX",
+              periodicity: 100,
+              size: 8,
+              criticality: "ESSENTIAL",
+              fields: [
+                {
+                  name: "temperature",
+                  type: "INT16",
+                  offset: 0,
+                  size: 2,
+                  unit: "°C",
+                  range: { min: -40, max: 85 },
+                  description: "System temperature",
+                },
+                {
+                  name: "voltage",
+                  type: "UINT16",
+                  offset: 2,
+                  size: 2,
+                  unit: "mV",
+                  range: { min: 0, max: 5000 },
+                  description: "Supply voltage",
+                },
+                {
+                  name: "status",
+                  type: "UINT32",
+                  offset: 4,
+                  size: 4,
+                  description: "System status flags",
+                },
+              ],
+            },
+            {
+              id: "0x200",
+              name: "COMMAND_PACKET",
+              direction: "RX",
+              periodicity: 0,
+              size: 4,
+              criticality: "CRITICAL",
+              fields: [
+                {
+                  name: "command_id",
+                  type: "UINT16",
+                  offset: 0,
+                  size: 2,
+                  description: "Command identifier",
+                },
+                {
+                  name: "parameter",
+                  type: "UINT16",
+                  offset: 2,
+                  size: 2,
+                  description: "Command parameter",
+                },
+              ],
+            },
+          ],
+          timing: {
+            maxLatency: 10,
+            jitter: 1,
+            timeout: 100,
+          },
+          errorHandling: {
+            retryCount: 3,
+            errorDetection: "CRC",
+            errorCorrection: "ARQ",
+          },
+        },
+        {
+          id: "SPACEWIRE_1",
+          name: "SpaceWire Interface",
+          type: "SpaceWire",
+          dataRate: "200Mbps",
+          messages: [
+            {
+              id: "0x01",
+              name: "IMAGE_DATA",
+              direction: "TX",
+              periodicity: 1000,
+              size: 1024,
+              criticality: "NON_ESSENTIAL",
+              fields: [
+                {
+                  name: "header",
+                  type: "UINT32",
+                  offset: 0,
+                  size: 4,
+                  description: "Packet header",
+                },
+                {
+                  name: "payload",
+                  type: "UINT8",
+                  offset: 4,
+                  size: 1020,
+                  description: "Image data payload",
+                },
+              ],
+            },
+          ],
+          timing: {
+            maxLatency: 5,
+            jitter: 0.5,
+            timeout: 50,
+          },
+          errorHandling: {
+            retryCount: 2,
+            errorDetection: "CRC",
+            errorCorrection: "FEC",
+          },
+        },
+      ];
 
-    setIsProcessing(false);
-  }, [obcConfig]);
+      setProtocols(mockProtocols);
+
+      // Generate drivers automatically
+      for (const protocol of mockProtocols) {
+        const driver = generateDriver(protocol);
+        setGeneratedDrivers(prev => new Map(prev).set(protocol.id, driver));
+
+        // Save driver to database
+        await saveOutput("icd_driver", `Generate driver for ${protocol.name} (${protocol.type})`, driver, {
+          protocol: protocol.name,
+          protocolType: protocol.type,
+          dataRate: protocol.dataRate,
+          messages: protocol.messages.length,
+        });
+      }
+
+      // Generate test cases
+      const tests = generateTestCases(mockProtocols);
+      setTestCases(tests);
+
+      // Save test cases to database
+      if (tests.length > 0) {
+        await saveOutput(
+          "test_case",
+          `Generate test cases for ${mockProtocols.map(p => p.name).join(", ")}`,
+          JSON.stringify(tests, null, 2),
+          {
+            totalTests: tests.length,
+            protocols: mockProtocols.map(p => p.id),
+          },
+        );
+      }
+
+      // Check OBC compatibility
+      const compatibility = checkCompatibility(mockProtocols, obcConfig);
+      setCompatibilityResults(compatibility);
+
+      setIsProcessing(false);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [obcConfig],
+  );
 
   // Generate driver code from protocol specification
   const generateDriver = (protocol: ICDProtocol): string => {
@@ -472,7 +518,7 @@ bool ${protocol.id}_validate_${message.name.toLowerCase()}(${message.name}_t *ms
     const file = e.target.files?.[0];
     if (file) {
       setIcdFile(file);
-      parseICD(file);
+      parseICD();
     }
   };
 
@@ -518,10 +564,10 @@ bool ${protocol.id}_validate_${message.name.toLowerCase()}(${message.name}_t *ms
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
           <div>
             <label className="label label-text">Processor</label>
-            <select 
+            <select
               className="select select-sm select-bordered w-full"
               value={obcConfig.processor}
-              onChange={(e) => setObcConfig({...obcConfig, processor: e.target.value})}
+              onChange={e => setObcConfig({ ...obcConfig, processor: e.target.value })}
             >
               <option>ARM Cortex-A53</option>
               <option>LEON3</option>
@@ -531,10 +577,10 @@ bool ${protocol.id}_validate_${message.name.toLowerCase()}(${message.name}_t *ms
           </div>
           <div>
             <label className="label label-text">OS</label>
-            <select 
+            <select
               className="select select-sm select-bordered w-full"
               value={obcConfig.os}
-              onChange={(e) => setObcConfig({...obcConfig, os: e.target.value as any})}
+              onChange={e => setObcConfig({ ...obcConfig, os: e.target.value as any })}
             >
               <option>Linux</option>
               <option>FreeRTOS</option>
@@ -544,20 +590,24 @@ bool ${protocol.id}_validate_${message.name.toLowerCase()}(${message.name}_t *ms
           </div>
           <div>
             <label className="label label-text">RAM (MB)</label>
-            <input 
-              type="number" 
+            <input
+              type="number"
               className="input input-sm input-bordered w-full"
               value={obcConfig.memory.ram}
-              onChange={(e) => setObcConfig({...obcConfig, memory: {...obcConfig.memory, ram: parseInt(e.target.value)}})}
+              onChange={e =>
+                setObcConfig({ ...obcConfig, memory: { ...obcConfig.memory, ram: parseInt(e.target.value) } })
+              }
             />
           </div>
           <div>
             <label className="label label-text">Flash (MB)</label>
-            <input 
-              type="number" 
+            <input
+              type="number"
               className="input input-sm input-bordered w-full"
               value={obcConfig.memory.flash}
-              onChange={(e) => setObcConfig({...obcConfig, memory: {...obcConfig.memory, flash: parseInt(e.target.value)}})}
+              onChange={e =>
+                setObcConfig({ ...obcConfig, memory: { ...obcConfig.memory, flash: parseInt(e.target.value) } })
+              }
             />
           </div>
         </div>
@@ -568,7 +618,7 @@ bool ${protocol.id}_validate_${message.name.toLowerCase()}(${message.name}_t *ms
         <div className="mb-6">
           <h3 className="font-bold mb-3">Detected Protocols</h3>
           <div className="grid gap-3">
-            {protocols.map((protocol) => (
+            {protocols.map(protocol => (
               <div key={protocol.id} className="card bg-base-100">
                 <div className="card-body p-4">
                   <div className="flex justify-between items-start">
@@ -578,7 +628,7 @@ bool ${protocol.id}_validate_${message.name.toLowerCase()}(${message.name}_t *ms
                         Type: {protocol.type} | Rate: {protocol.dataRate} | Messages: {protocol.messages.length}
                       </p>
                     </div>
-                    <button 
+                    <button
                       className="btn btn-sm btn-primary"
                       onClick={() => {
                         const driver = generatedDrivers.get(protocol.id);
@@ -596,18 +646,22 @@ bool ${protocol.id}_validate_${message.name.toLowerCase()}(${message.name}_t *ms
                       Download Driver
                     </button>
                   </div>
-                  
+
                   {/* Messages */}
                   <div className="mt-3">
                     <p className="text-sm font-medium mb-2">Messages:</p>
                     <div className="space-y-1">
-                      {protocol.messages.map((msg) => (
+                      {protocol.messages.map(msg => (
                         <div key={msg.id} className="text-xs flex items-center gap-2">
-                          <span className={`badge badge-xs ${msg.criticality === "CRITICAL" ? "badge-error" : msg.criticality === "ESSENTIAL" ? "badge-warning" : "badge-info"}`}>
+                          <span
+                            className={`badge badge-xs ${msg.criticality === "CRITICAL" ? "badge-error" : msg.criticality === "ESSENTIAL" ? "badge-warning" : "badge-info"}`}
+                          >
                             {msg.criticality}
                           </span>
                           <span>{msg.name}</span>
-                          <span className="opacity-60">({msg.direction}, {msg.size} bytes)</span>
+                          <span className="opacity-60">
+                            ({msg.direction}, {msg.size} bytes)
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -665,7 +719,9 @@ bool ${protocol.id}_validate_${message.name.toLowerCase()}(${message.name}_t *ms
                       )}
                     </td>
                     <td>
-                      <span className={`badge badge-sm ${result.overallStatus === "COMPATIBLE" ? "badge-success" : "badge-error"}`}>
+                      <span
+                        className={`badge badge-sm ${result.overallStatus === "COMPATIBLE" ? "badge-success" : "badge-error"}`}
+                      >
                         {result.overallStatus}
                       </span>
                     </td>
@@ -690,13 +746,15 @@ bool ${protocol.id}_validate_${message.name.toLowerCase()}(${message.name}_t *ms
             </button>
           </div>
           <div className="grid gap-2">
-            {testCases.map((test) => (
+            {testCases.map(test => (
               <div key={test.id} className="p-3 bg-base-100 rounded-lg">
                 <div className="flex justify-between items-center">
                   <div>
                     <span className="font-medium text-sm">{test.name}</span>
                     <div className="flex gap-2 mt-1">
-                      <span className={`badge badge-xs ${test.type === "FUNCTIONAL" ? "badge-primary" : test.type === "PERFORMANCE" ? "badge-secondary" : "badge-warning"}`}>
+                      <span
+                        className={`badge badge-xs ${test.type === "FUNCTIONAL" ? "badge-primary" : test.type === "PERFORMANCE" ? "badge-secondary" : "badge-warning"}`}
+                      >
                         {test.type}
                       </span>
                       <span className="text-xs opacity-60">Coverage: {test.coverage}%</span>

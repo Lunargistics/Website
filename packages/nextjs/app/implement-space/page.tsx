@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { FileCode, Globe, MapPin, Package, Rocket, Satellite, Save, Send, Sparkles, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
-import dynamic from "next/dynamic";
-import SpaceVisualization from "~~/components/SpaceVisualization";
 import ICDProcessor from "~~/components/ICDProcessor";
+import SpaceVisualization from "~~/components/SpaceVisualization";
 
 // Dynamic import for Cesium component
 const Cesium3DViewer = dynamic(() => import("~~/components/Cesium3DViewer"), {
@@ -63,7 +63,7 @@ export default function ImplementSpacePage() {
   const [viewMode, setViewMode] = useState<"2d" | "3d">("2d");
   const [showOrbitalCalculator, setShowOrbitalCalculator] = useState(false);
   const [showICDProcessor, setShowICDProcessor] = useState(false);
-  
+
   const missionSteps = [
     { icon: Rocket, label: "Mission Overview", key: "overview" },
     { icon: Satellite, label: "Payload Design", key: "payload" },
@@ -158,6 +158,30 @@ Format the response as a detailed technical document with specific numbers and r
       setMission(newMission);
       // Only add assistant response since user message was already added
       setMessages(prev => [...prev, { role: "assistant", content: data.response }]);
+
+      // Save the generated output to database
+      if (status === "authenticated") {
+        try {
+          await fetch("/api/outputs", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              type: "mission_plan",
+              prompt: userPrompt,
+              output: data.response,
+              metadata: {
+                missionName: newMission.name,
+                missionId: newMission.id,
+                elements: newMission.elements.length,
+              },
+            }),
+          });
+        } catch (saveError) {
+          console.error("Error saving output to database:", saveError);
+        }
+      }
     } catch (error) {
       console.error("Error generating mission:", error);
       // Only add error response since user message was already added
@@ -483,7 +507,7 @@ Format the response as a detailed technical document with specific numbers and r
             </div>
           </div>
         </div>
-        
+
         {/* Space Visualization Section */}
         {showVisualization && (
           <div className="mt-8 max-w-7xl mx-auto">
@@ -494,9 +518,7 @@ Format the response as a detailed technical document with specific numbers and r
                   <button
                     onClick={() => setViewMode("2d")}
                     className={`px-4 py-2 rounded-lg transition ${
-                      viewMode === "2d"
-                        ? "bg-purple-600 text-white"
-                        : "bg-white/10 text-purple-200 hover:bg-white/20"
+                      viewMode === "2d" ? "bg-purple-600 text-white" : "bg-white/10 text-purple-200 hover:bg-white/20"
                     }`}
                   >
                     2D View
@@ -504,9 +526,7 @@ Format the response as a detailed technical document with specific numbers and r
                   <button
                     onClick={() => setViewMode("3d")}
                     className={`px-4 py-2 rounded-lg transition ${
-                      viewMode === "3d"
-                        ? "bg-purple-600 text-white"
-                        : "bg-white/10 text-purple-200 hover:bg-white/20"
+                      viewMode === "3d" ? "bg-purple-600 text-white" : "bg-white/10 text-purple-200 hover:bg-white/20"
                     }`}
                   >
                     3D View
@@ -519,7 +539,7 @@ Format the response as a detailed technical document with specific numbers and r
                   </button>
                 </div>
               </div>
-              
+
               {showOrbitalCalculator && (
                 <div className="mb-6 p-4 bg-white/5 rounded-lg border border-purple-500/20">
                   <h3 className="text-lg font-bold text-white mb-4">Orbital Mechanics Calculator</h3>
@@ -546,7 +566,7 @@ Format the response as a detailed technical document with specific numbers and r
                   </button>
                 </div>
               )}
-              
+
               {viewMode === "2d" ? (
                 <div className="space-visualization-wrapper">
                   <SpaceVisualization />
@@ -564,7 +584,7 @@ Format the response as a detailed technical document with specific numbers and r
             </div>
           </div>
         )}
-        
+
         {/* ICD Processor Section */}
         {showICDProcessor && (
           <div className="mt-8 max-w-7xl mx-auto">
