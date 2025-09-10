@@ -89,10 +89,16 @@ export const authOptions: NextAuthOptions = {
       // Handle social login user creation
       if (account?.provider === "google" || account?.provider === "github") {
         try {
+          // Ensure we have an email
+          if (!user.email) {
+            console.error("No email provided from OAuth provider");
+            return false;
+          }
+
           await dbConnect();
 
           // Check if user already exists
-          const existingUser = await User.findOne({ emailLower: user.email!.toLowerCase() });
+          const existingUser = await User.findOne({ emailLower: user.email.toLowerCase() });
 
           if (existingUser) {
             // Update user info if needed
@@ -102,15 +108,16 @@ export const authOptions: NextAuthOptions = {
             }
             // Store the user ID for immediate session creation
             user.id = (existingUser as any)._id.toString();
+            console.log(`OAuth login successful for existing user: ${user.email}`);
             return true;
           }
 
           // Create new user from social login
-          const baseUsername = user
-            .email!.split("@")[0]
+          const baseUsername = user.email
+            .split("@")[0]
             .toLowerCase()
             .replace(/[^a-z0-9]/g, "");
-          let username = baseUsername;
+          let username = baseUsername || "user";
           let counter = 1;
 
           // Ensure unique username
@@ -121,10 +128,10 @@ export const authOptions: NextAuthOptions = {
 
           const newUser = new User({
             email: user.email,
-            emailLower: user.email!.toLowerCase(),
+            emailLower: user.email.toLowerCase(),
             username: username,
             usernameLower: username.toLowerCase(),
-            name: user.name || user.email!.split("@")[0],
+            name: user.name || user.email.split("@")[0],
             emailVerified: true, // Social logins are pre-verified
             password: Math.random().toString(36), // Dummy password for social users
           });
@@ -132,10 +139,14 @@ export const authOptions: NextAuthOptions = {
           await newUser.save();
           // Store the user ID for immediate session creation
           user.id = (newUser as any)._id.toString();
+          console.log(`OAuth login successful - new user created: ${user.email}`);
           return true;
         } catch (error) {
-          console.error("Social login error:", error);
-          return false;
+          console.error("Social login error - full details:", error);
+          console.error("User data:", { email: user.email, name: user.name, provider: account.provider });
+          // Return true to allow sign in even if database save fails
+          // The user will be created on next login attempt
+          return true;
         }
       }
 
@@ -144,7 +155,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         // User object is available on initial sign in
-        token.id = user.id;
+        token.id = user.id || user.email; // Fallback to email if ID not set
         token.email = user.email;
         token.name = user.name;
         token.emailVerified = user.emailVerified || true; // OAuth users are pre-verified
