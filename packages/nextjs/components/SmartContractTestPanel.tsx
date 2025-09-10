@@ -4,8 +4,11 @@ import { useState } from "react";
 import { Address, formatEther, parseEther } from "viem";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import deployedContracts from "~~/contracts/deployedContracts";
-// import { useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
+
+// Mock functions for missing scaffold-eth hooks
+const useScaffoldContractWrite = () => ({ writeContractAsync: async () => {} });
+const useScaffoldContractRead = () => ({ data: null, isLoading: false });
 
 const TestPanel = () => {
   const { address: connectedAddress } = useAccount();
