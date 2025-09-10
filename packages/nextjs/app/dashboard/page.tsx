@@ -23,6 +23,22 @@ const AsteroidAPI = dynamic(() => import("~~/components/AsteroidAPI").then(mod =
 const Profile = dynamic(() => import("~~/components/Profile"), { ssr: false });
 const SocialFeed = dynamic(() => import("~~/components/SocialFeed"), { ssr: false });
 const SmartContractTestPanel = dynamic(() => import("~~/components/SmartContractTestPanel"), { ssr: false });
+const LicensingDashboard = dynamic(
+  () => import("~~/components/dashboard/LicensingDashboard").then(mod => mod.LicensingDashboard),
+  { ssr: false },
+);
+const LogisticsDashboard = dynamic(
+  () => import("~~/components/dashboard/LogisticsDashboard").then(mod => mod.LogisticsDashboard),
+  { ssr: false },
+);
+const ActivitiesDashboard = dynamic(
+  () => import("~~/components/dashboard/ActivitiesDashboard").then(mod => mod.ActivitiesDashboard),
+  { ssr: false },
+);
+const LaunchesDashboard = dynamic(
+  () => import("~~/components/dashboard/LaunchesDashboard").then(mod => mod.LaunchesDashboard),
+  { ssr: false },
+);
 
 const menuItems = [
   { id: "overview", label: "Overview", icon: "🏠" },
@@ -128,33 +144,13 @@ export default function DashboardPage() {
           </div>
         );
       case "licensing":
-        return (
-          <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white">Licensing</h2>
-            <iframe src="/licensing" className="w-full h-[800px] border-0 rounded-lg" title="Licensing" />
-          </div>
-        );
+        return <LicensingDashboard />;
       case "launches":
-        return (
-          <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white">Launches</h2>
-            <iframe src="/launches" className="w-full h-[800px] border-0 rounded-lg" title="Launches" />
-          </div>
-        );
+        return <LaunchesDashboard />;
       case "activities":
-        return (
-          <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-gray-800">Activities</h2>
-            <iframe src="/activities" className="w-full h-[800px] border-0 rounded-lg" title="Activities" />
-          </div>
-        );
+        return <ActivitiesDashboard />;
       case "logistics":
-        return (
-          <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-gray-800">Logistics</h2>
-            <iframe src="/logistics" className="w-full h-[800px] border-0 rounded-lg" title="Logistics" />
-          </div>
-        );
+        return <LogisticsDashboard />;
       case "test-panel":
         return (
           <div className="space-y-6">
