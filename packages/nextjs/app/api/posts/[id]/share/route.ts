@@ -5,7 +5,11 @@ import dbConnect from "~~/lib/mongodb";
 import Post from "~~/models/Post";
 
 // POST share post
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -17,7 +21,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
     await dbConnect();
 
-    const originalPost = await Post.findById(params.id).populate("author", "username name avatar");
+    const originalPost = await Post.findById(id).populate("author", "username name avatar");
 
     if (!originalPost) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });

@@ -112,7 +112,7 @@ export async function POST(request: Request) {
       {
         verificationUrl: `${process.env.NEXTAUTH_URL}/verify-email?token=${verificationToken}`,
         user: {
-          id: user._id.toString(),
+          id: (user as any)._id.toString(),
           email: user.email,
           name: user.name,
         },

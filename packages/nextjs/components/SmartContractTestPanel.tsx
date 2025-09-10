@@ -133,12 +133,9 @@ const TestPanel = () => {
     }
   };
 
-  // Get token balance
+  // Get token balance - currently unused but kept for future implementation
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getTokenBalance = async (tokenAddress: string, account: string) => {
-    // Suppress unused variable warnings
-    void tokenAddress;
-    void account;
-    void getTokenBalance;
     if (!publicClient) return "0";
 
     try {

@@ -5,7 +5,11 @@ import dbConnect from "~~/lib/mongodb";
 import Post from "~~/models/Post";
 
 // POST like/unlike post
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -15,7 +19,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
     await dbConnect();
 
-    const post = await Post.findById(params.id);
+    const post = await Post.findById(id);
 
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });

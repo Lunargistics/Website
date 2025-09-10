@@ -5,7 +5,11 @@ import dbConnect from "~~/lib/mongodb";
 import User from "~~/models/User";
 
 // POST follow user
-export async function POST(request: Request, { params }: { params: { username: string } }) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ username: string }> }
+) {
+  const { username } = await params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -17,7 +21,7 @@ export async function POST(request: Request, { params }: { params: { username: s
 
     // Find target user
     const targetUser = await User.findOne({
-      usernameLower: params.username.toLowerCase(),
+      usernameLower: username.toLowerCase(),
     });
 
     if (!targetUser) {
@@ -61,7 +65,11 @@ export async function POST(request: Request, { params }: { params: { username: s
 }
 
 // DELETE unfollow user
-export async function DELETE(request: Request, { params }: { params: { username: string } }) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ username: string }> }
+) {
+  const { username } = await params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -73,7 +81,7 @@ export async function DELETE(request: Request, { params }: { params: { username:
 
     // Find target user
     const targetUser = await User.findOne({
-      usernameLower: params.username.toLowerCase(),
+      usernameLower: username.toLowerCase(),
     });
 
     if (!targetUser) {
