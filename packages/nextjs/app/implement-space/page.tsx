@@ -7,9 +7,9 @@ import { FileCode, Globe, MapPin, Package, Rocket, Satellite, Save, Send, Sparkl
 import { useSession } from "next-auth/react";
 import ICDProcessor from "~~/components/ICDProcessor";
 import SpaceEquipmentSuppliers from "~~/components/SpaceEquipmentSuppliers";
-import SpaceVisualization from "~~/components/SpaceVisualization";
+import SpaceVisualization, { OrbitalMechanics } from "~~/components/SpaceVisualization";
 
-// Dynamic import for Cesium component
+// Dynamic imports for 3D components to avoid SSR issues
 const Cesium3DViewer = dynamic(() => import("~~/components/Cesium3DViewer"), {
   ssr: false,
   loading: () => (
@@ -18,6 +18,15 @@ const Cesium3DViewer = dynamic(() => import("~~/components/Cesium3DViewer"), {
     </div>
   ),
 });
+
+// const WorldWindViewer = dynamic(() => import("~~/components/WorldWindViewer"), {
+//   ssr: false,
+//   loading: () => (
+//     <div className="h-[600px] w-full bg-base-200 rounded-lg flex items-center justify-center">
+//       <span className="loading loading-spinner loading-lg"></span>
+//     </div>
+//   ),
+// });
 
 interface MissionElement {
   id: string;
@@ -61,10 +70,11 @@ export default function ImplementSpacePage() {
   ];
 
   const [showVisualization, setShowVisualization] = useState(false);
-  const [viewMode, setViewMode] = useState<"2d" | "3d">("2d");
+  const [viewMode, setViewMode] = useState<"2d" | "3d" | "worldwind">("worldwind");
   const [showOrbitalCalculator, setShowOrbitalCalculator] = useState(false);
   const [showICDProcessor, setShowICDProcessor] = useState(false);
   const [showEquipmentMarketplace, setShowEquipmentMarketplace] = useState(false);
+  // const [showOrekitCalculator, setShowOrekitCalculator] = useState(false); // Removed temporarily
 
   const missionSteps = [
     { icon: Rocket, label: "Mission Overview", key: "overview" },
@@ -74,6 +84,7 @@ export default function ImplementSpacePage() {
     { icon: Package, label: "Equipment Marketplace", key: "equipment" },
     { icon: Globe, label: "Space Tracking", key: "tracking" },
     { icon: FileCode, label: "ICD Processing", key: "icd" },
+    { icon: Satellite, label: "Orekit Calculator", key: "orekit" },
   ];
 
   useEffect(() => {
@@ -116,22 +127,27 @@ export default function ImplementSpacePage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          prompt: `You are an expert space mission planner. Based on the following mission description, generate a comprehensive mission plan with specific technical details:
+          prompt: `You are an expert space mission planner with deep knowledge of orbital mechanics and Orekit calculations. Based on the following mission description, generate a comprehensive mission plan with specific technical details:
 
 Mission Description: ${userPrompt}
 
 Please provide a structured response with the following elements:
 1. Mission Overview (objectives, timeline, success criteria)
-2. Launch Vehicle Requirements (specific rockets, launch windows)
+2. Launch Vehicle Requirements (specific rockets, launch windows, inclination)
 3. Payload Specifications (mass, dimensions, power requirements)
 4. Crew Requirements (if applicable - number, specializations, training)
-5. Trajectory and Orbit Details (orbital parameters, delta-v requirements)
-6. Communication Infrastructure (ground stations, data rates, frequency bands)
+5. Trajectory and Orbit Details:
+   - Orbital parameters (semi-major axis, eccentricity, inclination, RAAN, argument of perigee)
+   - Delta-v requirements for maneuvers
+   - Hohmann transfer calculations if applicable
+   - Ground track and visibility windows
+   - TLE format orbital elements
+6. Communication Infrastructure (ground stations, data rates, frequency bands, visibility windows)
 7. Budget Estimation (launch costs, development, operations)
 8. Risk Assessment (technical risks, mitigation strategies)
-9. Mission Timeline (key milestones, critical path)
+9. Mission Timeline (key milestones, critical path, launch windows)
 
-Format the response as a detailed technical document with specific numbers and recommendations.`,
+Include specific numerical values and orbital mechanics calculations where relevant. Format the response as a detailed technical document with Orekit-compatible parameters.`,
           temperature: 0.7,
           max_tokens: 2000,
         }),
@@ -354,6 +370,15 @@ Format the response as a detailed technical document with specific numbers and r
                           setShowEquipmentMarketplace(true);
                           setShowVisualization(false);
                           setShowICDProcessor(false);
+                        } else if (step.key === "orekit") {
+                          setShowVisualization(false);
+                          setShowICDProcessor(false);
+                          setShowEquipmentMarketplace(false);
+                        } else if (step.key === "trajectory") {
+                          // Show Orekit for trajectory planning
+                          setShowVisualization(false);
+                          setShowICDProcessor(false);
+                          setShowEquipmentMarketplace(false);
                         } else {
                           // Hide all for other menu items
                           setShowVisualization(false);
@@ -378,6 +403,17 @@ Format the response as a detailed technical document with specific numbers and r
 
               {/* Quick Access Buttons */}
               <div className="mt-6 space-y-3">
+                <button
+                  onClick={() => {
+                    setShowVisualization(false);
+                    setShowICDProcessor(false);
+                    setShowEquipmentMarketplace(false);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 px-4 rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all"
+                >
+                  <Satellite className="w-5 h-5" />
+                  Orekit Calculator (Coming Soon)
+                </button>
                 <button
                   onClick={() => {
                     setShowEquipmentMarketplace(!showEquipmentMarketplace);
@@ -560,12 +596,22 @@ Format the response as a detailed technical document with specific numbers and r
                 <h2 className="text-2xl font-bold text-white">Real-Time Space Tracking</h2>
                 <div className="flex gap-2">
                   <button
+                    onClick={() => setViewMode("worldwind")}
+                    className={`px-4 py-2 rounded-lg transition ${
+                      viewMode === "worldwind"
+                        ? "bg-purple-600 text-white"
+                        : "bg-white/10 text-purple-200 hover:bg-white/20"
+                    }`}
+                  >
+                    WorldWind
+                  </button>
+                  <button
                     onClick={() => setViewMode("2d")}
                     className={`px-4 py-2 rounded-lg transition ${
                       viewMode === "2d" ? "bg-purple-600 text-white" : "bg-white/10 text-purple-200 hover:bg-white/20"
                     }`}
                   >
-                    2D View
+                    2D Canvas
                   </button>
                   <button
                     onClick={() => setViewMode("3d")}
@@ -573,7 +619,7 @@ Format the response as a detailed technical document with specific numbers and r
                       viewMode === "3d" ? "bg-purple-600 text-white" : "bg-white/10 text-purple-200 hover:bg-white/20"
                     }`}
                   >
-                    3D View
+                    Cesium 3D
                   </button>
                   <button
                     onClick={() => setShowOrbitalCalculator(!showOrbitalCalculator)}
@@ -591,6 +637,7 @@ Format the response as a detailed technical document with specific numbers and r
                     <div>
                       <label className="block text-purple-200 text-sm mb-2">TLE Line 1</label>
                       <input
+                        id="tle-line1"
                         type="text"
                         className="w-full bg-white/10 border border-purple-500/30 rounded px-3 py-2 text-white placeholder-purple-300"
                         defaultValue="1 25544U 98067A   24345.52795139  .00012506  00000-0  22495-3 0  9991"
@@ -599,13 +646,35 @@ Format the response as a detailed technical document with specific numbers and r
                     <div>
                       <label className="block text-purple-200 text-sm mb-2">TLE Line 2</label>
                       <input
+                        id="tle-line2"
                         type="text"
                         className="w-full bg-white/10 border border-purple-500/30 rounded px-3 py-2 text-white placeholder-purple-300"
                         defaultValue="2 25544  51.6415 208.4057 0002769  35.9667  61.6291 15.50381554436915"
                       />
                     </div>
                   </div>
-                  <button className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                  <button
+                    onClick={() => {
+                      const line1 = (document.getElementById("tle-line1") as HTMLInputElement)?.value;
+                      const line2 = (document.getElementById("tle-line2") as HTMLInputElement)?.value;
+                      if (line1 && line2) {
+                        try {
+                          const elements = OrbitalMechanics.tleToOrbitalElements(line1, line2);
+                          if (elements) {
+                            alert(
+                              `Orbital Elements Calculated:\n\nSemi-Major Axis: ${elements.semiMajorAxis.toFixed(2)} km\nEccentricity: ${elements.eccentricity.toFixed(4)}\nInclination: ${elements.inclination.toFixed(2)}°\nPeriod: ${elements.period.toFixed(2)} minutes\nApogee: ${elements.apogee.toFixed(2)} km\nPerigee: ${elements.perigee.toFixed(2)} km`,
+                            );
+                          } else {
+                            alert("Failed to calculate orbital elements. Please check the TLE data.");
+                          }
+                        } catch (error) {
+                          console.error("Error calculating orbital elements:", error);
+                          alert("Error calculating orbital elements. Please check the TLE format.");
+                        }
+                      }
+                    }}
+                    className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                  >
                     Calculate Orbital Elements
                   </button>
                 </div>
@@ -614,6 +683,22 @@ Format the response as a detailed technical document with specific numbers and r
               {viewMode === "2d" ? (
                 <div className="space-visualization-wrapper">
                   <SpaceVisualization />
+                </div>
+              ) : viewMode === "worldwind" ? (
+                <div className="worldwind-wrapper">
+                  {/* <WorldWindViewer /> */}
+                  <div className="h-[600px] w-full bg-base-200 rounded-lg flex items-center justify-center">
+                    <div className="text-center">
+                      <span className="loading loading-spinner loading-lg mb-4"></span>
+                      <p className="text-lg">WorldWind Viewer Coming Soon</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 text-sm text-purple-200 opacity-70">
+                    <p>• Drag to rotate the globe</p>
+                    <p>• Scroll to zoom in/out</p>
+                    <p>• Toggle layers for different data views</p>
+                    <p>• NASA data sources integrated</p>
+                  </div>
                 </div>
               ) : (
                 <div className="cesium-wrapper">
@@ -646,6 +731,9 @@ Format the response as a detailed technical document with specific numbers and r
             </div>
           </div>
         )}
+
+        {/* Orekit Calculator Section */}
+        {/* OrekitCalculator temporarily removed */}
       </div>
     </div>
   );

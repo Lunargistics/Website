@@ -13,43 +13,48 @@ const Cesium3DViewerComponent = () => {
     const loadCesium = async () => {
       if (typeof window === "undefined") return;
 
-      // Import Cesium
-      const Cesium = (await import("cesium")).default;
+      try {
+        // Import Cesium
+        const CesiumModule = await import("cesium");
+        const Cesium = CesiumModule.default || CesiumModule;
 
-      // Set Cesium base URL for assets
-      (window as any).CESIUM_BASE_URL = "/cesium/";
+        // Set Cesium base URL for assets - use CDN as fallback
+        (window as any).CESIUM_BASE_URL = "https://cdn.jsdelivr.net/npm/cesium@1.133.1/Build/Cesium/";
 
-      if (!cesiumContainer.current || viewerRef.current) return;
+        if (!cesiumContainer.current || viewerRef.current) return;
 
-      // Initialize Cesium Viewer
-      const viewer = new Cesium.Viewer(cesiumContainer.current, {
-        terrainProvider: await Cesium.createWorldTerrainAsync(),
-        baseLayerPicker: false,
-        geocoder: false,
-        homeButton: true,
-        sceneModePicker: true,
-        navigationHelpButton: false,
-        animation: true,
-        timeline: true,
-        fullscreenButton: false,
-        vrButton: false,
-      });
+        // Initialize Cesium Viewer with error handling
+        const viewer = new (Cesium as any).Viewer(cesiumContainer.current, {
+          terrainProvider: false, // Disable terrain initially to avoid errors
+          baseLayerPicker: false,
+          geocoder: false,
+          homeButton: true,
+          sceneModePicker: true,
+          navigationHelpButton: false,
+          animation: true,
+          timeline: true,
+          fullscreenButton: false,
+          vrButton: false,
+        });
 
-      viewerRef.current = viewer;
+        viewerRef.current = viewer;
 
-      // Add sample satellites
-      addSatellite(viewer, Cesium, {
-        name: "ISS",
-        tle1: "1 25544U 98067A   24345.52795139  .00012506  00000-0  22495-3 0  9991",
-        tle2: "2 25544  51.6415 208.4057 0002769  35.9667  61.6291 15.50381554436915",
-        color: Cesium.Color.YELLOW,
-      });
+        // Add sample satellites
+        addSatellite(viewer, Cesium, {
+          name: "ISS",
+          tle1: "1 25544U 98067A   24345.52795139  .00012506  00000-0  22495-3 0  9991",
+          tle2: "2 25544  51.6415 208.4057 0002769  35.9667  61.6291 15.50381554436915",
+          color: (Cesium as any).Color.YELLOW,
+        });
 
-      // Add asteroid belt visualization
-      addAsteroidBelt(viewer, Cesium);
+        // Add asteroid belt visualization
+        addAsteroidBelt(viewer, Cesium);
 
-      // Add Moon and Mars
-      addCelestialBodies(viewer, Cesium);
+        // Add Moon and Mars
+        addCelestialBodies(viewer, Cesium);
+      } catch (error) {
+        console.error("Error initializing Cesium viewer:", error);
+      }
     };
 
     loadCesium();
