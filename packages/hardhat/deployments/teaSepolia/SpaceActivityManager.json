@@ -1,0 +1,1031 @@
+{
+  "address": "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "activityId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum SpaceActivityManager.ActivityType",
+          "name": "activityType",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "createdAt",
+          "type": "uint256"
+        }
+      ],
+      "name": "ActivityLogged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "activityId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "updater",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum SpaceActivityManager.ActivityStatus",
+          "name": "newStatus",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "updatedAt",
+          "type": "uint256"
+        }
+      ],
+      "name": "ActivityUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "activityId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "documentId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "documentName",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum SpaceActivityManager.DocComplianceStatus",
+          "name": "status",
+          "type": "uint8"
+        }
+      ],
+      "name": "ComplianceDocumentAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "activityId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "documentId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum SpaceActivityManager.DocComplianceStatus",
+          "name": "newStatus",
+          "type": "uint8"
+        }
+      ],
+      "name": "ComplianceDocumentUpdated",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_activityId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "string",
+          "name": "_documentName",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_documentType",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_documentHashOrLink",
+          "type": "string"
+        },
+        {
+          "internalType": "enum SpaceActivityManager.DocComplianceStatus",
+          "name": "_status",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_submittedDate",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_expiryDate",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "_notes",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_responsibleEntity",
+          "type": "string"
+        }
+      ],
+      "name": "addComplianceDocumentToActivity",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "documentId",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        }
+      ],
+      "name": "getActivitiesByOwner",
+      "outputs": [
+        {
+          "internalType": "bytes32[]",
+          "name": "",
+          "type": "bytes32[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_activityId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getActivityById",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "id",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "enum SpaceActivityManager.ActivityType",
+              "name": "activityType",
+              "type": "uint8"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "organization",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "projectManager",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "startDate",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "endDate",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "launchDateTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "enum SpaceActivityManager.ActivityStatus",
+              "name": "status",
+              "type": "uint8"
+            },
+            {
+              "internalType": "string",
+              "name": "externalApiLaunchId",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "externalApiSource",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "launchSite",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "destination",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "payloadDetails",
+              "type": "string"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "bytes32",
+                  "name": "id",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "string",
+                  "name": "documentName",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "documentType",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "documentHashOrLink",
+                  "type": "string"
+                },
+                {
+                  "internalType": "enum SpaceActivityManager.DocComplianceStatus",
+                  "name": "status",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "submittedDate",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "reviewDate",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "expiryDate",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "string",
+                  "name": "notes",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "responsibleEntity",
+                  "type": "string"
+                }
+              ],
+              "internalType": "struct SpaceActivityManager.ComplianceDocument[]",
+              "name": "complianceDocuments",
+              "type": "tuple[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "createdAt",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "updatedAt",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct SpaceActivityManager.Activity",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getAllActivityIds",
+      "outputs": [
+        {
+          "internalType": "bytes32[]",
+          "name": "",
+          "type": "bytes32[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_activityId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getComplianceDocuments",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "id",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "string",
+              "name": "documentName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "documentType",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "documentHashOrLink",
+              "type": "string"
+            },
+            {
+              "internalType": "enum SpaceActivityManager.DocComplianceStatus",
+              "name": "status",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint256",
+              "name": "submittedDate",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "reviewDate",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "expiryDate",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "notes",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "responsibleEntity",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct SpaceActivityManager.ComplianceDocument[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "enum SpaceActivityManager.ActivityType",
+          "name": "_activityType",
+          "type": "uint8"
+        },
+        {
+          "internalType": "string",
+          "name": "_name",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_description",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_organization",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_projectManager",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_startDate",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_endDate",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_launchDateTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "enum SpaceActivityManager.ActivityStatus",
+          "name": "_status",
+          "type": "uint8"
+        },
+        {
+          "internalType": "string",
+          "name": "_externalApiLaunchId",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_externalApiSource",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_launchSite",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_destination",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_payloadDetails",
+          "type": "string"
+        }
+      ],
+      "name": "logActivity",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "activityId",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_activityId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "string",
+          "name": "_name",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_description",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_organization",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_projectManager",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_startDate",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_endDate",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_launchDateTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "enum SpaceActivityManager.ActivityStatus",
+          "name": "_status",
+          "type": "uint8"
+        },
+        {
+          "internalType": "string",
+          "name": "_externalApiLaunchId",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_externalApiSource",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_launchSite",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_destination",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_payloadDetails",
+          "type": "string"
+        }
+      ],
+      "name": "updateActivityDetails",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_activityId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_documentId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "enum SpaceActivityManager.DocComplianceStatus",
+          "name": "_newStatus",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_reviewDate",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateComplianceDocumentStatusInActivity",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x4bde1345905e26e6e9c953ef32a04c366b248e3fe3cfca6e12d4cb22106379f0",
+  "receipt": {
+    "to": null,
+    "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "contractAddress": "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44",
+    "transactionIndex": 1,
+    "gasUsed": "2744060",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0xce607b7c6669393ee204abb4993d28139f57789c5a8eb11b8edd70bfc6e1e3aa",
+    "transactionHash": "0x4bde1345905e26e6e9c953ef32a04c366b248e3fe3cfca6e12d4cb22106379f0",
+    "logs": [],
+    "blockNumber": 7312073,
+    "cumulativeGasUsed": "2818986",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "ef1167ea75b4af462766f7edd60d6792",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.20+commit.a1b79de6\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"activityId\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"enum SpaceActivityManager.ActivityType\",\"name\":\"activityType\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"createdAt\",\"type\":\"uint256\"}],\"name\":\"ActivityLogged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"activityId\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"updater\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"enum SpaceActivityManager.ActivityStatus\",\"name\":\"newStatus\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"updatedAt\",\"type\":\"uint256\"}],\"name\":\"ActivityUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"activityId\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"documentId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"documentName\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"enum SpaceActivityManager.DocComplianceStatus\",\"name\":\"status\",\"type\":\"uint8\"}],\"name\":\"ComplianceDocumentAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"activityId\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"documentId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"enum SpaceActivityManager.DocComplianceStatus\",\"name\":\"newStatus\",\"type\":\"uint8\"}],\"name\":\"ComplianceDocumentUpdated\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_activityId\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_documentName\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_documentType\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_documentHashOrLink\",\"type\":\"string\"},{\"internalType\":\"enum SpaceActivityManager.DocComplianceStatus\",\"name\":\"_status\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"_submittedDate\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_expiryDate\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_notes\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_responsibleEntity\",\"type\":\"string\"}],\"name\":\"addComplianceDocumentToActivity\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"documentId\",\"type\":\"bytes32\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_owner\",\"type\":\"address\"}],\"name\":\"getActivitiesByOwner\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_activityId\",\"type\":\"bytes32\"}],\"name\":\"getActivityById\",\"outputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"enum SpaceActivityManager.ActivityType\",\"name\":\"activityType\",\"type\":\"uint8\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"description\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"organization\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"projectManager\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"startDate\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endDate\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"launchDateTime\",\"type\":\"uint256\"},{\"internalType\":\"enum SpaceActivityManager.ActivityStatus\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"string\",\"name\":\"externalApiLaunchId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"externalApiSource\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"launchSite\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"destination\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"payloadDetails\",\"type\":\"string\"},{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"documentName\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"documentType\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"documentHashOrLink\",\"type\":\"string\"},{\"internalType\":\"enum SpaceActivityManager.DocComplianceStatus\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"submittedDate\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reviewDate\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiryDate\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"notes\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"responsibleEntity\",\"type\":\"string\"}],\"internalType\":\"struct SpaceActivityManager.ComplianceDocument[]\",\"name\":\"complianceDocuments\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"createdAt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"updatedAt\",\"type\":\"uint256\"}],\"internalType\":\"struct SpaceActivityManager.Activity\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAllActivityIds\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_activityId\",\"type\":\"bytes32\"}],\"name\":\"getComplianceDocuments\",\"outputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"documentName\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"documentType\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"documentHashOrLink\",\"type\":\"string\"},{\"internalType\":\"enum SpaceActivityManager.DocComplianceStatus\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"submittedDate\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reviewDate\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiryDate\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"notes\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"responsibleEntity\",\"type\":\"string\"}],\"internalType\":\"struct SpaceActivityManager.ComplianceDocument[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enum SpaceActivityManager.ActivityType\",\"name\":\"_activityType\",\"type\":\"uint8\"},{\"internalType\":\"string\",\"name\":\"_name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_description\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_organization\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_projectManager\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"_startDate\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_endDate\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_launchDateTime\",\"type\":\"uint256\"},{\"internalType\":\"enum SpaceActivityManager.ActivityStatus\",\"name\":\"_status\",\"type\":\"uint8\"},{\"internalType\":\"string\",\"name\":\"_externalApiLaunchId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_externalApiSource\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_launchSite\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_destination\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_payloadDetails\",\"type\":\"string\"}],\"name\":\"logActivity\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"activityId\",\"type\":\"bytes32\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_activityId\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"_name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_description\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_organization\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_projectManager\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"_startDate\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_endDate\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_launchDateTime\",\"type\":\"uint256\"},{\"internalType\":\"enum SpaceActivityManager.ActivityStatus\",\"name\":\"_status\",\"type\":\"uint8\"},{\"internalType\":\"string\",\"name\":\"_externalApiLaunchId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_externalApiSource\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_launchSite\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_destination\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_payloadDetails\",\"type\":\"string\"}],\"name\":\"updateActivityDetails\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_activityId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"_documentId\",\"type\":\"bytes32\"},{\"internalType\":\"enum SpaceActivityManager.DocComplianceStatus\",\"name\":\"_newStatus\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"_reviewDate\",\"type\":\"uint256\"}],\"name\":\"updateComplianceDocumentStatusInActivity\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/SpaceActivityManager.sol\":\"SpaceActivityManager\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[],\"viaIR\":true},\"sources\":{\"contracts/SpaceActivityManager.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.20;\\n\\n// Consider importing OpenZeppelin contracts for Ownable, AccessControl, ReentrancyGuard if needed later.\\n// import \\\"@openzeppelin/contracts/access/Ownable.sol\\\";\\n// import \\\"@openzeppelin/contracts/utils/Strings.sol\\\"; // For string operations if complex ones are needed\\n\\ncontract SpaceActivityManager {\\n    // --- Enums (mirroring TypeScript enums) ---\\n    enum ActivityType {\\n        ROCKET_LAUNCH,\\n        SATELLITE_DEPLOYMENT,\\n        EXPLORATION_MISSION,\\n        RESEARCH_PROJECT,\\n        SPACE_TOURISM,\\n        MANUFACTURING,\\n        RESOURCE_EXTRACTION,\\n        OTHER\\n    }\\n\\n    enum ActivityStatus {\\n        PLANNED,\\n        PREPARATION,\\n        IN_PROGRESS,\\n        COMPLETED_SUCCESS,\\n        COMPLETED_FAILURE,\\n        COMPLETED_PARTIAL_SUCCESS,\\n        ON_HOLD,\\n        CANCELLED\\n    }\\n\\n    enum DocComplianceStatus {\\n        PENDING_SUBMISSION,\\n        PENDING_REVIEW,\\n        APPROVED,\\n        REJECTED,\\n        ACTION_REQUIRED,\\n        EXPIRED,\\n        NOT_APPLICABLE\\n    }\\n\\n    // --- Structs ---\\n    struct ComplianceDocument {\\n        bytes32 id; // Using bytes32 for on-chain ID, can be generated\\n        string documentName;\\n        string documentType; \\n        string documentHashOrLink; // IPFS hash, URL, etc.\\n        DocComplianceStatus status;\\n        uint256 submittedDate; // timestamp\\n        uint256 reviewDate;    // timestamp\\n        uint256 expiryDate;    // timestamp\\n        string notes;\\n        string responsibleEntity;\\n    }\\n\\n    struct Activity {\\n        bytes32 id;          // Unique ID for the activity\\n        address owner;       // Address of the user who logged the activity\\n        ActivityType activityType;\\n        string name;\\n        string description;\\n        string organization;\\n        string projectManager;\\n        uint256 startDate;     // timestamp\\n        uint256 endDate;       // timestamp\\n        uint256 launchDateTime; // timestamp, if applicable\\n        ActivityStatus status;\\n        \\n        string externalApiLaunchId; // For linking to external API data\\n        string externalApiSource;   // e.g., \\\"general\\\", \\\"spacex\\\"\\n\\n        string launchSite;\\n        string destination;\\n        string payloadDetails;\\n\\n        ComplianceDocument[] complianceDocuments;\\n        // overallComplianceSummary might be better handled off-chain or via events\\n\\n        uint256 createdAt;     // timestamp\\n        uint256 updatedAt;     // timestamp\\n    }\\n\\n    // --- State Variables ---\\n    mapping(bytes32 => Activity) private s_activities;\\n    mapping(address => bytes32[]) private s_activitiesByOwner;\\n    bytes32[] private s_allActivityIds; // To allow iterating or getting all (can be gas intensive)\\n\\n    uint256 private s_activityNonce; // Used for generating unique IDs\\n\\n    // --- Events ---\\n    event ActivityLogged(\\n        bytes32 indexed activityId,\\n        address indexed owner,\\n        string name,\\n        ActivityType activityType,\\n        uint256 createdAt\\n    );\\n\\n    event ActivityUpdated(\\n        bytes32 indexed activityId,\\n        address indexed updater,\\n        ActivityStatus newStatus,\\n        uint256 updatedAt\\n    );\\n\\n    event ComplianceDocumentAdded(\\n        bytes32 indexed activityId,\\n        bytes32 indexed documentId,\\n        string documentName,\\n        DocComplianceStatus status\\n    );\\n\\n    event ComplianceDocumentUpdated(\\n        bytes32 indexed activityId,\\n        bytes32 indexed documentId,\\n        DocComplianceStatus newStatus\\n    );\\n\\n    // --- Modifiers ---\\n    modifier onlyActivityOwner(bytes32 _activityId) {\\n        // This require implicitly checks for existence if owner is non-zero after creation\\n        require(s_activities[_activityId].owner != address(0), \\\"SAM: Activity may not exist or has no owner\\\");\\n        require(s_activities[_activityId].owner == msg.sender, \\\"SAM: Caller is not activity owner\\\");\\n        _;\\n    }\\n\\n    // --- Constructor ---\\n    constructor() {\\n        s_activityNonce = 0;\\n    }\\n\\n    // --- Internal ID Generation ---\\n    function _generateActivityId(string memory _name) internal returns (bytes32) {\\n        s_activityNonce++;\\n        return keccak256(abi.encodePacked(block.timestamp, msg.sender, s_activityNonce, _name));\\n    }\\n\\n    function _generateDocumentId(bytes32 _activityId, string memory _docName) internal returns (bytes32) {\\n        // Ensure document ID is unique within the activity and globally if necessary\\n        // Here, we use activityId to scope, and an incrementing count specific to the activity for uniqueness.\\n        // This assumes s_activities[_activityId].complianceDocuments.length provides a unique enough counter for new docs.\\n        uint256 docNonce = s_activities[_activityId].complianceDocuments.length;\\n        return keccak256(abi.encodePacked(block.timestamp, _activityId, docNonce, _docName));\\n    }\\n\\n    // --- Public/External Functions ---\\n\\n    function logActivity(\\n        ActivityType _activityType,\\n        string memory _name,\\n        string memory _description,\\n        string memory _organization,\\n        string memory _projectManager,\\n        uint256 _startDate, // Use 0 if not applicable\\n        uint256 _endDate,   // Use 0 if not applicable\\n        uint256 _launchDateTime, // Use 0 if not applicable\\n        ActivityStatus _status,\\n        string memory _externalApiLaunchId,\\n        string memory _externalApiSource,\\n        string memory _launchSite,\\n        string memory _destination,\\n        string memory _payloadDetails\\n    ) external returns (bytes32 activityId) {\\n        require(bytes(_name).length > 0, \\\"SAM: Activity name cannot be empty\\\");\\n        \\n        activityId = _generateActivityId(_name);\\n        \\n        Activity storage newActivity = s_activities[activityId];\\n        newActivity.id = activityId;\\n        newActivity.owner = msg.sender;\\n        newActivity.activityType = _activityType;\\n        newActivity.name = _name;\\n        newActivity.description = _description;\\n        newActivity.organization = _organization;\\n        newActivity.projectManager = _projectManager;\\n        newActivity.startDate = _startDate;\\n        newActivity.endDate = _endDate;\\n        newActivity.launchDateTime = _launchDateTime;\\n        newActivity.status = _status;\\n        newActivity.externalApiLaunchId = _externalApiLaunchId;\\n        newActivity.externalApiSource = _externalApiSource;\\n        newActivity.launchSite = _launchSite;\\n        newActivity.destination = _destination;\\n        newActivity.payloadDetails = _payloadDetails;\\n        // newActivity.complianceDocuments is already initialized as an empty array for new storage structs\\n        newActivity.createdAt = block.timestamp;\\n        newActivity.updatedAt = block.timestamp;\\n\\n        s_activitiesByOwner[msg.sender].push(activityId);\\n        s_allActivityIds.push(activityId);\\n\\n        emit ActivityLogged(activityId, msg.sender, _name, _activityType, block.timestamp);\\n        return activityId;\\n    }\\n\\n    // --- Getter Functions ---\\n    function getActivityById(bytes32 _activityId) external view returns (Activity memory) {\\n        require(s_activities[_activityId].id != bytes32(0), \\\"SAM: Activity does not exist\\\");\\n        return s_activities[_activityId];\\n    }\\n\\n    function getActivitiesByOwner(address _owner) external view returns (bytes32[] memory) {\\n        return s_activitiesByOwner[_owner];\\n    }\\n\\n    function getAllActivityIds() external view returns (bytes32[] memory) {\\n        return s_allActivityIds;\\n    }\\n    \\n    function getComplianceDocuments(bytes32 _activityId) external view returns (ComplianceDocument[] memory) {\\n        require(s_activities[_activityId].id != bytes32(0), \\\"SAM: Activity does not exist\\\");\\n        return s_activities[_activityId].complianceDocuments;\\n    }\\n\\n    // --- Activity & Document Management Functions ---\\n\\n    function updateActivityDetails(\\n        bytes32 _activityId,\\n        string memory _name,\\n        string memory _description,\\n        string memory _organization,\\n        string memory _projectManager,\\n        uint256 _startDate,\\n        uint256 _endDate,\\n        uint256 _launchDateTime,\\n        ActivityStatus _status, \\n        string memory _externalApiLaunchId,\\n        string memory _externalApiSource,\\n        string memory _launchSite,\\n        string memory _destination,\\n        string memory _payloadDetails\\n    ) external { // Removed onlyActivityOwner modifier for now\\n        // Explicit checks for existence and ownership\\n        require(s_activities[_activityId].id != bytes32(0), \\\"SAM: Activity does not exist\\\");\\n        require(s_activities[_activityId].owner == msg.sender, \\\"SAM: Caller is not activity owner\\\");\\n        require(bytes(_name).length > 0, \\\"SAM: Activity name cannot be empty\\\");\\n\\n        Activity storage activityToUpdate = s_activities[_activityId];\\n        activityToUpdate.name = _name;\\n        activityToUpdate.description = _description;\\n        activityToUpdate.organization = _organization;\\n        activityToUpdate.projectManager = _projectManager;\\n        activityToUpdate.startDate = _startDate;\\n        activityToUpdate.endDate = _endDate;\\n        activityToUpdate.launchDateTime = _launchDateTime;\\n        activityToUpdate.status = _status;\\n        activityToUpdate.externalApiLaunchId = _externalApiLaunchId;\\n        activityToUpdate.externalApiSource = _externalApiSource;\\n        activityToUpdate.launchSite = _launchSite;\\n        activityToUpdate.destination = _destination;\\n        activityToUpdate.payloadDetails = _payloadDetails;\\n        activityToUpdate.updatedAt = block.timestamp;\\n\\n        emit ActivityUpdated(_activityId, msg.sender, _status, block.timestamp);\\n    }\\n\\n    function addComplianceDocumentToActivity(\\n        bytes32 _activityId,\\n        string memory _documentName,\\n        string memory _documentType,\\n        string memory _documentHashOrLink,\\n        DocComplianceStatus _status,\\n        uint256 _submittedDate,\\n        uint256 _expiryDate,\\n        string memory _notes,\\n        string memory _responsibleEntity\\n    ) external onlyActivityOwner(_activityId) returns (bytes32 documentId) {\\n        require(s_activities[_activityId].id != bytes32(0), \\\"SAM: Activity does not exist\\\");\\n        require(bytes(_documentName).length > 0, \\\"SAM: Document name cannot be empty\\\");\\n\\n        documentId = _generateDocumentId(_activityId, _documentName);\\n\\n        ComplianceDocument memory newDocument = ComplianceDocument({\\n            id: documentId,\\n            documentName: _documentName,\\n            documentType: _documentType,\\n            documentHashOrLink: _documentHashOrLink,\\n            status: _status,\\n            submittedDate: _submittedDate, // Use 0 if not applicable\\n            reviewDate: 0, // Review date TBD by a reviewer role later\\n            expiryDate: _expiryDate,   // Use 0 if not applicable\\n            notes: _notes,\\n            responsibleEntity: _responsibleEntity\\n        });\\n\\n        s_activities[_activityId].complianceDocuments.push(newDocument);\\n        s_activities[_activityId].updatedAt = block.timestamp;\\n\\n        emit ComplianceDocumentAdded(_activityId, documentId, _documentName, _status);\\n        return documentId;\\n    }\\n\\n    function updateComplianceDocumentStatusInActivity(\\n        bytes32 _activityId,\\n        bytes32 _documentId,\\n        DocComplianceStatus _newStatus,\\n        uint256 _reviewDate // Reviewer sets this date\\n    ) external onlyActivityOwner(_activityId) { // For now, only owner. Could be a different role.\\n        require(s_activities[_activityId].id != bytes32(0), \\\"SAM: Activity does not exist\\\");\\n        \\n        ComplianceDocument[] storage documents = s_activities[_activityId].complianceDocuments;\\n        bool found = false;\\n        for (uint i = 0; i < documents.length; i++) {\\n            if (documents[i].id == _documentId) {\\n                documents[i].status = _newStatus;\\n                documents[i].reviewDate = _reviewDate; // Update review date\\n                s_activities[_activityId].updatedAt = block.timestamp;\\n                emit ComplianceDocumentUpdated(_activityId, _documentId, _newStatus);\\n                found = true;\\n                break;\\n            }\\n        }\\n        require(found, \\\"SAM: Document not found in activity\\\");\\n    }\\n    \\n    // Consider a function to update other fields of a compliance document if needed, by owner.\\n    // function updateComplianceDocumentDetails(...) internal onlyActivityOwner(_activityId) { ... }\\n} \",\"keccak256\":\"0x3b94f1b7042403a332863b3919ec859922ddc035214fb4536da2de4072b2cf39\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x6080806040523461001b5760006003556130a190816100218239f35b600080fdfe6080604052600436101561001257600080fd5b60003560e01c806351a7293314612714578063640858ba146125d55780636e3f95fb14611ce65780637789ae7214611c6b578063b51625e714611be0578063baf78a6c14610f9e578063c242e4db14610ded5763f919c7161461007457600080fd5b34610de8576101c0366003190112610de85760086004351015610de8576024356001600160401b038111610de8576100b0903690600401612c31565b6044356001600160401b038111610de8576100cf903690600401612c31565b906064356001600160401b038111610de8576100ef903690600401612c31565b6084356001600160401b038111610de85761010e903690600401612c31565b926008610104351015610de857610124356001600160401b038111610de85761013b903690600401612c31565b610144356001600160401b038111610de85761015b903690600401612c31565b610164356001600160401b038111610de85761017b903690600401612c31565b90610184356001600160401b038111610de85761019c903690600401612c31565b926101a4356001600160401b038111610de8576101bd903690600401612c31565b976101ca88511515612cc2565b6101d5600354612d6b565b8060035560405160208101914283523360601b6040830152605482015261021c6074828c61020c8151809260208686019101612b83565b8101036054810184520182612c10565b51902096876000526000602052604060002096888855600188018054610243600435612b79565b6001600160a81b0319163360ff60a01b19161760043560a01b60ff60a01b1617905589516001600160401b0381116106a45761028260028a0154612d19565b601f8111610da1575b50806020601f8211600114610d3357600091610d28575b508160011b916000199060031b1c19161760028901555b8051906001600160401b0382116106a45781906102d960038b0154612d19565b601f8111610cd5575b50602090601f8311600114610c6357600092610c58575b50508160011b916000199060031b1c19161760038801555b8051906001600160401b0382116106a457819061033160048a0154612d19565b601f8111610c05575b50602090601f8311600114610b9357600092610b88575b50508160011b916000199060031b1c19161760048701555b8051906001600160401b0382116106a45781906103896005890154612d19565b601f8111610b35575b50602090601f8311600114610ac357600092610ab8575b50508160011b916000199060031b1c19161760058601555b60a435600686015560c435600786015560e43560088601556103e96101043560098701612d53565b8051906001600160401b0382116106a4578190610409600a880154612d19565b601f8111610a65575b50602090601f83116001146109f3576000926109e8575b50508160011b916000199060031b1c191617600a8501555b8051906001600160401b0382116106a4578190610461600b870154612d19565b601f8111610995575b50602090601f831160011461092357600092610918575b50508160011b916000199060031b1c191617600b8401555b8051906001600160401b0382116106a45781906104b9600c860154612d19565b601f81116108c5575b50602090601f831160011461085357600092610848575b50508160011b916000199060031b1c191617600c8301555b8051906001600160401b0382116106a4578190610511600d850154612d19565b601f81116107f5575b50602090601f831160011461078357600092610778575b50508160011b916000199060031b1c191617600d8201555b83516001600160401b0381116106a457610566600e830154612d19565b601f8111610731575b50602094601f82116001146106c5579481929394956000926106ba575b50508160011b916000199060031b1c191617600e8201555b426010820155601142910155336000526001602052604060002091825492600160401b93848110156106a4576001810180835581101561068e57839160005260206000200155600254928310156106a457600183018060025583101561068e578160209360026000527f405787fa12a823e0f2b7631cc41b3ba8828b3321ca811111fa75cd3aa3bb5ace0155817f1c8d7e47ce2d8e002bbc8c3f80a22247d09e0faf09b2a4d105385dfe6c64862961066760405193606085526060850190612ba6565b92610673600435612b79565b600435868201524260408201528033940390a3604051908152f35b634e487b7160e01b600052603260045260246000fd5b634e487b7160e01b600052604160045260246000fd5b01519050388061058c565b601f19821695600e840160005260206000209160005b88811061071957508360019596979810610700575b505050811b01600e8201556105a4565b015160001960f88460031b161c191690553880806106f0565b919260206001819286850151815501940192016106db565b600e83016000526020600020601f830160051c810160208410610771575b601f830160051c8201811061076557505061056f565b6000815560010161074f565b508061074f565b015190503880610531565b9250600d84016000526020600020906000935b601f19841685106107da576001945083601f198116106107c1575b505050811b01600d820155610549565b015160001960f88460031b161c191690553880806107b1565b81810151835560209485019460019093019290910190610796565b909150600d84016000526020600020601f840160051c810160208510610841575b90849392915b601f830160051c8201811061083257505061051a565b6000815585945060010161081c565b5080610816565b0151905038806104d9565b9250600c85016000526020600020906000935b601f19841685106108aa576001945083601f19811610610891575b505050811b01600c8301556104f1565b015160001960f88460031b161c19169055388080610881565b81810151835560209485019460019093019290910190610866565b909150600c85016000526020600020601f840160051c810160208510610911575b90849392915b601f830160051c820181106109025750506104c2565b600081558594506001016108ec565b50806108e6565b015190503880610481565b9250600b86016000526020600020906000935b601f198416851061097a576001945083601f19811610610961575b505050811b01600b840155610499565b015160001960f88460031b161c19169055388080610951565b81810151835560209485019460019093019290910190610936565b909150600b86016000526020600020601f840160051c8101602085106109e1575b90849392915b601f830160051c820181106109d257505061046a565b600081558594506001016109bc565b50806109b6565b015190503880610429565b9250600a87016000526020600020906000935b601f1984168510610a4a576001945083601f19811610610a31575b505050811b01600a850155610441565b015160001960f88460031b161c19169055388080610a21565b81810151835560209485019460019093019290910190610a06565b909150600a87016000526020600020601f840160051c810160208510610ab1575b90849392915b601f830160051c82018110610aa2575050610412565b60008155859450600101610a8c565b5080610a86565b0151905038806103a9565b9250600588016000526020600020906000935b601f1984168510610b1a576001945083601f19811610610b01575b505050811b0160058601556103c1565b015160001960f88460031b161c19169055388080610af1565b81810151835560209485019460019093019290910190610ad6565b909150600588016000526020600020601f840160051c810160208510610b81575b90849392915b601f830160051c82018110610b72575050610392565b60008155859450600101610b5c565b5080610b56565b015190503880610351565b9250600489016000526020600020906000935b601f1984168510610bea576001945083601f19811610610bd1575b505050811b016004870155610369565b015160001960f88460031b161c19169055388080610bc1565b81810151835560209485019460019093019290910190610ba6565b909150600489016000526020600020601f840160051c810160208510610c51575b90849392915b601f830160051c82018110610c4257505061033a565b60008155859450600101610c2c565b5080610c26565b0151905038806102f9565b925060038a016000526020600020906000935b601f1984168510610cba576001945083601f19811610610ca1575b505050811b016003880155610311565b015160001960f88460031b161c19169055388080610c91565b81810151835560209485019460019093019290910190610c76565b90915060038a016000526020600020601f840160051c810160208510610d21575b90849392915b601f830160051c82018110610d125750506102e2565b60008155859450600101610cfc565b5080610cf6565b90508b0151386102a2565b915060028a0160005260206000206000925b8d601f1984168510610d8a57506001935082601f19811610610d71575b5050811b0160028901556102b9565b8d015160001960f88460031b161c191690553880610d62565b810151825560209384019360019092019101610d45565b60028a016000526020600020601f830160051c810160208410610de1575b601f830160051c82018110610dd557505061028b565b60008155600101610dbf565b5080610dbf565b600080fd5b34610de8576080366003190112610de8576004356024356044356007811015610de85790610e5d9160643591846000526020946000865260018060a01b039260019584610e4588968760406000200154161515612fd7565b83600052600089528560406000200154163314612f81565b8160005260008752610e756040600020541515612d90565b8160005260008752600f604060002001946000956000975b610ef1575b505050505050905015610ea157005b6084906040519062461bcd60e51b82526004820152602360248201527f53414d3a20446f63756d656e74206e6f7420666f756e6420696e20616374697660448201526269747960e81b6064820152fd5b8054881015610f99578885610f068a84613037565b505414610f205750610f19869798612d6b565b9796610e8d565b9395977f450c88c7168f5a18afd5e3d9b9fd29acb78530216867a02f3c3239a2c4b2d3709597508082610f65866004610f5e610f6a96600698613037565b5001613053565b613037565b500155836000526000825242601160406000200155610f8c6040518092612bcb565ba380838080808080610e92565b610e92565b34610de8576101c0366003190112610de8576024356001600160401b038111610de857610fcf903690600401612c31565b6044356001600160401b038111610de857610fee903690600401612c31565b6064356001600160401b038111610de85761100d903690600401612c31565b906084356001600160401b038111610de85761102d903690600401612c31565b926008610104351015610de857610124356001600160401b038111610de85761105a903690600401612c31565b610144356001600160401b038111610de85761107a903690600401612c31565b90610164356001600160401b038111610de85761109b903690600401612c31565b95610184356001600160401b038111610de8576110bc903690600401612c31565b956101a4356001600160401b038111610de8576110dd903690600401612c31565b9560043560005260006020526110f96040600020541515612d90565b600435600052600060205261111f60018060a01b03600160406000200154163314612f81565b61112b86511515612cc2565b60043560005260006020526040600020958051906001600160401b0382116106a457819061115c60028a0154612d19565b601f8111611b8d575b50602090601f8311600114611b1b57600092611b10575b50508160011b916000199060031b1c19161760028701555b8051906001600160401b0382116106a45781906111b46003890154612d19565b601f8111611abd575b50602090601f8311600114611a4b57600092611a40575b50508160011b916000199060031b1c19161760038601555b8051906001600160401b0382116106a457819061120c6004880154612d19565b601f81116119ed575b50602090601f831160011461197b57600092611970575b50508160011b916000199060031b1c19161760048501555b8051906001600160401b0382116106a45781906112646005870154612d19565b601f811161191d575b50602090601f83116001146118ab576000926118a0575b50508160011b916000199060031b1c19161760058401555b60a435600684015560c435600784015560e43560088401556112c46101043560098501612d53565b8051906001600160401b0382116106a45781906112e4600a860154612d19565b601f811161184d575b50602090601f83116001146117db576000926117d0575b50508160011b916000199060031b1c191617600a8301555b8051906001600160401b0382116106a457819061133c600b850154612d19565b601f811161177d575b50602090601f831160011461170b57600092611700575b50508160011b916000199060031b1c191617600b8201555b83516001600160401b0381116106a457611391600c830154612d19565b601f81116116b9575b506020601f821160011461164a57819293949560009261163f575b50508160011b916000199060031b1c191617600c8201555b82516001600160401b0381116106a4576113ea600d830154612d19565b601f81116115f8575b506020601f821160011461158c5781929394600092611581575b50508160011b916000199060031b1c191617600d8201555b600e810182516001600160401b0381116106a4576114438254612d19565b601f8111611539575b506020601f82116001146114d357819293946000926114c8575b50508160011b916000199060031b1c19161790555b60114291015560405161149061010435612b79565b61010435815242602082015233907fe5da5f3519cc0892f013a29d0f4418355f7a96213c7f7fcc44f0bdd70bf60fe7604060043592a3005b015190508480611466565b601f198216908360005260206000209160005b81811061152157509583600195969710611508575b505050811b01905561147b565b015160001960f88460031b161c191690558480806114fb565b9192602060018192868b0151815501940192016114e6565b826000526020600020601f830160051c81019160208410611577575b601f0160051c01905b81811061156b575061144c565b6000815560010161155e565b9091508190611555565b01519050848061140d565b601f19821690600d840160005260206000209160005b8181106115e0575095836001959697106115c7575b505050811b01600d820155611425565b015160001960f88460031b161c191690558480806115b7565b9192602060018192868b0151815501940192016115a2565b600d83016000526020600020601f830160051c810160208410611638575b601f830160051c8201811061162c5750506113f3565b60008155600101611616565b5080611616565b0151905085806113b5565b600c830160005260206000209060005b601f19841681106116a1575060019394959683601f19811610611688575b505050811b01600c8201556113cd565b015160001960f88460031b161c19169055858080611678565b9091602060018192858b01518155019301910161165a565b600c83016000526020600020601f830160051c8101602084106116f9575b601f830160051c820181106116ed57505061139a565b600081556001016116d7565b50806116d7565b01519050868061135c565b9250600b84016000526020600020906000935b601f1984168510611762576001945083601f19811610611749575b505050811b01600b820155611374565b015160001960f88460031b161c19169055868080611739565b8181015183556020948501946001909301929091019061171e565b909150600b84016000526020600020601f840160051c8101602085106117c9575b90849392915b601f830160051c820181106117ba575050611345565b600081558594506001016117a4565b508061179e565b015190508780611304565b9250600a85016000526020600020906000935b601f1984168510611832576001945083601f19811610611819575b505050811b01600a83015561131c565b015160001960f88460031b161c19169055878080611809565b818101518355602094850194600190930192909101906117ee565b909150600a85016000526020600020601f840160051c810160208510611899575b90849392915b601f830160051c8201811061188a5750506112ed565b60008155859450600101611874565b508061186e565b015190508880611284565b9250600586016000526020600020906000935b601f1984168510611902576001945083601f198116106118e9575b505050811b01600584015561129c565b015160001960f88460031b161c191690558880806118d9565b818101518355602094850194600190930192909101906118be565b909150600586016000526020600020601f840160051c810160208510611969575b90849392915b601f830160051c8201811061195a57505061126d565b60008155859450600101611944565b508061193e565b01519050898061122c565b9250600487016000526020600020906000935b601f19841685106119d2576001945083601f198116106119b9575b505050811b016004850155611244565b015160001960f88460031b161c191690558980806119a9565b8181015183556020948501946001909301929091019061198e565b909150600487016000526020600020601f840160051c810160208510611a39575b90849392915b601f830160051c82018110611a2a575050611215565b60008155859450600101611a14565b5080611a0e565b015190508a806111d4565b9250600388016000526020600020906000935b601f1984168510611aa2576001945083601f19811610611a89575b505050811b0160038601556111ec565b015160001960f88460031b161c191690558a8080611a79565b81810151835560209485019460019093019290910190611a5e565b909150600388016000526020600020601f840160051c810160208510611b09575b90849392915b601f830160051c82018110611afa5750506111bd565b60008155859450600101611ae4565b5080611ade565b015190508b8061117c565b9250600289016000526020600020906000935b601f1984168510611b72576001945083601f19811610611b59575b505050811b016002870155611194565b015160001960f88460031b161c191690558b8080611b49565b81810151835560209485019460019093019290910190611b2e565b909150600289016000526020600020601f840160051c810160208510611bd9575b90849392915b601f830160051c82018110611bca575050611165565b60008155859450600101611bb4565b5080611bae565b34610de857602080600319360112610de8576004356001600160a01b03811690819003610de8576000526001808252604060002091604051918282855491828152019460005282600020926000905b828210611c5657611c5286611c46818a0382612c10565b60405191829182612c87565b0390f35b84548752958601959383019390830190611c2f565b34610de8576000366003190112610de857604051806002549182815260208091019260026000527f405787fa12a823e0f2b7631cc41b3ba8828b3321ca811111fa75cd3aa3bb5ace916000905b828210611ccf57611c5285611c4681890382612c10565b835486529485019460019384019390910190611cb8565b34610de857610120366003190112610de8576024356001600160401b038111610de857611d17903690600401612c31565b6044356001600160401b038111610de857611d36903690600401612c31565b6064356001600160401b038111610de857611d55903690600401612c31565b60076084351015610de85760e4356001600160401b038111610de857611d7f903690600401612c31565b610104356001600160401b038111610de857611d9f903690600401612c31565b906004356000526000602052611de660018060a01b03611dca81600160406000200154161515612fd7565b6004356000526000602052600160406000200154163314612f81565b6004356000526000602052611e016040600020541515612d90565b845115612585576004356000526000602052600f60406000200154604051602081019142835260043560408301526060820152611e5d6080828951611e4d818c60208686019101612b83565b8101036060810184520182612c10565b5190209260405194611e6e86612bf4565b84865286602087015260408601526060850152611e9060843560808601612e82565b60a43560a0850152600060c085015260c43560e08501526101008401526101208301526004356000526000602052600f6040600020018054600160401b8110156106a457611ee391600182018155613037565b61256f578251815560208301518051906001600160401b0382116106a4578190611f106001850154612d19565b601f811161251c575b50602090601f83116001146124aa5760009261249f575b50508160011b916000199060031b1c19161760018201555b60408301518051906001600160401b0382116106a4578190611f6d6002850154612d19565b601f811161244c575b50602090601f83116001146123da576000926123cf575b50508160011b916000199060031b1c19161760028201555b60608301518051906001600160401b0382116106a4578190611fca6003850154612d19565b601f811161237c575b50602090601f831160011461230a576000926122ff575b50508160011b916000199060031b1c19161760038201555b608083015160078110156122e95761201d9060048301613053565b60a0830151600582015560c0830151600682015560e083015160078201556101008301518051906001600160401b0382116106a45761205f6008840154612d19565b601f81116122a2575b50602090601f831160011461222c5791806101209492600994600092612221575b50508160011b916000199060031b1c19161760088201555b01920151928351926001600160401b0384116106a4576120c18154612d19565b94601f86116121d9575b602095508590601f8611600114612172579480918596600092612167575b50508160011b916000199060031b1c19161790555b60043560005260008452426011604060002001557fcfe92407c78b1520d151055bacf06aa469f96420aaf033a32f9345da40fa789261214860405192604084526040840190612ba6565b91612157868201608435612bcb565b80600435930390a3604051908152f35b0151905087806120e9565b90601f1986169183600052876000209260005b8181106121c25750916001939188889994106121a9575b505050811b0190556120fe565b015160001960f88460031b161c1916905587808061219c565b929389600181928786015181550195019301612185565b816000526020600020601f860160051c81019660208710612217575b601f0160051c01955b86811061220b57506120cb565b600081556001016121fe565b90965086906121f5565b015190508880612089565b906008840160005260206000209160005b601f198516811061228a575092610120949260019260099583601f19811610612271575b505050811b0160088201556120a1565b015160001960f88460031b161c19169055888080612261565b9192602060018192868501518155019401920161223d565b600884016000526020600020601f840160051c8101602085106122e2575b601f830160051c820181106122d6575050612068565b600081556001016122c0565b50806122c0565b634e487b7160e01b600052602160045260246000fd5b015190508680611fea565b9250600384016000526020600020906000935b601f1984168510612361576001945083601f19811610612348575b505050811b016003820155612002565b015160001960f88460031b161c19169055868080612338565b8181015183556020948501946001909301929091019061231d565b909150600384016000526020600020601f840160051c8101602085106123c8575b90849392915b601f830160051c820181106123b9575050611fd3565b600081558594506001016123a3565b508061239d565b015190508680611f8d565b9250600284016000526020600020906000935b601f1984168510612431576001945083601f19811610612418575b505050811b016002820155611fa5565b015160001960f88460031b161c19169055868080612408565b818101518355602094850194600190930192909101906123ed565b909150600284016000526020600020601f840160051c810160208510612498575b90849392915b601f830160051c82018110612489575050611f76565b60008155859450600101612473565b508061246d565b015190508680611f30565b9250600184016000526020600020906000935b601f1984168510612501576001945083601f198116106124e8575b505050811b016001820155611f48565b015160001960f88460031b161c191690558680806124d8565b818101518355602094850194600190930192909101906124bd565b909150600184016000526020600020601f840160051c810160208510612568575b90849392915b601f830160051c82018110612559575050611f19565b60008155859450600101612543565b508061253d565b634e487b7160e01b600052600060045260246000fd5b60405162461bcd60e51b815260206004820152602260248201527f53414d3a20446f63756d656e74206e616d652063616e6e6f7420626520656d70604482015261747960f01b6064820152608490fd5b34610de857602080600319360112610de85760043580600052600082526126026040600020541515612d90565b60005260008152612619600f604060002001612e8e565b6040519082820192808352815180945260408301938160408260051b8601019301916000955b82871061264c5785850386f35b909192938280612704600193603f198a82030186528851805182526126f06126ac61269961268787850151610140808a890152870190612ba6565b60408501518682036040880152612ba6565b6060808501519086830390870152612ba6565b6126be60808085015190860190612bcb565b60a0808401519085015260c0808401519085015260e083015160e0850152610100808401519085830390860152612ba6565b916101208092015191818403910152612ba6565b960192019601959291909261263f565b34610de8576020366003190112610de85761272f6080612bd8565b6000608081905260a081905260c0819052606060e08190526101008190526101208190526101408190526101608290526101808290526101a08290526101c08290526101e0819052610200819052610220819052610240819052610260819052610280526102a08190526102c081905260043580825260208290526040909120546127bb901515612d90565b600052600060205260406000206011604051916127d783612bd8565b8054835260018101546001600160a01b038116602085015260ff9061280160a082901c8316612b79565b60a01c16604084015261281660028201612ddc565b606084015261282760038201612ddc565b608084015261283860048201612ddc565b60a084015261284960058201612ddc565b60c0840152600681015460e08401526007810154610100840152600881015461012084015260ff60098201541661287f81612b79565b610140840152612891600a8201612ddc565b6101608401526128a3600b8201612ddc565b6101808401526128b5600c8201612ddc565b6101a08401526128c7600d8201612ddc565b6101c08401526128d9600e8201612ddc565b6101e08401526128eb600f8201612e8e565b610200840152601081015461022084015201546102408201526040805160208082528351818301528301516001600160a01b0316818301529082015161293081612b79565b6060820152612a5a612a42612a2a612a126129fa6129aa61299461297e61296860608b015161026060808c01526102808b0190612ba6565b60808b01518a8203601f190160a08c0152612ba6565b60a08a0151898203601f190160c08b0152612ba6565b60c0890151888203601f190160e08a0152612ba6565b60e08801516101008801526101008801516101208801526101208801516101408801526101408801516129dc81612b79565b610160880152610160880151601f1988830301610180890152612ba6565b610180870151868203601f19016101a0880152612ba6565b6101a0860151858203601f19016101c0870152612ba6565b6101c0850151848203601f19016101e0860152612ba6565b6101e0840151838203601f1901610200850152612ba6565b61020083015190601f1983820301610220840152815180825260208201916020808360051b8301019401926000915b838310612aad578680876102408b6102208101518285015201516102608301520390f35b9091929394602080612b6a600193601f1986820301875289519081518152610120612b58612b14612b02612af0888701516101408a880152610140870190612ba6565b60408701518682036040880152612ba6565b60608601518582036060870152612ba6565b612b2660808601516080860190612bcb565b60a085015160a085015260c085015160c085015260e085015160e0850152610100850151848203610100860152612ba6565b92015190610120818403910152612ba6565b97019301930191939290612a89565b600811156122e957565b60005b838110612b965750506000910152565b8181015183820152602001612b86565b90602091612bbf81518092818552858086019101612b83565b601f01601f1916010190565b9060078210156122e95752565b61026081019081106001600160401b038211176106a457604052565b61014081019081106001600160401b038211176106a457604052565b90601f801991011681019081106001600160401b038211176106a457604052565b81601f82011215610de8578035906001600160401b0382116106a45760405192612c65601f8401601f191660200185612c10565b82845260208383010111610de857816000926020809301838601378301015290565b6020908160408183019282815285518094520193019160005b828110612cae575050505090565b835185529381019392810192600101612ca0565b15612cc957565b60405162461bcd60e51b815260206004820152602260248201527f53414d3a204163746976697479206e616d652063616e6e6f7420626520656d70604482015261747960f01b6064820152608490fd5b90600182811c92168015612d49575b6020831014612d3357565b634e487b7160e01b600052602260045260246000fd5b91607f1691612d28565b90612d5d81612b79565b60ff80198354169116179055565b6000198114612d7a5760010190565b634e487b7160e01b600052601160045260246000fd5b15612d9757565b60405162461bcd60e51b815260206004820152601c60248201527f53414d3a20416374697669747920646f6573206e6f74206578697374000000006044820152606490fd5b9060405191826000825492612df084612d19565b908184526001948581169081600014612e5f5750600114612e1c575b5050612e1a92500383612c10565b565b9093915060005260209081600020936000915b818310612e47575050612e1a93508201013880612e0c565b85548884018501529485019487945091830191612e2f565b915050612e1a94506020925060ff191682840152151560051b8201013880612e0c565b60078210156122e95752565b9081546001600160401b0381116106a457604092835193602090600590612eb98386841b0188612c10565b8487526000938452828420918388015b868610612ed95750505050505050565b600a856001928551612eea81612bf4565b87548152612ef9858901612ddc565b83820152612f0960028901612ddc565b87820152612f1960038901612ddc565b6060820152612f3260ff60048a01541660808301612e82565b8588015460a0820152600688015460c0820152600788015460e0820152612f5b60088901612ddc565b610100820152612f6d60098901612ddc565b610120820152815201940195019492612ec9565b15612f8857565b60405162461bcd60e51b815260206004820152602160248201527f53414d3a2043616c6c6572206973206e6f74206163746976697479206f776e656044820152603960f91b6064820152608490fd5b15612fde57565b60405162461bcd60e51b815260206004820152602b60248201527f53414d3a204163746976697479206d6179206e6f74206578697374206f72206860448201526a30b99037379037bbb732b960a91b6064820152608490fd5b805482101561068e57600052600a602060002091020190600090565b9060078110156122e95760ff8019835416911617905556fea264697066735822122080390b02022b41d2283754763d35742bca1624b8fde316a4c651c4a860fc959164736f6c63430008140033",
+  "deployedBytecode": "0x6080604052600436101561001257600080fd5b60003560e01c806351a7293314612714578063640858ba146125d55780636e3f95fb14611ce65780637789ae7214611c6b578063b51625e714611be0578063baf78a6c14610f9e578063c242e4db14610ded5763f919c7161461007457600080fd5b34610de8576101c0366003190112610de85760086004351015610de8576024356001600160401b038111610de8576100b0903690600401612c31565b6044356001600160401b038111610de8576100cf903690600401612c31565b906064356001600160401b038111610de8576100ef903690600401612c31565b6084356001600160401b038111610de85761010e903690600401612c31565b926008610104351015610de857610124356001600160401b038111610de85761013b903690600401612c31565b610144356001600160401b038111610de85761015b903690600401612c31565b610164356001600160401b038111610de85761017b903690600401612c31565b90610184356001600160401b038111610de85761019c903690600401612c31565b926101a4356001600160401b038111610de8576101bd903690600401612c31565b976101ca88511515612cc2565b6101d5600354612d6b565b8060035560405160208101914283523360601b6040830152605482015261021c6074828c61020c8151809260208686019101612b83565b8101036054810184520182612c10565b51902096876000526000602052604060002096888855600188018054610243600435612b79565b6001600160a81b0319163360ff60a01b19161760043560a01b60ff60a01b1617905589516001600160401b0381116106a45761028260028a0154612d19565b601f8111610da1575b50806020601f8211600114610d3357600091610d28575b508160011b916000199060031b1c19161760028901555b8051906001600160401b0382116106a45781906102d960038b0154612d19565b601f8111610cd5575b50602090601f8311600114610c6357600092610c58575b50508160011b916000199060031b1c19161760038801555b8051906001600160401b0382116106a457819061033160048a0154612d19565b601f8111610c05575b50602090601f8311600114610b9357600092610b88575b50508160011b916000199060031b1c19161760048701555b8051906001600160401b0382116106a45781906103896005890154612d19565b601f8111610b35575b50602090601f8311600114610ac357600092610ab8575b50508160011b916000199060031b1c19161760058601555b60a435600686015560c435600786015560e43560088601556103e96101043560098701612d53565b8051906001600160401b0382116106a4578190610409600a880154612d19565b601f8111610a65575b50602090601f83116001146109f3576000926109e8575b50508160011b916000199060031b1c191617600a8501555b8051906001600160401b0382116106a4578190610461600b870154612d19565b601f8111610995575b50602090601f831160011461092357600092610918575b50508160011b916000199060031b1c191617600b8401555b8051906001600160401b0382116106a45781906104b9600c860154612d19565b601f81116108c5575b50602090601f831160011461085357600092610848575b50508160011b916000199060031b1c191617600c8301555b8051906001600160401b0382116106a4578190610511600d850154612d19565b601f81116107f5575b50602090601f831160011461078357600092610778575b50508160011b916000199060031b1c191617600d8201555b83516001600160401b0381116106a457610566600e830154612d19565b601f8111610731575b50602094601f82116001146106c5579481929394956000926106ba575b50508160011b916000199060031b1c191617600e8201555b426010820155601142910155336000526001602052604060002091825492600160401b93848110156106a4576001810180835581101561068e57839160005260206000200155600254928310156106a457600183018060025583101561068e578160209360026000527f405787fa12a823e0f2b7631cc41b3ba8828b3321ca811111fa75cd3aa3bb5ace0155817f1c8d7e47ce2d8e002bbc8c3f80a22247d09e0faf09b2a4d105385dfe6c64862961066760405193606085526060850190612ba6565b92610673600435612b79565b600435868201524260408201528033940390a3604051908152f35b634e487b7160e01b600052603260045260246000fd5b634e487b7160e01b600052604160045260246000fd5b01519050388061058c565b601f19821695600e840160005260206000209160005b88811061071957508360019596979810610700575b505050811b01600e8201556105a4565b015160001960f88460031b161c191690553880806106f0565b919260206001819286850151815501940192016106db565b600e83016000526020600020601f830160051c810160208410610771575b601f830160051c8201811061076557505061056f565b6000815560010161074f565b508061074f565b015190503880610531565b9250600d84016000526020600020906000935b601f19841685106107da576001945083601f198116106107c1575b505050811b01600d820155610549565b015160001960f88460031b161c191690553880806107b1565b81810151835560209485019460019093019290910190610796565b909150600d84016000526020600020601f840160051c810160208510610841575b90849392915b601f830160051c8201811061083257505061051a565b6000815585945060010161081c565b5080610816565b0151905038806104d9565b9250600c85016000526020600020906000935b601f19841685106108aa576001945083601f19811610610891575b505050811b01600c8301556104f1565b015160001960f88460031b161c19169055388080610881565b81810151835560209485019460019093019290910190610866565b909150600c85016000526020600020601f840160051c810160208510610911575b90849392915b601f830160051c820181106109025750506104c2565b600081558594506001016108ec565b50806108e6565b015190503880610481565b9250600b86016000526020600020906000935b601f198416851061097a576001945083601f19811610610961575b505050811b01600b840155610499565b015160001960f88460031b161c19169055388080610951565b81810151835560209485019460019093019290910190610936565b909150600b86016000526020600020601f840160051c8101602085106109e1575b90849392915b601f830160051c820181106109d257505061046a565b600081558594506001016109bc565b50806109b6565b015190503880610429565b9250600a87016000526020600020906000935b601f1984168510610a4a576001945083601f19811610610a31575b505050811b01600a850155610441565b015160001960f88460031b161c19169055388080610a21565b81810151835560209485019460019093019290910190610a06565b909150600a87016000526020600020601f840160051c810160208510610ab1575b90849392915b601f830160051c82018110610aa2575050610412565b60008155859450600101610a8c565b5080610a86565b0151905038806103a9565b9250600588016000526020600020906000935b601f1984168510610b1a576001945083601f19811610610b01575b505050811b0160058601556103c1565b015160001960f88460031b161c19169055388080610af1565b81810151835560209485019460019093019290910190610ad6565b909150600588016000526020600020601f840160051c810160208510610b81575b90849392915b601f830160051c82018110610b72575050610392565b60008155859450600101610b5c565b5080610b56565b015190503880610351565b9250600489016000526020600020906000935b601f1984168510610bea576001945083601f19811610610bd1575b505050811b016004870155610369565b015160001960f88460031b161c19169055388080610bc1565b81810151835560209485019460019093019290910190610ba6565b909150600489016000526020600020601f840160051c810160208510610c51575b90849392915b601f830160051c82018110610c4257505061033a565b60008155859450600101610c2c565b5080610c26565b0151905038806102f9565b925060038a016000526020600020906000935b601f1984168510610cba576001945083601f19811610610ca1575b505050811b016003880155610311565b015160001960f88460031b161c19169055388080610c91565b81810151835560209485019460019093019290910190610c76565b90915060038a016000526020600020601f840160051c810160208510610d21575b90849392915b601f830160051c82018110610d125750506102e2565b60008155859450600101610cfc565b5080610cf6565b90508b0151386102a2565b915060028a0160005260206000206000925b8d601f1984168510610d8a57506001935082601f19811610610d71575b5050811b0160028901556102b9565b8d015160001960f88460031b161c191690553880610d62565b810151825560209384019360019092019101610d45565b60028a016000526020600020601f830160051c810160208410610de1575b601f830160051c82018110610dd557505061028b565b60008155600101610dbf565b5080610dbf565b600080fd5b34610de8576080366003190112610de8576004356024356044356007811015610de85790610e5d9160643591846000526020946000865260018060a01b039260019584610e4588968760406000200154161515612fd7565b83600052600089528560406000200154163314612f81565b8160005260008752610e756040600020541515612d90565b8160005260008752600f604060002001946000956000975b610ef1575b505050505050905015610ea157005b6084906040519062461bcd60e51b82526004820152602360248201527f53414d3a20446f63756d656e74206e6f7420666f756e6420696e20616374697660448201526269747960e81b6064820152fd5b8054881015610f99578885610f068a84613037565b505414610f205750610f19869798612d6b565b9796610e8d565b9395977f450c88c7168f5a18afd5e3d9b9fd29acb78530216867a02f3c3239a2c4b2d3709597508082610f65866004610f5e610f6a96600698613037565b5001613053565b613037565b500155836000526000825242601160406000200155610f8c6040518092612bcb565ba380838080808080610e92565b610e92565b34610de8576101c0366003190112610de8576024356001600160401b038111610de857610fcf903690600401612c31565b6044356001600160401b038111610de857610fee903690600401612c31565b6064356001600160401b038111610de85761100d903690600401612c31565b906084356001600160401b038111610de85761102d903690600401612c31565b926008610104351015610de857610124356001600160401b038111610de85761105a903690600401612c31565b610144356001600160401b038111610de85761107a903690600401612c31565b90610164356001600160401b038111610de85761109b903690600401612c31565b95610184356001600160401b038111610de8576110bc903690600401612c31565b956101a4356001600160401b038111610de8576110dd903690600401612c31565b9560043560005260006020526110f96040600020541515612d90565b600435600052600060205261111f60018060a01b03600160406000200154163314612f81565b61112b86511515612cc2565b60043560005260006020526040600020958051906001600160401b0382116106a457819061115c60028a0154612d19565b601f8111611b8d575b50602090601f8311600114611b1b57600092611b10575b50508160011b916000199060031b1c19161760028701555b8051906001600160401b0382116106a45781906111b46003890154612d19565b601f8111611abd575b50602090601f8311600114611a4b57600092611a40575b50508160011b916000199060031b1c19161760038601555b8051906001600160401b0382116106a457819061120c6004880154612d19565b601f81116119ed575b50602090601f831160011461197b57600092611970575b50508160011b916000199060031b1c19161760048501555b8051906001600160401b0382116106a45781906112646005870154612d19565b601f811161191d575b50602090601f83116001146118ab576000926118a0575b50508160011b916000199060031b1c19161760058401555b60a435600684015560c435600784015560e43560088401556112c46101043560098501612d53565b8051906001600160401b0382116106a45781906112e4600a860154612d19565b601f811161184d575b50602090601f83116001146117db576000926117d0575b50508160011b916000199060031b1c191617600a8301555b8051906001600160401b0382116106a457819061133c600b850154612d19565b601f811161177d575b50602090601f831160011461170b57600092611700575b50508160011b916000199060031b1c191617600b8201555b83516001600160401b0381116106a457611391600c830154612d19565b601f81116116b9575b506020601f821160011461164a57819293949560009261163f575b50508160011b916000199060031b1c191617600c8201555b82516001600160401b0381116106a4576113ea600d830154612d19565b601f81116115f8575b506020601f821160011461158c5781929394600092611581575b50508160011b916000199060031b1c191617600d8201555b600e810182516001600160401b0381116106a4576114438254612d19565b601f8111611539575b506020601f82116001146114d357819293946000926114c8575b50508160011b916000199060031b1c19161790555b60114291015560405161149061010435612b79565b61010435815242602082015233907fe5da5f3519cc0892f013a29d0f4418355f7a96213c7f7fcc44f0bdd70bf60fe7604060043592a3005b015190508480611466565b601f198216908360005260206000209160005b81811061152157509583600195969710611508575b505050811b01905561147b565b015160001960f88460031b161c191690558480806114fb565b9192602060018192868b0151815501940192016114e6565b826000526020600020601f830160051c81019160208410611577575b601f0160051c01905b81811061156b575061144c565b6000815560010161155e565b9091508190611555565b01519050848061140d565b601f19821690600d840160005260206000209160005b8181106115e0575095836001959697106115c7575b505050811b01600d820155611425565b015160001960f88460031b161c191690558480806115b7565b9192602060018192868b0151815501940192016115a2565b600d83016000526020600020601f830160051c810160208410611638575b601f830160051c8201811061162c5750506113f3565b60008155600101611616565b5080611616565b0151905085806113b5565b600c830160005260206000209060005b601f19841681106116a1575060019394959683601f19811610611688575b505050811b01600c8201556113cd565b015160001960f88460031b161c19169055858080611678565b9091602060018192858b01518155019301910161165a565b600c83016000526020600020601f830160051c8101602084106116f9575b601f830160051c820181106116ed57505061139a565b600081556001016116d7565b50806116d7565b01519050868061135c565b9250600b84016000526020600020906000935b601f1984168510611762576001945083601f19811610611749575b505050811b01600b820155611374565b015160001960f88460031b161c19169055868080611739565b8181015183556020948501946001909301929091019061171e565b909150600b84016000526020600020601f840160051c8101602085106117c9575b90849392915b601f830160051c820181106117ba575050611345565b600081558594506001016117a4565b508061179e565b015190508780611304565b9250600a85016000526020600020906000935b601f1984168510611832576001945083601f19811610611819575b505050811b01600a83015561131c565b015160001960f88460031b161c19169055878080611809565b818101518355602094850194600190930192909101906117ee565b909150600a85016000526020600020601f840160051c810160208510611899575b90849392915b601f830160051c8201811061188a5750506112ed565b60008155859450600101611874565b508061186e565b015190508880611284565b9250600586016000526020600020906000935b601f1984168510611902576001945083601f198116106118e9575b505050811b01600584015561129c565b015160001960f88460031b161c191690558880806118d9565b818101518355602094850194600190930192909101906118be565b909150600586016000526020600020601f840160051c810160208510611969575b90849392915b601f830160051c8201811061195a57505061126d565b60008155859450600101611944565b508061193e565b01519050898061122c565b9250600487016000526020600020906000935b601f19841685106119d2576001945083601f198116106119b9575b505050811b016004850155611244565b015160001960f88460031b161c191690558980806119a9565b8181015183556020948501946001909301929091019061198e565b909150600487016000526020600020601f840160051c810160208510611a39575b90849392915b601f830160051c82018110611a2a575050611215565b60008155859450600101611a14565b5080611a0e565b015190508a806111d4565b9250600388016000526020600020906000935b601f1984168510611aa2576001945083601f19811610611a89575b505050811b0160038601556111ec565b015160001960f88460031b161c191690558a8080611a79565b81810151835560209485019460019093019290910190611a5e565b909150600388016000526020600020601f840160051c810160208510611b09575b90849392915b601f830160051c82018110611afa5750506111bd565b60008155859450600101611ae4565b5080611ade565b015190508b8061117c565b9250600289016000526020600020906000935b601f1984168510611b72576001945083601f19811610611b59575b505050811b016002870155611194565b015160001960f88460031b161c191690558b8080611b49565b81810151835560209485019460019093019290910190611b2e565b909150600289016000526020600020601f840160051c810160208510611bd9575b90849392915b601f830160051c82018110611bca575050611165565b60008155859450600101611bb4565b5080611bae565b34610de857602080600319360112610de8576004356001600160a01b03811690819003610de8576000526001808252604060002091604051918282855491828152019460005282600020926000905b828210611c5657611c5286611c46818a0382612c10565b60405191829182612c87565b0390f35b84548752958601959383019390830190611c2f565b34610de8576000366003190112610de857604051806002549182815260208091019260026000527f405787fa12a823e0f2b7631cc41b3ba8828b3321ca811111fa75cd3aa3bb5ace916000905b828210611ccf57611c5285611c4681890382612c10565b835486529485019460019384019390910190611cb8565b34610de857610120366003190112610de8576024356001600160401b038111610de857611d17903690600401612c31565b6044356001600160401b038111610de857611d36903690600401612c31565b6064356001600160401b038111610de857611d55903690600401612c31565b60076084351015610de85760e4356001600160401b038111610de857611d7f903690600401612c31565b610104356001600160401b038111610de857611d9f903690600401612c31565b906004356000526000602052611de660018060a01b03611dca81600160406000200154161515612fd7565b6004356000526000602052600160406000200154163314612f81565b6004356000526000602052611e016040600020541515612d90565b845115612585576004356000526000602052600f60406000200154604051602081019142835260043560408301526060820152611e5d6080828951611e4d818c60208686019101612b83565b8101036060810184520182612c10565b5190209260405194611e6e86612bf4565b84865286602087015260408601526060850152611e9060843560808601612e82565b60a43560a0850152600060c085015260c43560e08501526101008401526101208301526004356000526000602052600f6040600020018054600160401b8110156106a457611ee391600182018155613037565b61256f578251815560208301518051906001600160401b0382116106a4578190611f106001850154612d19565b601f811161251c575b50602090601f83116001146124aa5760009261249f575b50508160011b916000199060031b1c19161760018201555b60408301518051906001600160401b0382116106a4578190611f6d6002850154612d19565b601f811161244c575b50602090601f83116001146123da576000926123cf575b50508160011b916000199060031b1c19161760028201555b60608301518051906001600160401b0382116106a4578190611fca6003850154612d19565b601f811161237c575b50602090601f831160011461230a576000926122ff575b50508160011b916000199060031b1c19161760038201555b608083015160078110156122e95761201d9060048301613053565b60a0830151600582015560c0830151600682015560e083015160078201556101008301518051906001600160401b0382116106a45761205f6008840154612d19565b601f81116122a2575b50602090601f831160011461222c5791806101209492600994600092612221575b50508160011b916000199060031b1c19161760088201555b01920151928351926001600160401b0384116106a4576120c18154612d19565b94601f86116121d9575b602095508590601f8611600114612172579480918596600092612167575b50508160011b916000199060031b1c19161790555b60043560005260008452426011604060002001557fcfe92407c78b1520d151055bacf06aa469f96420aaf033a32f9345da40fa789261214860405192604084526040840190612ba6565b91612157868201608435612bcb565b80600435930390a3604051908152f35b0151905087806120e9565b90601f1986169183600052876000209260005b8181106121c25750916001939188889994106121a9575b505050811b0190556120fe565b015160001960f88460031b161c1916905587808061219c565b929389600181928786015181550195019301612185565b816000526020600020601f860160051c81019660208710612217575b601f0160051c01955b86811061220b57506120cb565b600081556001016121fe565b90965086906121f5565b015190508880612089565b906008840160005260206000209160005b601f198516811061228a575092610120949260019260099583601f19811610612271575b505050811b0160088201556120a1565b015160001960f88460031b161c19169055888080612261565b9192602060018192868501518155019401920161223d565b600884016000526020600020601f840160051c8101602085106122e2575b601f830160051c820181106122d6575050612068565b600081556001016122c0565b50806122c0565b634e487b7160e01b600052602160045260246000fd5b015190508680611fea565b9250600384016000526020600020906000935b601f1984168510612361576001945083601f19811610612348575b505050811b016003820155612002565b015160001960f88460031b161c19169055868080612338565b8181015183556020948501946001909301929091019061231d565b909150600384016000526020600020601f840160051c8101602085106123c8575b90849392915b601f830160051c820181106123b9575050611fd3565b600081558594506001016123a3565b508061239d565b015190508680611f8d565b9250600284016000526020600020906000935b601f1984168510612431576001945083601f19811610612418575b505050811b016002820155611fa5565b015160001960f88460031b161c19169055868080612408565b818101518355602094850194600190930192909101906123ed565b909150600284016000526020600020601f840160051c810160208510612498575b90849392915b601f830160051c82018110612489575050611f76565b60008155859450600101612473565b508061246d565b015190508680611f30565b9250600184016000526020600020906000935b601f1984168510612501576001945083601f198116106124e8575b505050811b016001820155611f48565b015160001960f88460031b161c191690558680806124d8565b818101518355602094850194600190930192909101906124bd565b909150600184016000526020600020601f840160051c810160208510612568575b90849392915b601f830160051c82018110612559575050611f19565b60008155859450600101612543565b508061253d565b634e487b7160e01b600052600060045260246000fd5b60405162461bcd60e51b815260206004820152602260248201527f53414d3a20446f63756d656e74206e616d652063616e6e6f7420626520656d70604482015261747960f01b6064820152608490fd5b34610de857602080600319360112610de85760043580600052600082526126026040600020541515612d90565b60005260008152612619600f604060002001612e8e565b6040519082820192808352815180945260408301938160408260051b8601019301916000955b82871061264c5785850386f35b909192938280612704600193603f198a82030186528851805182526126f06126ac61269961268787850151610140808a890152870190612ba6565b60408501518682036040880152612ba6565b6060808501519086830390870152612ba6565b6126be60808085015190860190612bcb565b60a0808401519085015260c0808401519085015260e083015160e0850152610100808401519085830390860152612ba6565b916101208092015191818403910152612ba6565b960192019601959291909261263f565b34610de8576020366003190112610de85761272f6080612bd8565b6000608081905260a081905260c0819052606060e08190526101008190526101208190526101408190526101608290526101808290526101a08290526101c08290526101e0819052610200819052610220819052610240819052610260819052610280526102a08190526102c081905260043580825260208290526040909120546127bb901515612d90565b600052600060205260406000206011604051916127d783612bd8565b8054835260018101546001600160a01b038116602085015260ff9061280160a082901c8316612b79565b60a01c16604084015261281660028201612ddc565b606084015261282760038201612ddc565b608084015261283860048201612ddc565b60a084015261284960058201612ddc565b60c0840152600681015460e08401526007810154610100840152600881015461012084015260ff60098201541661287f81612b79565b610140840152612891600a8201612ddc565b6101608401526128a3600b8201612ddc565b6101808401526128b5600c8201612ddc565b6101a08401526128c7600d8201612ddc565b6101c08401526128d9600e8201612ddc565b6101e08401526128eb600f8201612e8e565b610200840152601081015461022084015201546102408201526040805160208082528351818301528301516001600160a01b0316818301529082015161293081612b79565b6060820152612a5a612a42612a2a612a126129fa6129aa61299461297e61296860608b015161026060808c01526102808b0190612ba6565b60808b01518a8203601f190160a08c0152612ba6565b60a08a0151898203601f190160c08b0152612ba6565b60c0890151888203601f190160e08a0152612ba6565b60e08801516101008801526101008801516101208801526101208801516101408801526101408801516129dc81612b79565b610160880152610160880151601f1988830301610180890152612ba6565b610180870151868203601f19016101a0880152612ba6565b6101a0860151858203601f19016101c0870152612ba6565b6101c0850151848203601f19016101e0860152612ba6565b6101e0840151838203601f1901610200850152612ba6565b61020083015190601f1983820301610220840152815180825260208201916020808360051b8301019401926000915b838310612aad578680876102408b6102208101518285015201516102608301520390f35b9091929394602080612b6a600193601f1986820301875289519081518152610120612b58612b14612b02612af0888701516101408a880152610140870190612ba6565b60408701518682036040880152612ba6565b60608601518582036060870152612ba6565b612b2660808601516080860190612bcb565b60a085015160a085015260c085015160c085015260e085015160e0850152610100850151848203610100860152612ba6565b92015190610120818403910152612ba6565b97019301930191939290612a89565b600811156122e957565b60005b838110612b965750506000910152565b8181015183820152602001612b86565b90602091612bbf81518092818552858086019101612b83565b601f01601f1916010190565b9060078210156122e95752565b61026081019081106001600160401b038211176106a457604052565b61014081019081106001600160401b038211176106a457604052565b90601f801991011681019081106001600160401b038211176106a457604052565b81601f82011215610de8578035906001600160401b0382116106a45760405192612c65601f8401601f191660200185612c10565b82845260208383010111610de857816000926020809301838601378301015290565b6020908160408183019282815285518094520193019160005b828110612cae575050505090565b835185529381019392810192600101612ca0565b15612cc957565b60405162461bcd60e51b815260206004820152602260248201527f53414d3a204163746976697479206e616d652063616e6e6f7420626520656d70604482015261747960f01b6064820152608490fd5b90600182811c92168015612d49575b6020831014612d3357565b634e487b7160e01b600052602260045260246000fd5b91607f1691612d28565b90612d5d81612b79565b60ff80198354169116179055565b6000198114612d7a5760010190565b634e487b7160e01b600052601160045260246000fd5b15612d9757565b60405162461bcd60e51b815260206004820152601c60248201527f53414d3a20416374697669747920646f6573206e6f74206578697374000000006044820152606490fd5b9060405191826000825492612df084612d19565b908184526001948581169081600014612e5f5750600114612e1c575b5050612e1a92500383612c10565b565b9093915060005260209081600020936000915b818310612e47575050612e1a93508201013880612e0c565b85548884018501529485019487945091830191612e2f565b915050612e1a94506020925060ff191682840152151560051b8201013880612e0c565b60078210156122e95752565b9081546001600160401b0381116106a457604092835193602090600590612eb98386841b0188612c10565b8487526000938452828420918388015b868610612ed95750505050505050565b600a856001928551612eea81612bf4565b87548152612ef9858901612ddc565b83820152612f0960028901612ddc565b87820152612f1960038901612ddc565b6060820152612f3260ff60048a01541660808301612e82565b8588015460a0820152600688015460c0820152600788015460e0820152612f5b60088901612ddc565b610100820152612f6d60098901612ddc565b610120820152815201940195019492612ec9565b15612f8857565b60405162461bcd60e51b815260206004820152602160248201527f53414d3a2043616c6c6572206973206e6f74206163746976697479206f776e656044820152603960f91b6064820152608490fd5b15612fde57565b60405162461bcd60e51b815260206004820152602b60248201527f53414d3a204163746976697479206d6179206e6f74206578697374206f72206860448201526a30b99037379037bbb732b960a91b6064820152608490fd5b805482101561068e57600052600a602060002091020190600090565b9060078110156122e95760ff8019835416911617905556fea264697066735822122080390b02022b41d2283754763d35742bca1624b8fde316a4c651c4a860fc959164736f6c63430008140033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 97,
+        "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+        "label": "s_activities",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_mapping(t_bytes32,t_struct(Activity)92_storage)"
+      },
+      {
+        "astId": 102,
+        "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+        "label": "s_activitiesByOwner",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_address,t_array(t_bytes32)dyn_storage)"
+      },
+      {
+        "astId": 105,
+        "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+        "label": "s_allActivityIds",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_array(t_bytes32)dyn_storage"
+      },
+      {
+        "astId": 107,
+        "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+        "label": "s_activityNonce",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_uint256"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_bytes32)dyn_storage": {
+        "base": "t_bytes32",
+        "encoding": "dynamic_array",
+        "label": "bytes32[]",
+        "numberOfBytes": "32"
+      },
+      "t_array(t_struct(ComplianceDocument)49_storage)dyn_storage": {
+        "base": "t_struct(ComplianceDocument)49_storage",
+        "encoding": "dynamic_array",
+        "label": "struct SpaceActivityManager.ComplianceDocument[]",
+        "numberOfBytes": "32"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_enum(ActivityStatus)19": {
+        "encoding": "inplace",
+        "label": "enum SpaceActivityManager.ActivityStatus",
+        "numberOfBytes": "1"
+      },
+      "t_enum(ActivityType)10": {
+        "encoding": "inplace",
+        "label": "enum SpaceActivityManager.ActivityType",
+        "numberOfBytes": "1"
+      },
+      "t_enum(DocComplianceStatus)27": {
+        "encoding": "inplace",
+        "label": "enum SpaceActivityManager.DocComplianceStatus",
+        "numberOfBytes": "1"
+      },
+      "t_mapping(t_address,t_array(t_bytes32)dyn_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => bytes32[])",
+        "numberOfBytes": "32",
+        "value": "t_array(t_bytes32)dyn_storage"
+      },
+      "t_mapping(t_bytes32,t_struct(Activity)92_storage)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => struct SpaceActivityManager.Activity)",
+        "numberOfBytes": "32",
+        "value": "t_struct(Activity)92_storage"
+      },
+      "t_string_storage": {
+        "encoding": "bytes",
+        "label": "string",
+        "numberOfBytes": "32"
+      },
+      "t_struct(Activity)92_storage": {
+        "encoding": "inplace",
+        "label": "struct SpaceActivityManager.Activity",
+        "members": [
+          {
+            "astId": 51,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "id",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_bytes32"
+          },
+          {
+            "astId": 53,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "owner",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address"
+          },
+          {
+            "astId": 56,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "activityType",
+            "offset": 20,
+            "slot": "1",
+            "type": "t_enum(ActivityType)10"
+          },
+          {
+            "astId": 58,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "name",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 60,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "description",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 62,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "organization",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 64,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "projectManager",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 66,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "startDate",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 68,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "endDate",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 70,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "launchDateTime",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 73,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "status",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_enum(ActivityStatus)19"
+          },
+          {
+            "astId": 75,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "externalApiLaunchId",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 77,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "externalApiSource",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 79,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "launchSite",
+            "offset": 0,
+            "slot": "12",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 81,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "destination",
+            "offset": 0,
+            "slot": "13",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 83,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "payloadDetails",
+            "offset": 0,
+            "slot": "14",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 87,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "complianceDocuments",
+            "offset": 0,
+            "slot": "15",
+            "type": "t_array(t_struct(ComplianceDocument)49_storage)dyn_storage"
+          },
+          {
+            "astId": 89,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "createdAt",
+            "offset": 0,
+            "slot": "16",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 91,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "updatedAt",
+            "offset": 0,
+            "slot": "17",
+            "type": "t_uint256"
+          }
+        ],
+        "numberOfBytes": "576"
+      },
+      "t_struct(ComplianceDocument)49_storage": {
+        "encoding": "inplace",
+        "label": "struct SpaceActivityManager.ComplianceDocument",
+        "members": [
+          {
+            "astId": 29,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "id",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_bytes32"
+          },
+          {
+            "astId": 31,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "documentName",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 33,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "documentType",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 35,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "documentHashOrLink",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 38,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "status",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_enum(DocComplianceStatus)27"
+          },
+          {
+            "astId": 40,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "submittedDate",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 42,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "reviewDate",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 44,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "expiryDate",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 46,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "notes",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 48,
+            "contract": "contracts/SpaceActivityManager.sol:SpaceActivityManager",
+            "label": "responsibleEntity",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_string_storage"
+          }
+        ],
+        "numberOfBytes": "320"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

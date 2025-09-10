@@ -39,9 +39,14 @@ const LaunchesDashboard = dynamic(
   () => import("~~/components/dashboard/LaunchesDashboard").then(mod => mod.LaunchesDashboard),
   { ssr: false },
 );
+const MissionPlanningDashboard = dynamic(
+  () => import("~~/components/dashboard/MissionPlanningDashboard").then(mod => mod.MissionPlanningDashboard),
+  { ssr: false },
+);
 
 const menuItems = [
   { id: "overview", label: "Overview", icon: "🏠" },
+  { id: "mission-planning", label: "Mission Planning", icon: "🛸" },
   { id: "feed", label: "Social Feed", icon: "🌐" },
   { id: "profile", label: "Profile", icon: "👤" },
   { id: "outputs", label: "My Outputs", icon: "📊" },
@@ -85,6 +90,13 @@ export default function DashboardPage() {
           <div className="space-y-6">
             <h2 className="text-3xl font-bold text-white">Welcome to Lunargistics Dashboard</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div 
+                onClick={() => setActiveTab("mission-planning")}
+                className="bg-gray-800 border border-gray-700 p-6 rounded-xl hover:border-purple-500/50 transition-all duration-200 cursor-pointer"
+              >
+                <h3 className="text-lg font-semibold mb-2 text-white">Mission Planning</h3>
+                <p className="text-gray-400">End-to-end mission design and analysis suite</p>
+              </div>
               <div className="bg-gray-800 border border-gray-700 p-6 rounded-xl hover:border-purple-500/50 transition-all duration-200">
                 <h3 className="text-lg font-semibold mb-2 text-white">Smart Wallets</h3>
                 <p className="text-gray-400">Manage your ERC-6551 smart wallets</p>
@@ -112,6 +124,8 @@ export default function DashboardPage() {
             </div>
           </div>
         );
+      case "mission-planning":
+        return <MissionPlanningDashboard />;
       case "feed":
         return (
           <div className="space-y-6">

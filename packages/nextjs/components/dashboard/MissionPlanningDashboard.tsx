@@ -115,7 +115,8 @@ const subTabs = [
   { id: "ait", label: "AIT Planning", icon: CheckCircle },
   { id: "compliance", label: "Compliance", icon: FileText },
   { id: "visualization", label: "3D View", icon: Eye },
-  { id: "documents", label: "Documents", icon: FileCode },
+  { id: "icd", label: "ICD & Drivers", icon: FileCode },
+  { id: "documents", label: "Documents", icon: FileText },
   { id: "api", label: "API & Export", icon: Database },
 ];
 
@@ -974,6 +975,165 @@ export const MissionPlanningDashboard = () => {
             <div className="text-center">
               <Globe className="w-16 h-16 text-purple-400 mx-auto mb-4" />
               <p className="text-gray-400">3D Visualization Coming Soon</p>
+            </div>
+          </div>
+        )}
+        
+        {/* ICD & Drivers Tab */}
+        {activeSubTab === "icd" && (
+          <div className="p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Interface Control & Driver Generation</h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* ICD Generation Section */}
+              <div className="bg-gray-800 rounded-lg p-4">
+                <h4 className="font-medium text-white mb-4">Interface Control Documents</h4>
+                
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Select Components</label>
+                    <select className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white">
+                      <option>All Components</option>
+                      <option>Satellite Bus ↔ Payload</option>
+                      <option>Ground Station ↔ Satellite</option>
+                      <option>Power System ↔ Bus</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">ICD Version</label>
+                    <input
+                      type="text"
+                      placeholder="1.0"
+                      className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white"
+                    />
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <button className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded">
+                      Generate ICD
+                    </button>
+                    <button className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded">
+                      View Template
+                    </button>
+                  </div>
+                  
+                  <div className="border-t border-gray-700 pt-3">
+                    <p className="text-sm text-gray-400 mb-2">Recent ICDs:</p>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-300">ICD-001-v1.2</span>
+                        <span className="text-gray-500">2 days ago</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-300">ICD-002-v2.0</span>
+                        <span className="text-gray-500">1 week ago</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Driver Generation Section */}
+              <div className="bg-gray-800 rounded-lg p-4">
+                <h4 className="font-medium text-white mb-4">Driver Generation</h4>
+                
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Component</label>
+                    <select className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white">
+                      <option>High-Resolution Camera</option>
+                      <option>S-Band Transceiver</option>
+                      <option>Star Tracker</option>
+                      <option>Reaction Wheel</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Target Language</label>
+                    <select className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white">
+                      <option>C</option>
+                      <option>C++</option>
+                      <option>Python</option>
+                      <option>Rust</option>
+                      <option>VHDL</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Features</label>
+                    <div className="space-y-2">
+                      <label className="flex items-center text-sm text-gray-300">
+                        <input type="checkbox" className="mr-2" defaultChecked />
+                        Error Handling
+                      </label>
+                      <label className="flex items-center text-sm text-gray-300">
+                        <input type="checkbox" className="mr-2" defaultChecked />
+                        Logging
+                      </label>
+                      <label className="flex items-center text-sm text-gray-300">
+                        <input type="checkbox" className="mr-2" />
+                        Unit Tests
+                      </label>
+                      <label className="flex items-center text-sm text-gray-300">
+                        <input type="checkbox" className="mr-2" />
+                        Simulation Mode
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <button className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded">
+                    Generate Driver
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            {/* Interface Matrix */}
+            <div className="mt-6 bg-gray-800 rounded-lg p-4">
+              <h4 className="font-medium text-white mb-4">Interface Matrix</h4>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-700">
+                      <th className="text-left py-2 text-gray-400">Component</th>
+                      <th className="text-left py-2 text-gray-400">Interface</th>
+                      <th className="text-left py-2 text-gray-400">Protocol</th>
+                      <th className="text-left py-2 text-gray-400">Data Rate</th>
+                      <th className="text-left py-2 text-gray-400">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-gray-700">
+                      <td className="py-2 text-gray-300">Payload Camera</td>
+                      <td className="py-2 text-gray-300">SpaceWire</td>
+                      <td className="py-2 text-gray-300">RMAP</td>
+                      <td className="py-2 text-gray-300">200 Mbps</td>
+                      <td className="py-2">
+                        <span className="text-green-400">✓ Verified</span>
+                      </td>
+                    </tr>
+                    <tr className="border-b border-gray-700">
+                      <td className="py-2 text-gray-300">S-Band Radio</td>
+                      <td className="py-2 text-gray-300">RS-422</td>
+                      <td className="py-2 text-gray-300">CCSDS</td>
+                      <td className="py-2 text-gray-300">115.2 kbps</td>
+                      <td className="py-2">
+                        <span className="text-yellow-400">⚠ Pending</span>
+                      </td>
+                    </tr>
+                    <tr className="border-b border-gray-700">
+                      <td className="py-2 text-gray-300">Power System</td>
+                      <td className="py-2 text-gray-300">CAN Bus</td>
+                      <td className="py-2 text-gray-300">CANopen</td>
+                      <td className="py-2 text-gray-300">1 Mbps</td>
+                      <td className="py-2">
+                        <span className="text-green-400">✓ Verified</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}

@@ -8,26 +8,27 @@ import { withRateLimit } from '~~/lib/rateLimit';
 
 // Mock services for now
 const pinataService = {
-  uploadMissionData: async (data: any) => ({ cid: "mock-cid" }),
-  getMissionData: async (cid: string) => ({}),
-  listPins: async (filters: any) => ({ 
+  uploadMissionData: async () => ({ cid: "mock-cid" }),
+  getMissionData: async () => ({}),
+  listPins: async () => ({ 
     rows: [
       { id: "1", name: "Mission Alpha", type: "Earth Observation" },
       { id: "2", name: "Mission Beta", type: "Communication" }
     ], 
     count: 2 
   }),
-  pinMissionData: async (data: any) => "QmMockIPFSHash123",
-  unpin: async (hash: string) => true,
+  pinMissionData: async () => "QmMockIPFSHash123",
+  unpin: async () => true,
 };
 
-const orbitService = {
-  calculateOrbit: (elements: any) => ({ position: { x: 0, y: 0, z: 0 }, velocity: { x: 0, y: 0, z: 0 } }),
-};
-
-const documentGenerator = {
-  generateMissionDocument: (data: any) => "# Mission Document\n\nGenerated document content...",
-};
+// Unused services - commented out for now
+// const orbitService = {
+//   calculateOrbit: () => ({ position: { x: 0, y: 0, z: 0 }, velocity: { x: 0, y: 0, z: 0 } }),
+// };
+// 
+// const documentGenerator = {
+//   generateMissionDocument: () => "# Mission Document\n\nGenerated document content...",
+// };
 
 // GET /api/missions - List all missions
 // GET /api/missions?id=123 - Get specific mission
@@ -73,108 +74,115 @@ export async function GET(request: NextRequest) {
       missions: pins.rows,
       total: pins.count,
     });
-  } catch (error) {
-    console.error('Error fetching missions:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch missions' },
-      { status: 500 }
-    );
-  }
+    } catch (error) {
+      console.error('Error fetching missions:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch missions' },
+        { status: 500 }
+      );
+    }
+  });
 }
 
 // POST /api/missions - Create new mission
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
+  return withRateLimit(request, async () => {
+    try {
+      const body = await request.json();
     
-    // Validate required fields
-    if (!body.name || !body.type) {
+      // Validate required fields
+      if (!body.name || !body.type) {
+        return NextResponse.json(
+          { error: 'Missing required fields: name, type' },
+          { status: 400 }
+        );
+      }
+      
+      // Save to IPFS
+      const ipfsHash = await pinataService.pinMissionData(body);
+      
+      // In production, would also create on-chain record
+      
+      return NextResponse.json({
+        success: true,
+        ipfsHash: ipfsHash,
+        message: 'Mission created successfully',
+      });
+    } catch (error) {
+      console.error('Error creating mission:', error);
       return NextResponse.json(
-        { error: 'Missing required fields: name, type' },
-        { status: 400 }
+        { error: 'Failed to create mission' },
+        { status: 500 }
       );
     }
-    
-    // Save to IPFS
-    const ipfsHash = await pinataService.pinMissionData(body);
-    
-    // In production, would also create on-chain record
-    
-    return NextResponse.json({
-      success: true,
-      ipfsHash: ipfsHash,
-      message: 'Mission created successfully',
-    });
-  } catch (error) {
-    console.error('Error creating mission:', error);
-    return NextResponse.json(
-      { error: 'Failed to create mission' },
-      { status: 500 }
-    );
-  }
+  });
 }
 
 // PUT /api/missions - Update mission
 export async function PUT(request: NextRequest) {
-  try {
-    const body = await request.json();
-    
-    if (!body.id) {
+  return withRateLimit(request, async () => {
+    try {
+      const body = await request.json();
+      
+      if (!body.id) {
+        return NextResponse.json(
+          { error: 'Mission ID required' },
+          { status: 400 }
+        );
+      }
+      
+      // Update IPFS data
+      const ipfsHash = await pinataService.pinMissionData(body);
+      
+      // In production, would update blockchain record
+      
+      return NextResponse.json({
+        success: true,
+        ipfsHash: ipfsHash,
+        message: 'Mission updated successfully',
+      });
+    } catch (error) {
+      console.error('Error updating mission:', error);
       return NextResponse.json(
-        { error: 'Mission ID required' },
-        { status: 400 }
+        { error: 'Failed to update mission' },
+        { status: 500 }
       );
     }
-    
-    // Update IPFS data
-    const ipfsHash = await pinataService.pinMissionData(body);
-    
-    // In production, would update blockchain record
-    
-    return NextResponse.json({
-      success: true,
-      ipfsHash: ipfsHash,
-      message: 'Mission updated successfully',
-    });
-  } catch (error) {
-    console.error('Error updating mission:', error);
-    return NextResponse.json(
-      { error: 'Failed to update mission' },
-      { status: 500 }
-    );
-  }
+  });
 }
 
 // DELETE /api/missions?id=123 - Delete mission
 export async function DELETE(request: NextRequest) {
-  try {
-    const searchParams = request.nextUrl.searchParams;
-    const missionId = searchParams.get('id');
-    const ipfsHash = searchParams.get('hash');
-    
-    if (!missionId && !ipfsHash) {
+  return withRateLimit(request, async () => {
+    try {
+      const searchParams = request.nextUrl.searchParams;
+      const missionId = searchParams.get('id');
+      const ipfsHash = searchParams.get('hash');
+      
+      if (!missionId && !ipfsHash) {
+        return NextResponse.json(
+          { error: 'Mission ID or IPFS hash required' },
+          { status: 400 }
+        );
+      }
+      
+      if (ipfsHash) {
+        // Unpin from IPFS
+        await pinataService.unpin(ipfsHash);
+      }
+      
+      // In production, would also update blockchain status
+      
+      return NextResponse.json({
+        success: true,
+        message: 'Mission deleted successfully',
+      });
+    } catch (error) {
+      console.error('Error deleting mission:', error);
       return NextResponse.json(
-        { error: 'Mission ID or IPFS hash required' },
-        { status: 400 }
+        { error: 'Failed to delete mission' },
+        { status: 500 }
       );
     }
-    
-    if (ipfsHash) {
-      // Unpin from IPFS
-      await pinataService.unpin(ipfsHash);
-    }
-    
-    // In production, would also update blockchain status
-    
-    return NextResponse.json({
-      success: true,
-      message: 'Mission deleted successfully',
-    });
-  } catch (error) {
-    console.error('Error deleting mission:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete mission' },
-      { status: 500 }
-    );
-  }
+  });
 }

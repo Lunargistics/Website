@@ -27,6 +27,11 @@ export const menuLinks: HeaderMenuLink[] = [
     icon: <RocketLaunchIcon className="h-4 w-4" />,
   },
   {
+    label: "Mission Planning",
+    href: "/mission-planning",
+    icon: <RocketLaunchIcon className="h-4 w-4" />,
+  },
+  {
     label: "Implement Space",
     href: "/implement-space",
     icon: <SparklesIcon className="h-4 w-4" />,

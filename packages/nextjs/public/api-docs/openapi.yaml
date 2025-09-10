@@ -1,0 +1,618 @@
+openapi: 3.0.3
+info:
+  title: Lunargistics Mission Planning Suite API
+  description: |
+    REST API for the Lunargistics Mission Planning Suite, providing endpoints for mission management,
+    orbital calculations, document generation, and blockchain integration.
+    
+    ## Authentication
+    All endpoints require authentication via Bearer token in the Authorization header.
+    
+    ## Rate Limiting
+    API endpoints are rate-limited to prevent abuse. Rate limit headers are included in all responses.
+  version: 1.0.0
+  contact:
+    name: Lunargistics Development Team
+    email: api@lunargistics.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.lunargistics.com/v1
+    description: Production server
+  - url: https://staging-api.lunargistics.com/v1
+    description: Staging server
+  - url: http://localhost:3000/api
+    description: Development server
+
+tags:
+  - name: Missions
+    description: Mission planning and management
+  - name: Orbit
+    description: Orbital mechanics calculations
+  - name: Documents
+    description: Document generation and management
+  - name: Constellation
+    description: Constellation analysis and design
+  - name: Orekit
+    description: Advanced orbital mechanics with Orekit
+  - name: Venice
+    description: AI-powered mission planning
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Mission:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        id:
+          type: string
+          description: Unique mission identifier
+          example: "mission-123"
+        name:
+          type: string
+          description: Mission name
+          example: "Lunar Gateway Resupply"
+        type:
+          type: string
+          enum: [Earth Observation, Communication, Navigation, Scientific, Exploration]
+          description: Mission type
+        description:
+          type: string
+          description: Detailed mission description
+        status:
+          type: string
+          enum: [Planning, Active, Complete, Cancelled]
+          default: Planning
+        budget:
+          type: object
+          properties:
+            total:
+              type: number
+              description: Total budget in USD
+            allocated:
+              type: number
+              description: Allocated budget
+            spent:
+              type: number
+              description: Spent budget
+        phase:
+          type: string
+          enum: [Pre-Phase A, Phase A, Phase B, Phase C, Phase D, Phase E, Phase F]
+          description: Mission lifecycle phase
+        ipfsHash:
+          type: string
+          description: IPFS hash for mission data
+          example: "QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    OrbitalElements:
+      type: object
+      properties:
+        semiMajorAxis:
+          type: number
+          description: Semi-major axis in kilometers
+        eccentricity:
+          type: number
+          description: Orbital eccentricity (0-1)
+        inclination:
+          type: number
+          description: Inclination in degrees
+        raan:
+          type: number
+          description: Right Ascension of Ascending Node in degrees
+        argumentOfPerigee:
+          type: number
+          description: Argument of perigee in degrees
+        trueAnomaly:
+          type: number
+          description: True anomaly in degrees
+        period:
+          type: number
+          description: Orbital period in minutes
+        apogee:
+          type: number
+          description: Apogee altitude in kilometers
+        perigee:
+          type: number
+          description: Perigee altitude in kilometers
+
+    TLE:
+      type: object
+      required:
+        - line1
+        - line2
+      properties:
+        line1:
+          type: string
+          description: TLE line 1
+          example: "1 25544U 98067A   24345.52795139  .00012506  00000-0  22495-3 0  9991"
+        line2:
+          type: string
+          description: TLE line 2
+          example: "2 25544  51.6415 208.4057 0002769  35.9667  61.6291 15.50381554436915"
+
+    PropagationResult:
+      type: object
+      properties:
+        position:
+          type: object
+          properties:
+            x:
+              type: number
+              description: X coordinate in km
+            y:
+              type: number
+              description: Y coordinate in km
+            z:
+              type: number
+              description: Z coordinate in km
+        velocity:
+          type: object
+          properties:
+            x:
+              type: number
+              description: X velocity in km/s
+            y:
+              type: number
+              description: Y velocity in km/s
+            z:
+              type: number
+              description: Z velocity in km/s
+        latitude:
+          type: number
+          description: Geographic latitude in degrees
+        longitude:
+          type: number
+          description: Geographic longitude in degrees
+        altitude:
+          type: number
+          description: Altitude above Earth surface in km
+        timestamp:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code
+        details:
+          type: object
+          description: Additional error details
+
+    RateLimitError:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Rate limit error message
+        limit:
+          type: integer
+          description: Request limit
+        remaining:
+          type: integer
+          description: Remaining requests
+        reset:
+          type: string
+          format: date-time
+          description: Rate limit reset time
+
+  responses:
+    Unauthorized:
+      description: Unauthorized access
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: Request limit per window
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: Remaining requests in window
+        X-RateLimit-Reset:
+          schema:
+            type: string
+            format: date-time
+          description: Rate limit reset time
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until rate limit reset
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RateLimitError'
+
+security:
+  - bearerAuth: []
+
+paths:
+  /missions:
+    get:
+      tags:
+        - Missions
+      summary: List all missions
+      description: Retrieve a list of all missions with optional filtering
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: string
+          description: Filter by mission ID
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: Filter by mission name
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [Earth Observation, Communication, Navigation, Scientific, Exploration]
+          description: Filter by mission type
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [Planning, Active, Complete, Cancelled]
+          description: Filter by mission status
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+          description: Number of items per page
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  missions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Mission'
+                  total:
+                    type: integer
+                    description: Total number of missions
+                  page:
+                    type: integer
+                    description: Current page
+                  pages:
+                    type: integer
+                    description: Total pages
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+    post:
+      tags:
+        - Missions
+      summary: Create a new mission
+      description: Create a new mission and store it on IPFS and blockchain
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Mission'
+      responses:
+        '201':
+          description: Mission created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  ipfsHash:
+                    type: string
+                  message:
+                    type: string
+                  mission:
+                    $ref: '#/components/schemas/Mission'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /missions/{id}:
+    put:
+      tags:
+        - Missions
+      summary: Update a mission
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Mission ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Mission'
+      responses:
+        '200':
+          description: Mission updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  ipfsHash:
+                    type: string
+                  message:
+                    type: string
+        '404':
+          description: Mission not found
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+    delete:
+      tags:
+        - Missions
+      summary: Delete a mission
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Mission ID
+      responses:
+        '200':
+          description: Mission deleted successfully
+        '404':
+          description: Mission not found
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /orbit/propagate:
+    post:
+      tags:
+        - Orbit
+      summary: Propagate orbital position
+      description: Calculate satellite position at a given time
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - orbitalElements
+              properties:
+                orbitalElements:
+                  $ref: '#/components/schemas/OrbitalElements'
+                timeMinutes:
+                  type: number
+                  description: Time offset in minutes
+                  default: 0
+      responses:
+        '200':
+          description: Propagation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  propagation:
+                    $ref: '#/components/schemas/PropagationResult'
+        '400':
+          description: Invalid orbital elements
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /orekit:
+    post:
+      tags:
+        - Orekit
+      summary: Execute Orekit calculation
+      description: Perform advanced orbital mechanics calculations using Orekit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action
+                - data
+              properties:
+                action:
+                  type: string
+                  enum: [parseTLE, propagate, hohmannTransfer, visibilityWindow, launchWindow, deltaV]
+                  description: Calculation type
+                data:
+                  type: object
+                  description: Input data for the calculation
+      responses:
+        '200':
+          description: Calculation result
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Result varies based on action type
+        '400':
+          description: Invalid input data
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /constellation:
+    post:
+      tags:
+        - Constellation
+      summary: Analyze constellation
+      description: Perform constellation analysis and optimization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: [walker, custom]
+                parameters:
+                  type: object
+                  properties:
+                    planes:
+                      type: integer
+                      description: Number of orbital planes
+                    satellitesPerPlane:
+                      type: integer
+                      description: Satellites per plane
+                    altitude:
+                      type: number
+                      description: Altitude in km
+                    inclination:
+                      type: number
+                      description: Inclination in degrees
+      responses:
+        '200':
+          description: Constellation analysis result
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /documents/generate:
+    post:
+      tags:
+        - Documents
+      summary: Generate mission document
+      description: Generate PDR, CDR, FRR, or other mission documents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - missionData
+              properties:
+                type:
+                  type: string
+                  enum: [PDR, CDR, FRR, test-report, compliance-matrix]
+                  description: Document type
+                missionData:
+                  type: object
+                  description: Mission data for document generation
+                format:
+                  type: string
+                  enum: [markdown, html, pdf]
+                  default: markdown
+      responses:
+        '200':
+          description: Generated document
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: string
+                    description: Document content
+                  filename:
+                    type: string
+                    description: Suggested filename
+                  format:
+                    type: string
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /venice:
+    post:
+      tags:
+        - Venice
+      summary: AI mission planning
+      description: Generate mission plans using Venice AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt
+              properties:
+                prompt:
+                  type: string
+                  description: Mission description prompt
+                temperature:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                  default: 0.7
+                max_tokens:
+                  type: integer
+                  default: 2000
+      responses:
+        '200':
+          description: AI-generated mission plan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                    description: Generated mission plan
+        '429':
+          $ref: '#/components/responses/RateLimited'

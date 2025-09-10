@@ -152,6 +152,11 @@ const config: HardhatUserConfig = {
       url: "https://alfajores-forno.celo-testnet.org",
       accounts: [deployerPrivateKey],
     },
+    teaSepolia: {
+      url: "https://tea-sepolia.g.alchemy.com/public",
+      accounts: [deployerPrivateKey],
+      chainId: 10218, // TEA Sepolia chain ID
+    },
   },
   // Configuration for harhdat-verify plugin
   etherscan: {
