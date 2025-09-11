@@ -20,7 +20,8 @@ import {
   XCircle,
 } from "lucide-react";
 import { useAccount } from "wagmi";
-import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+
+// import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 // Mock types for now
 interface MissionData {
@@ -212,8 +213,9 @@ export const MissionPlanningDashboard = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string>("");
 
-  // Contract hooks
-  const { writeContractAsync: writeMissionRegistry } = useScaffoldWriteContract("MissionRegistry" as any);
+  // Contract hooks - MissionRegistry is only available on Hardhat network
+  // For production, we'll skip contract interactions
+  // const { writeContractAsync: writeMissionRegistry } = useScaffoldWriteContract("MissionRegistry" as any);
   // These will be used for equipment and compliance features in next update
   // const { writeContractAsync: writeEquipmentNFT } = useScaffoldWriteContract("SpaceEquipmentNFT");
   // const { writeContractAsync: writeStandardsCompliance } = useScaffoldWriteContract("StandardsCompliance");
@@ -300,10 +302,10 @@ export const MissionPlanningDashboard = () => {
         updatedAt: new Date().toISOString(),
       };
 
-      const ipfsHash = await pinataService.pinMissionData(missionData);
+      const _ipfsHash = await pinataService.pinMissionData(missionData);
       setSaveStatus("Saved to IPFS! Creating on-chain record...");
 
-      let orbitHash = "";
+      let _orbitHash = "";
       if (tleInput.line1 && tleInput.line2) {
         const orbitData: OrbitData = {
           tle: tleInput,
@@ -313,28 +315,30 @@ export const MissionPlanningDashboard = () => {
             velocity: [0, 0, 0],
           })),
         };
-        orbitHash = await pinataService.pinOrbitData(orbitData, mission.name);
+        _orbitHash = await pinataService.pinOrbitData(orbitData, mission.name);
       }
 
-      const tx = await writeMissionRegistry({
-        functionName: "createMission" as any,
-        args: [
-          mission.name,
-          Object.values(MissionType).indexOf(mission.type) as any,
-          ipfsHash,
-          BigInt(new Date(mission.launchDate).getTime() / 1000) as any,
-          BigInt(new Date(mission.endDate).getTime() / 1000) as any,
-        ],
-      });
+      // Contract interactions are only available on Hardhat network
+      // For production, we skip blockchain storage
+      // const tx = await writeMissionRegistry({
+      //   functionName: "createMission" as any,
+      //   args: [
+      //     mission.name,
+      //     Object.values(MissionType).indexOf(mission.type) as any,
+      //     ipfsHash,
+      //     BigInt(new Date(mission.launchDate).getTime() / 1000) as any,
+      //     BigInt(new Date(mission.endDate).getTime() / 1000) as any,
+      //   ],
+      // });
 
-      setSaveStatus("Mission created successfully!");
+      setSaveStatus("Mission saved to IPFS successfully!");
 
-      if (orbitHash && tx) {
-        await writeMissionRegistry({
-          functionName: "updateOrbitData" as any,
-          args: [1n as any, orbitHash as any],
-        });
-      }
+      // if (orbitHash && tx) {
+      //   await writeMissionRegistry({
+      //     functionName: "updateOrbitData" as any,
+      //     args: [1n as any, orbitHash as any],
+      //   });
+      // }
     } catch (error) {
       console.error("Error saving mission:", error);
       setSaveStatus("Error saving mission");

@@ -46,19 +46,19 @@ export function WorldWindGlobe({
 
     // Create WorldWindow with professional configuration
     const worldWindow = new WorldWind.WorldWindow(canvasRef.current);
-    
+
     // Configure professional layers
     const layers = [
       // Base imagery layers
       { layer: new WorldWind.BMNGLayer(), enabled: true },
       { layer: new WorldWind.BMNGLandsatLayer(), enabled: false },
       { layer: new WorldWind.BingAerialWithLabelsLayer(null), enabled: false },
-      
+
       // Reference layers
       { layer: new WorldWind.CompassLayer(), enabled: config.enableCompass !== false },
       { layer: new WorldWind.CoordinatesDisplayLayer(worldWindow), enabled: true },
       { layer: new WorldWind.ViewControlsLayer(worldWindow), enabled: true },
-      
+
       // Atmospheric effects
       { layer: new WorldWind.AtmosphereLayer(), enabled: config.enableAtmosphere !== false },
       { layer: new WorldWind.StarFieldLayer(), enabled: config.enableStarField !== false },
@@ -99,7 +99,7 @@ export function WorldWindGlobe({
     // Add pick listener for interaction
     const handlePick = (event: MouseEvent) => {
       const pickList = worldWindow.pick(worldWindow.canvasCoordinates(event.clientX, event.clientY));
-      
+
       if (pickList.objects.length > 0) {
         const topObject = pickList.objects[0];
         if (topObject.userObject?.type === "satellite" && onSatelliteClick) {
@@ -137,15 +137,13 @@ export function WorldWindGlobe({
       placemarkAttributes.imageSource = "/satellite-icon.png";
       placemarkAttributes.imageScale = 0.3;
       placemarkAttributes.imageOffset = new WorldWind.Offset(
-        WorldWind.OFFSET_FRACTION, 0.5,
-        WorldWind.OFFSET_FRACTION, 0.5
+        WorldWind.OFFSET_FRACTION,
+        0.5,
+        WorldWind.OFFSET_FRACTION,
+        0.5,
       );
 
-      const position = new WorldWind.Position(
-        satellite.latitude,
-        satellite.longitude,
-        satellite.altitude
-      );
+      const position = new WorldWind.Position(satellite.latitude, satellite.longitude, satellite.altitude);
 
       const placemark = new WorldWind.Placemark(position, false, placemarkAttributes);
       placemark.label = satellite.name;
@@ -167,8 +165,8 @@ export function WorldWindGlobe({
     trajectoryLayer.removeAllRenderables();
 
     trajectories.forEach(trajectory => {
-      const positions = trajectory.points.map((point: any) =>
-        new WorldWind.Position(point.latitude, point.longitude, point.altitude)
+      const positions = trajectory.points.map(
+        (point: any) => new WorldWind.Position(point.latitude, point.longitude, point.altitude),
       );
 
       const pathAttributes = new WorldWind.ShapeAttributes(null);
@@ -200,15 +198,13 @@ export function WorldWindGlobe({
       placemarkAttributes.imageSource = "/ground-station-icon.png";
       placemarkAttributes.imageScale = 0.4;
       placemarkAttributes.imageOffset = new WorldWind.Offset(
-        WorldWind.OFFSET_FRACTION, 0.5,
-        WorldWind.OFFSET_FRACTION, 0.5
+        WorldWind.OFFSET_FRACTION,
+        0.5,
+        WorldWind.OFFSET_FRACTION,
+        0.5,
       );
 
-      const position = new WorldWind.Position(
-        station.latitude,
-        station.longitude,
-        0
-      );
+      const position = new WorldWind.Position(station.latitude, station.longitude, 0);
 
       const placemark = new WorldWind.Placemark(position, false, placemarkAttributes);
       placemark.label = station.name;
@@ -234,12 +230,8 @@ export function WorldWindGlobe({
 
   return (
     <div className="relative w-full h-full">
-      <canvas 
-        ref={canvasRef} 
-        className="w-full h-full"
-        style={{ cursor: "grab" }}
-      />
-      
+      <canvas ref={canvasRef} className="w-full h-full" style={{ cursor: "grab" }} />
+
       {/* Layer Controls */}
       <div className="absolute top-4 right-4 bg-gray-800/90 backdrop-blur-sm rounded-lg p-4 space-y-2">
         <h3 className="text-white font-semibold mb-2">Layers</h3>
@@ -247,7 +239,7 @@ export function WorldWindGlobe({
           <input
             type="checkbox"
             defaultChecked
-            onChange={(e) => {
+            onChange={e => {
               if (layers.has("satellites")) {
                 layers.get("satellites").enabled = e.target.checked;
                 wwd?.redraw();
@@ -261,7 +253,7 @@ export function WorldWindGlobe({
           <input
             type="checkbox"
             defaultChecked
-            onChange={(e) => {
+            onChange={e => {
               if (layers.has("trajectories")) {
                 layers.get("trajectories").enabled = e.target.checked;
                 wwd?.redraw();
@@ -275,7 +267,7 @@ export function WorldWindGlobe({
           <input
             type="checkbox"
             defaultChecked
-            onChange={(e) => {
+            onChange={e => {
               if (layers.has("groundStations")) {
                 layers.get("groundStations").enabled = e.target.checked;
                 wwd?.redraw();

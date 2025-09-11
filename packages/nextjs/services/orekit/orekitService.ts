@@ -3,62 +3,61 @@
  * High-fidelity orbital mechanics using Orekit Java library
  * Provides professional-grade orbital propagation and analysis
  */
-
 import { spawn } from "child_process";
 
 export interface OrekitOrbitData {
   epoch: Date;
-  semiMajorAxis: number;  // km
+  semiMajorAxis: number; // km
   eccentricity: number;
-  inclination: number;    // degrees
-  raan: number;           // Right Ascension of Ascending Node (degrees)
+  inclination: number; // degrees
+  raan: number; // Right Ascension of Ascending Node (degrees)
   argumentOfPerigee: number; // degrees
-  trueAnomaly: number;    // degrees
-  meanMotion?: number;    // revolutions per day
+  trueAnomaly: number; // degrees
+  meanMotion?: number; // revolutions per day
 }
 
 export interface OrekitPropagationResult {
   timestamp: Date;
   position: {
-    x: number;  // km
-    y: number;  // km
-    z: number;  // km
+    x: number; // km
+    y: number; // km
+    z: number; // km
   };
   velocity: {
     vx: number; // km/s
     vy: number; // km/s
     vz: number; // km/s
   };
-  latitude: number;   // degrees
-  longitude: number;  // degrees
-  altitude: number;   // km
+  latitude: number; // degrees
+  longitude: number; // degrees
+  altitude: number; // km
 }
 
 export interface OrekitGroundPass {
   startTime: Date;
   endTime: Date;
-  maxElevation: number;  // degrees
-  azimuthAtMax: number;  // degrees
-  duration: number;      // seconds
+  maxElevation: number; // degrees
+  azimuthAtMax: number; // degrees
+  duration: number; // seconds
 }
 
 export interface OrekitManeuver {
   type: "HOHMANN" | "BIELLIPTICAL" | "PLANE_CHANGE" | "COMBINED";
-  deltaV: number;        // m/s
-  burnTime?: number;     // seconds
+  deltaV: number; // m/s
+  burnTime?: number; // seconds
   epoch: Date;
   targetOrbit?: OrekitOrbitData;
 }
 
 export interface OrekitAnalysisResult {
-  orbitalPeriod: number;        // minutes
-  apoapsisAltitude: number;     // km
-  periapsisAltitude: number;    // km
-  nodalPeriod: number;          // minutes
-  groundTrackRepeat?: number;   // days
+  orbitalPeriod: number; // minutes
+  apoapsisAltitude: number; // km
+  periapsisAltitude: number; // km
+  nodalPeriod: number; // minutes
+  groundTrackRepeat?: number; // days
   sunSynchronous: boolean;
-  eclipseDuration?: number;     // minutes per orbit
-  betaAngle?: number;           // degrees
+  eclipseDuration?: number; // minutes per orbit
+  betaAngle?: number; // degrees
 }
 
 export class OrekitService {
@@ -83,12 +82,7 @@ export class OrekitService {
 
     try {
       // Start Java Orekit bridge process
-      this.javaProcess = spawn("java", [
-        "-jar",
-        "/usr/local/lib/orekit-bridge.jar",
-        "--port",
-        "9090",
-      ]);
+      this.javaProcess = spawn("java", ["-jar", "/usr/local/lib/orekit-bridge.jar", "--port", "9090"]);
 
       this.javaProcess.stdout.on("data", (data: Buffer) => {
         console.log(`Orekit: ${data}`);
@@ -119,8 +113,8 @@ export class OrekitService {
       includeDrag?: boolean;
       includeSolarPressure?: boolean;
       includeThirdBody?: boolean;
-      stepSize?: number;  // seconds
-    }
+      stepSize?: number; // seconds
+    },
   ): Promise<OrekitPropagationResult[]> {
     const requestData = {
       action: "propagate",
@@ -158,7 +152,7 @@ export class OrekitService {
       minElevation?: number;
     },
     startTime: Date,
-    endTime: Date
+    endTime: Date,
   ): Promise<OrekitGroundPass[]> {
     const requestData = {
       action: "groundPasses",
@@ -184,7 +178,7 @@ export class OrekitService {
   async calculateManeuver(
     currentOrbit: OrekitOrbitData,
     targetOrbit: OrekitOrbitData,
-    maneuverType: OrekitManeuver["type"]
+    maneuverType: OrekitManeuver["type"],
   ): Promise<OrekitManeuver> {
     const requestData = {
       action: "calculateManeuver",
@@ -228,10 +222,7 @@ export class OrekitService {
   /**
    * Convert TLE to Keplerian elements
    */
-  async tleToKeplerian(
-    line1: string,
-    line2: string
-  ): Promise<OrekitOrbitData> {
+  async tleToKeplerian(line1: string, line2: string): Promise<OrekitOrbitData> {
     const requestData = {
       action: "tleToKeplerian",
       tle: { line1, line2 },
@@ -261,7 +252,7 @@ export class OrekitService {
     },
     targetOrbit: OrekitOrbitData,
     searchStart: Date,
-    searchEnd: Date
+    searchEnd: Date,
   ): Promise<{ windowStart: Date; windowEnd: Date; deltaV: number }[]> {
     const requestData = {
       action: "launchWindow",
@@ -285,18 +276,20 @@ export class OrekitService {
   async predictSolarPower(
     orbit: OrekitOrbitData,
     spacecraftConfig: {
-      solarPanelArea: number;  // m²
+      solarPanelArea: number; // m²
       solarPanelEfficiency: number; // 0-1
       batteryCapacity: number; // Wh
     },
     startTime: Date,
-    duration: number  // hours
-  ): Promise<{
-    timestamp: Date;
-    power: number;  // Watts
-    eclipsed: boolean;
-    sunAngle: number;  // degrees
-  }[]> {
+    duration: number, // hours
+  ): Promise<
+    {
+      timestamp: Date;
+      power: number; // Watts
+      eclipsed: boolean;
+      sunAngle: number; // degrees
+    }[]
+  > {
     const requestData = {
       action: "solarPower",
       orbit,
@@ -320,15 +313,15 @@ export class OrekitService {
   async calculateStationKeeping(
     orbit: OrekitOrbitData,
     tolerances: {
-      semiMajorAxis: number;  // km
+      semiMajorAxis: number; // km
       eccentricity: number;
-      inclination: number;    // degrees
+      inclination: number; // degrees
     },
-    duration: number  // days
+    duration: number, // days
   ): Promise<{
     maneuvers: OrekitManeuver[];
     totalDeltaV: number;
-    fuelRequired: number;  // kg (assuming Isp=300s)
+    fuelRequired: number; // kg (assuming Isp=300s)
   }> {
     const requestData = {
       action: "stationKeeping",

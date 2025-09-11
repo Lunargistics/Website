@@ -2,8 +2,7 @@
  * GMAT (General Mission Analysis Tool) Integration Service
  * NASA GMAT connectivity for open-source mission design
  */
-
-import { spawn, ChildProcess } from "child_process";
+import { ChildProcess, spawn } from "child_process";
 import fs from "fs/promises";
 import path from "path";
 
@@ -136,7 +135,7 @@ export class GMATService {
    */
   async createMission(
     name: string,
-    template: "LEO" | "GEO_TRANSFER" | "LUNAR" | "INTERPLANETARY" | "CUSTOM"
+    template: "LEO" | "GEO_TRANSFER" | "LUNAR" | "INTERPLANETARY" | "CUSTOM",
   ): Promise<GMATMission> {
     const mission: GMATMission = {
       id: `gmat_${Date.now()}`,
@@ -155,10 +154,7 @@ export class GMATService {
   /**
    * Add spacecraft to mission
    */
-  addSpacecraft(
-    missionId: string,
-    spacecraft: GMATSpacecraft
-  ): void {
+  addSpacecraft(missionId: string, spacecraft: GMATSpacecraft): void {
     const mission = this.missions.get(missionId);
     if (!mission) throw new Error("Mission not found");
 
@@ -169,10 +165,7 @@ export class GMATService {
   /**
    * Configure force model
    */
-  configureForceModel(
-    missionId: string,
-    forceModel: GMATForceModel
-  ): void {
+  configureForceModel(missionId: string, forceModel: GMATForceModel): void {
     const mission = this.missions.get(missionId);
     if (!mission) throw new Error("Mission not found");
 
@@ -183,10 +176,7 @@ export class GMATService {
   /**
    * Add optimizer for trajectory optimization
    */
-  addOptimizer(
-    missionId: string,
-    optimizer: GMATOptimizer
-  ): void {
+  addOptimizer(missionId: string, optimizer: GMATOptimizer): void {
     const mission = this.missions.get(missionId);
     if (!mission) throw new Error("Mission not found");
 
@@ -214,29 +204,25 @@ export class GMATService {
         plots: [],
       };
 
-      this.process = spawn(this.gmatPath, [
-        "--run",
-        scriptPath,
-        "--exit"
-      ], {
+      this.process = spawn(this.gmatPath, ["--run", scriptPath, "--exit"], {
         cwd: this.workDir,
       });
 
-      this.process.stdout?.on("data", (data) => {
+      this.process.stdout?.on("data", data => {
         console.log(`GMAT: ${data}`);
       });
 
-      this.process.stderr?.on("data", (data) => {
+      this.process.stderr?.on("data", data => {
         console.error(`GMAT Error: ${data}`);
       });
 
-      this.process.on("close", async (code) => {
+      this.process.on("close", async code => {
         if (code === 0) {
           // Parse output files
           results.ephemeris = await this.parseEphemeris(mission);
           results.reports = await this.parseReports(mission);
           results.plots = await this.findPlots(mission);
-          
+
           if (mission.optimizers?.length) {
             results.optimization = await this.parseOptimizationResults(mission);
           }
@@ -262,11 +248,11 @@ export class GMATService {
       maxDeltaV?: number;
       maxTime?: number;
       minAltitude?: number;
-    }
+    },
   ): Promise<OptimizationResult> {
     // Create optimization mission
     const mission = await this.createMission("optimization", "CUSTOM");
-    
+
     // Add spacecraft
     this.addSpacecraft(mission.id, spacecraft);
 
@@ -284,7 +270,7 @@ export class GMATService {
 
     // Run optimization
     const results = await this.runMission(mission.id);
-    
+
     if (!results.optimization) {
       throw new Error("Optimization failed");
     }
@@ -302,23 +288,18 @@ export class GMATService {
     options?: {
       inclination?: number;
       launchAzimuthLimits?: [number, number];
-    }
+    },
   ): Promise<{ windows: Array<{ time: Date; azimuth: number; deltaV: number }> }> {
-    const script = this.generateLaunchWindowScript(
-      launchSite,
-      targetOrbit,
-      searchWindow,
-      options
-    );
+    const script = this.generateLaunchWindowScript(launchSite, targetOrbit, searchWindow, options);
 
     const mission = await this.createMission("launch_window", "CUSTOM");
     mission.script = script;
 
     const results = await this.runMission(mission.id);
-    
+
     // Parse launch window results
-    const windows = await this.parseLaunchWindows(results.reports);
-    
+    const windows = await this.parseLaunchWindows(results.reports || {});
+
     return { windows };
   }
 
@@ -332,7 +313,7 @@ export class GMATService {
       distribution: "NORMAL" | "UNIFORM" | "TRIANGULAR";
       parameters: number[];
     }[],
-    runs: number
+    runs: number,
   ): Promise<{
     statistics: Record<string, { mean: number; std: number; min: number; max: number }>;
     samples: Array<Record<string, any>>;
@@ -342,17 +323,17 @@ export class GMATService {
 
     // Generate Monte Carlo script
     const mcScript = this.generateMonteCarloScript(mission, variables, runs);
-    
+
     // Create temporary mission for MC analysis
     const mcMission = await this.createMission(`${mission.name}_MC`, "CUSTOM");
     mcMission.script = mcScript;
 
     // Run Monte Carlo
     const results = await this.runMission(mcMission.id);
-    
+
     // Parse statistics
-    const statistics = await this.parseMonteCarloResults(results.reports);
-    
+    const statistics = await this.parseMonteCarloResults(results.reports || {});
+
     return statistics;
   }
 
@@ -452,10 +433,12 @@ GMAT ${spacecraft.name}.DateFormat = UTCGregorian;
 GMAT ${spacecraft.name}.Epoch = '${spacecraft.epoch}';
 GMAT ${spacecraft.name}.CoordinateSystem = ${spacecraft.coordinateSystem};
 GMAT ${spacecraft.name}.DisplayStateType = ${spacecraft.stateType};
-${spacecraft.state.map((val, idx) => {
-  const params = ["SMA", "ECC", "INC", "RAAN", "AOP", "TA"];
-  return `GMAT ${spacecraft.name}.${params[idx]} = ${val};`;
-}).join("\n")}
+${spacecraft.state
+  .map((val, idx) => {
+    const params = ["SMA", "ECC", "INC", "RAAN", "AOP", "TA"];
+    return `GMAT ${spacecraft.name}.${params[idx]} = ${val};`;
+  })
+  .join("\n")}
     `;
   }
 
@@ -468,11 +451,15 @@ Create ForceModel ${forceModel.name};
 GMAT ${forceModel.name}.CentralBody = ${forceModel.centralBody};
 GMAT ${forceModel.name}.GravityField.${forceModel.centralBody}.Degree = ${forceModel.gravityField.degree || 4};
 GMAT ${forceModel.name}.GravityField.${forceModel.centralBody}.Order = ${forceModel.gravityField.order || 4};
-${forceModel.drag ? `
+${
+  forceModel.drag
+    ? `
 GMAT ${forceModel.name}.Drag.AtmosphereModel = ${forceModel.drag.atmosphereModel};
 GMAT ${forceModel.name}.Drag.F107 = ${forceModel.drag.f107 || 150};
 GMAT ${forceModel.name}.Drag.F107A = ${forceModel.drag.f107Average || 150};
-` : ""}
+`
+    : ""
+}
 ${forceModel.srp ? `GMAT ${forceModel.name}.SRP = On;` : ""}
 ${forceModel.pointMasses ? `GMAT ${forceModel.name}.PointMasses = {${forceModel.pointMasses.join(", ")}};` : ""}
     `;
@@ -495,7 +482,7 @@ GMAT ${optimizer.name}.Tolerance = ${optimizer.tolerance || 1e-6};
    */
   private async parseEphemeris(mission: GMATMission): Promise<EphemerisData[]> {
     const ephemerisData: EphemerisData[] = [];
-    
+
     for (const output of mission.outputs) {
       if (output.type === "EphemerisFile" && output.filename) {
         const filePath = path.join(this.workDir, output.filename);
@@ -509,16 +496,8 @@ GMAT ${optimizer.name}.Tolerance = ${optimizer.tolerance || 1e-6};
               if (parts.length >= 7) {
                 ephemerisData.push({
                   time: new Date(parseFloat(parts[0]) * 1000),
-                  position: [
-                    parseFloat(parts[1]),
-                    parseFloat(parts[2]),
-                    parseFloat(parts[3]),
-                  ],
-                  velocity: [
-                    parseFloat(parts[4]),
-                    parseFloat(parts[5]),
-                    parseFloat(parts[6]),
-                  ],
+                  position: [parseFloat(parts[1]), parseFloat(parts[2]), parseFloat(parts[3])],
+                  velocity: [parseFloat(parts[4]), parseFloat(parts[5]), parseFloat(parts[6])],
                   spacecraft: output.spacecraft?.[0] || "unknown",
                 });
               }
@@ -529,7 +508,7 @@ GMAT ${optimizer.name}.Tolerance = ${optimizer.tolerance || 1e-6};
         }
       }
     }
-    
+
     return ephemerisData;
   }
 
@@ -538,7 +517,7 @@ GMAT ${optimizer.name}.Tolerance = ${optimizer.tolerance || 1e-6};
    */
   private async parseReports(mission: GMATMission): Promise<Record<string, any>> {
     const reports: Record<string, any> = {};
-    
+
     for (const output of mission.outputs) {
       if (output.type === "ReportFile" && output.filename) {
         const filePath = path.join(this.workDir, output.filename);
@@ -550,7 +529,7 @@ GMAT ${optimizer.name}.Tolerance = ${optimizer.tolerance || 1e-6};
         }
       }
     }
-    
+
     return reports;
   }
 
@@ -562,20 +541,18 @@ GMAT ${optimizer.name}.Tolerance = ${optimizer.tolerance || 1e-6};
     const lines = content.split("\n");
     const headers = lines[0]?.split(/[,\t]/) || [];
     const data: any[] = [];
-    
+
     for (let i = 1; i < lines.length; i++) {
       if (lines[i].trim()) {
         const values = lines[i].split(/[,\t]/);
         const row: Record<string, any> = {};
         headers.forEach((header, idx) => {
-          row[header.trim()] = isNaN(Number(values[idx]))
-            ? values[idx]
-            : Number(values[idx]);
+          row[header.trim()] = isNaN(Number(values[idx])) ? values[idx] : Number(values[idx]);
         });
         data.push(row);
       }
     }
-    
+
     return data;
   }
 
@@ -584,7 +561,7 @@ GMAT ${optimizer.name}.Tolerance = ${optimizer.tolerance || 1e-6};
    */
   private async findPlots(mission: GMATMission): Promise<string[]> {
     const plots: string[] = [];
-    
+
     for (const output of mission.outputs) {
       if (output.type === "OrbitView" || output.type === "GroundTrackPlot") {
         // GMAT typically saves plots as images
@@ -600,7 +577,7 @@ GMAT ${optimizer.name}.Tolerance = ${optimizer.tolerance || 1e-6};
         }
       }
     }
-    
+
     return plots;
   }
 
@@ -638,7 +615,7 @@ GMAT ${optimizer.name}.Tolerance = ${optimizer.tolerance || 1e-6};
    */
   private formatConstraints(constraints?: any): string[] {
     const constraintList: string[] = [];
-    
+
     if (constraints?.maxDeltaV) {
       constraintList.push(`DeltaV <= ${constraints.maxDeltaV}`);
     }
@@ -648,19 +625,14 @@ GMAT ${optimizer.name}.Tolerance = ${optimizer.tolerance || 1e-6};
     if (constraints?.minAltitude) {
       constraintList.push(`Altitude >= ${constraints.minAltitude}`);
     }
-    
+
     return constraintList;
   }
 
   /**
    * Generate launch window script
    */
-  private generateLaunchWindowScript(
-    launchSite: any,
-    targetOrbit: any,
-    searchWindow: any,
-    options?: any
-  ): string {
+  private generateLaunchWindowScript(launchSite: any, targetOrbit: any, searchWindow: any, options?: any): string {
     // Generate GMAT script for launch window analysis
     return `
 % Launch Window Analysis
@@ -690,11 +662,7 @@ BeginMissionSequence;
   /**
    * Generate Monte Carlo script
    */
-  private generateMonteCarloScript(
-    mission: GMATMission,
-    variables: any[],
-    runs: number
-  ): string {
+  private generateMonteCarloScript(mission: GMATMission, variables: any[], runs: number): string {
     // Generate GMAT script for Monte Carlo analysis
     return `
 % Monte Carlo Analysis
@@ -727,7 +695,7 @@ ${mission.script}
       this.process.kill();
       this.process = null;
     }
-    
+
     // Clean work directory
     try {
       const files = await fs.readdir(this.workDir);

@@ -3,7 +3,6 @@
  * Real-time satellite catalog and tracking data
  * Performance optimized for 1000+ satellites with intelligent caching
  */
-
 import axios from "axios";
 import { LRUCache } from "lru-cache";
 
@@ -76,7 +75,7 @@ class CacheManager {
   private catalogCache: LRUCache<string, SpaceObject[]>;
   private conjunctionCache: LRUCache<string, Conjunction[]>;
   private batchCache: LRUCache<string, any>;
-  
+
   constructor() {
     // TLE cache: 15 minutes TTL, max 10000 entries
     this.tleCache = new LRUCache({
@@ -193,7 +192,7 @@ export class SpaceTrackService {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
           },
-        }
+        },
       );
 
       this.cookie = response.headers["set-cookie"]?.[0] || null;
@@ -252,10 +251,10 @@ export class SpaceTrackService {
       limit?: number;
       orderBy?: string;
       format?: "tle" | "3le" | "json";
-    }
+    },
   ): Promise<TLE[]> {
     const cacheKey = `tle_${noradIds?.join(",") || "all"}_${JSON.stringify(options)}`;
-    
+
     // Check cache first
     const cached = this.cache.getTLE(cacheKey);
     if (cached) {
@@ -267,7 +266,7 @@ export class SpaceTrackService {
 
     return this.queueRequest(async () => {
       let url = `${this.baseUrl}/basicspacedata/query/class/tle_latest`;
-      
+
       const params: string[] = [];
       if (noradIds && noradIds.length > 0) {
         // Batch request for multiple satellites
@@ -293,7 +292,7 @@ export class SpaceTrackService {
 
       const tles = this.parseTLEResponse(response.data);
       this.cache.setTLE(cacheKey, tles);
-      
+
       return tles;
     });
   }
@@ -321,10 +320,10 @@ export class SpaceTrackService {
       limit?: number;
       offset?: number;
       orderBy?: string;
-    }
+    },
   ): Promise<SpaceObject[]> {
     const cacheKey = `catalog_${JSON.stringify(filters)}_${JSON.stringify(options)}`;
-    
+
     const cached = this.cache.getCatalog(cacheKey);
     if (cached) {
       console.log("📦 Catalog cache hit");
@@ -335,9 +334,9 @@ export class SpaceTrackService {
 
     return this.queueRequest(async () => {
       let url = `${this.baseUrl}/basicspacedata/query/class/satcat`;
-      
+
       const params: string[] = [];
-      
+
       // Apply filters
       if (filters?.objectType) {
         params.push(`OBJECT_TYPE/${filters.objectType.join(",")}`);
@@ -357,7 +356,7 @@ export class SpaceTrackService {
       if (filters?.decayed === false) {
         params.push("DECAY/null-val");
       }
-      
+
       // Apply options
       if (options?.limit) {
         params.push(`limit/${options.limit}`);
@@ -368,7 +367,7 @@ export class SpaceTrackService {
       if (options?.orderBy) {
         params.push(`orderby/${options.orderBy}`);
       }
-      
+
       params.push("format/json");
 
       if (params.length > 0) {
@@ -383,7 +382,7 @@ export class SpaceTrackService {
 
       const objects = this.parseCatalogResponse(response.data);
       this.cache.setCatalog(cacheKey, objects);
-      
+
       return objects;
     });
   }
@@ -397,10 +396,10 @@ export class SpaceTrackService {
       daysAhead?: number;
       minRange?: number;
       minProbability?: number;
-    }
+    },
   ): Promise<Conjunction[]> {
     const cacheKey = `conjunction_${primaryObject || "all"}_${JSON.stringify(options)}`;
-    
+
     const cached = this.cache.getConjunction(cacheKey);
     if (cached) {
       console.log("📦 Conjunction cache hit");
@@ -411,9 +410,9 @@ export class SpaceTrackService {
 
     return this.queueRequest(async () => {
       let url = `${this.baseUrl}/basicspacedata/query/class/cdm_public`;
-      
+
       const params: string[] = [];
-      
+
       if (primaryObject) {
         params.push(`SAT_1_ID/${primaryObject}`);
       }
@@ -425,9 +424,9 @@ export class SpaceTrackService {
       if (options?.minRange !== undefined) {
         params.push(`MIN_RNG/<=${options.minRange}`);
       }
-      
+
       params.push("format/json");
-      
+
       if (params.length > 0) {
         url += "/" + params.join("/");
       }
@@ -440,7 +439,7 @@ export class SpaceTrackService {
 
       const conjunctions = this.parseConjunctionResponse(response.data);
       this.cache.setConjunction(cacheKey, conjunctions);
-      
+
       return conjunctions;
     });
   }
@@ -448,13 +447,10 @@ export class SpaceTrackService {
   /**
    * Batch request for multiple satellites (optimized for 1000+)
    */
-  async batchGetSatelliteData(
-    noradIds: number[],
-    dataTypes: ("tle" | "catalog" | "omm")[]
-  ): Promise<Map<number, any>> {
+  async batchGetSatelliteData(noradIds: number[], dataTypes: ("tle" | "catalog" | "omm")[]): Promise<Map<number, any>> {
     const batchSize = 100; // Process in batches of 100
     const results = new Map<number, any>();
-    
+
     // Split into batches
     const batches: number[][] = [];
     for (let i = 0; i < noradIds.length; i += batchSize) {
@@ -465,10 +461,10 @@ export class SpaceTrackService {
     const concurrencyLimit = 5;
     for (let i = 0; i < batches.length; i += concurrencyLimit) {
       const currentBatches = batches.slice(i, i + concurrencyLimit);
-      
+
       const batchPromises = currentBatches.map(async batch => {
         const batchKey = `batch_${batch.join(",")}_${dataTypes.join(",")}`;
-        
+
         // Check batch cache
         const cached = this.cache.getBatch(batchKey);
         if (cached) {
@@ -476,7 +472,7 @@ export class SpaceTrackService {
         }
 
         const batchData: any = {};
-        
+
         // Get requested data types
         if (dataTypes.includes("tle")) {
           batchData.tles = await this.getLatestTLEs(batch);
@@ -487,13 +483,13 @@ export class SpaceTrackService {
           });
           batchData.catalog = catalogData;
         }
-        
+
         this.cache.setBatch(batchKey, batchData);
         return batchData;
       });
 
       const batchResults = await Promise.all(batchPromises);
-      
+
       // Merge results
       batchResults.forEach((batchData, batchIndex) => {
         const batch = currentBatches[batchIndex];
@@ -512,16 +508,16 @@ export class SpaceTrackService {
   async *streamSatellitePositions(
     noradIds: number[],
     duration: number, // minutes
-    interval: number = 60 // seconds
+    interval: number = 60, // seconds
   ): AsyncGenerator<Map<number, any>> {
     const endTime = Date.now() + duration * 60 * 1000;
-    
+
     while (Date.now() < endTime) {
       const positions = new Map<number, any>();
-      
+
       // Get TLEs in batches
       const tleData = await this.batchGetSatelliteData(noradIds, ["tle"]);
-      
+
       // Calculate positions (would integrate with propagator)
       for (const [noradId, data] of tleData) {
         if (data.tles && data.tles.length > 0) {
@@ -530,14 +526,16 @@ export class SpaceTrackService {
           positions.set(noradId, {
             noradId,
             timestamp: new Date(),
-            position: { /* calculated position */ },
+            position: {
+              /* calculated position */
+            },
             tle,
           });
         }
       }
-      
+
       yield positions;
-      
+
       // Wait for next interval
       await new Promise(resolve => setTimeout(resolve, interval * 1000));
     }
@@ -546,19 +544,14 @@ export class SpaceTrackService {
   /**
    * Get decay predictions
    */
-  async getDecayPredictions(
-    options?: {
-      daysAhead?: number;
-      countryCode?: string;
-    }
-  ): Promise<Decay[]> {
+  async getDecayPredictions(options?: { daysAhead?: number; countryCode?: string }): Promise<Decay[]> {
     if (!this.cookie) await this.authenticate();
 
     return this.queueRequest(async () => {
       let url = `${this.baseUrl}/basicspacedata/query/class/decay`;
-      
+
       const params: string[] = [];
-      
+
       if (options?.daysAhead) {
         const futureDate = new Date();
         futureDate.setDate(futureDate.getDate() + options.daysAhead);
@@ -567,9 +560,9 @@ export class SpaceTrackService {
       if (options?.countryCode) {
         params.push(`COUNTRY/${options.countryCode}`);
       }
-      
+
       params.push("format/json");
-      
+
       if (params.length > 0) {
         url += "/" + params.join("/");
       }

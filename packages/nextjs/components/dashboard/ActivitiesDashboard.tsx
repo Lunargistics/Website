@@ -65,17 +65,11 @@ const ActivityRow = ({ activityId }: { activityId: Hex }) => {
     );
   }
 
-  const [title, description, activityType, status, startDate] = activityDetails as [
-    string,
-    string,
-    number,
-    number,
-    bigint,
-    bigint,
-  ];
+  // activityDetails is an object with named properties, not a tuple
+  const { name: title, description, activityType, status, startDate } = activityDetails;
 
-  const mappedType = mapActivityTypeFromUint(activityType);
-  const mappedStatus = mapActivityStatusFromUint(status);
+  const mappedType = mapActivityTypeFromUint(Number(activityType));
+  const mappedStatus = mapActivityStatusFromUint(Number(status));
 
   const formatDate = (timestamp: bigint) => {
     if (timestamp === 0n) return "Not set";

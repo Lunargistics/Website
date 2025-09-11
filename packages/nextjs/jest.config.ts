@@ -1,35 +1,32 @@
-import type { Config } from 'jest';
-import nextJest from 'next/jest';
+import nextJest from "next/jest";
+import type { Config } from "jest";
 
 const createJestConfig = nextJest({
-  dir: './',
+  dir: "./",
 });
 
 const config: Config = {
-  testEnvironment: 'jest-environment-jsdom',
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
-  testMatch: [
-    '**/__tests__/**/*.{js,jsx,ts,tsx}',
-    '**/*.{spec,test}.{js,jsx,ts,tsx}',
-  ],
+  testEnvironment: "jest-environment-jsdom",
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
+  testMatch: ["**/__tests__/**/*.{js,jsx,ts,tsx}", "**/*.{spec,test}.{js,jsx,ts,tsx}"],
   moduleNameMapper: {
-    '^~~/(.*)$': '<rootDir>/$1',
-    '^@/(.*)$': '<rootDir>/$1',
-    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    "^~~/(.*)$": "<rootDir>/$1",
+    "^@/(.*)$": "<rootDir>/$1",
+    "\\.(css|less|scss|sass)$": "identity-obj-proxy",
   },
   collectCoverageFrom: [
-    'app/**/*.{js,jsx,ts,tsx}',
-    'components/**/*.{js,jsx,ts,tsx}',
-    'lib/**/*.{js,jsx,ts,tsx}',
-    'services/**/*.{js,jsx,ts,tsx}',
-    'models/**/*.{js,jsx,ts,tsx}',
-    'hooks/**/*.{js,jsx,ts,tsx}',
-    'utils/**/*.{js,jsx,ts,tsx}',
-    '!**/*.d.ts',
-    '!**/node_modules/**',
-    '!**/.next/**',
-    '!**/coverage/**',
-    '!**/dist/**',
+    "app/**/*.{js,jsx,ts,tsx}",
+    "components/**/*.{js,jsx,ts,tsx}",
+    "lib/**/*.{js,jsx,ts,tsx}",
+    "services/**/*.{js,jsx,ts,tsx}",
+    "models/**/*.{js,jsx,ts,tsx}",
+    "hooks/**/*.{js,jsx,ts,tsx}",
+    "utils/**/*.{js,jsx,ts,tsx}",
+    "!**/*.d.ts",
+    "!**/node_modules/**",
+    "!**/.next/**",
+    "!**/coverage/**",
+    "!**/dist/**",
   ],
   coverageThreshold: {
     global: {
@@ -39,14 +36,14 @@ const config: Config = {
       statements: 80,
     },
   },
-  testPathIgnorePatterns: ['/node_modules/', '/.next/', '/e2e/'],
+  testPathIgnorePatterns: ["/node_modules/", "/.next/", "/e2e/"],
   transformIgnorePatterns: [
-    'node_modules/(?!(wagmi|@wagmi|@rainbow-me|viem|@tanstack|@ethereum-attestation-service|@tokenbound)/)',
+    "node_modules/(?!(wagmi|@wagmi|@rainbow-me|viem|@tanstack|@ethereum-attestation-service|@tokenbound)/)",
   ],
   globals: {
-    'ts-jest': {
+    "ts-jest": {
       tsconfig: {
-        jsx: 'react-jsx',
+        jsx: "react-jsx",
       },
     },
   },

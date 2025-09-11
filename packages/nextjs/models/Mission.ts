@@ -238,7 +238,7 @@ MissionSchema.index({ createdAt: -1 });
 
 // Virtual for access check
 MissionSchema.virtual("hasAccess").get(function (this: IMission) {
-  return function (userId: string) {
+  return (userId: string) => {
     return this.owner.toString() === userId || this.collaborators.some(c => c.toString() === userId);
   };
 });
@@ -252,7 +252,7 @@ MissionSchema.methods.addCollaborator = async function (userId: mongoose.Types.O
 };
 
 MissionSchema.methods.removeCollaborator = async function (userId: mongoose.Types.ObjectId) {
-  this.collaborators = this.collaborators.filter(c => c.toString() !== userId.toString());
+  this.collaborators = this.collaborators.filter((c: mongoose.Types.ObjectId) => c.toString() !== userId.toString());
   await this.save();
 };
 

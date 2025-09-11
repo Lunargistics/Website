@@ -246,7 +246,7 @@ EquipmentSchema.index({ createdAt: -1 });
 
 // Virtual for compatibility check
 EquipmentSchema.virtual("isCompatibleWith").get(function (this: IEquipment) {
-  return function (equipmentId: mongoose.Types.ObjectId) {
+  return (equipmentId: mongoose.Types.ObjectId) => {
     return this.compatibleWith.includes(equipmentId) && !this.incompatibleWith.includes(equipmentId);
   };
 });
@@ -261,8 +261,8 @@ EquipmentSchema.methods.checkCompatibility = function (otherEquipment: IEquipmen
   }
 
   // Check interface compatibility
-  const commonInterfaces = this.interfaces.filter(i1 =>
-    otherEquipment.interfaces.some(i2 => i1.type === i2.type && i1.protocol === i2.protocol),
+  const commonInterfaces = this.interfaces.filter((i1: InterfaceSpec) =>
+    otherEquipment.interfaces.some((i2: InterfaceSpec) => i1.type === i2.type && i1.protocol === i2.protocol),
   );
 
   if (commonInterfaces.length === 0) {
@@ -281,7 +281,7 @@ EquipmentSchema.methods.assignToMission = async function (missionId: mongoose.Ty
 };
 
 EquipmentSchema.methods.removeFromMission = async function (missionId: mongoose.Types.ObjectId) {
-  this.missions = this.missions.filter(m => m.toString() !== missionId.toString());
+  this.missions = this.missions.filter((m: mongoose.Types.ObjectId) => m.toString() !== missionId.toString());
   if (this.missions.length === 0) {
     this.status = EquipmentStatus.AVAILABLE;
   }

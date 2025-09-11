@@ -19,7 +19,7 @@ export interface IUser extends Document {
   password?: string;
   name: string;
   roles: UserRole[];
-  
+
   // Methods
   comparePassword(candidatePassword: string): Promise<boolean>;
   hashPassword(): Promise<void>;

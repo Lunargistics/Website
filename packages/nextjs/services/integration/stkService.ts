@@ -2,7 +2,6 @@
  * STK (Systems Tool Kit) Integration Service
  * AGI STK connectivity for professional mission analysis
  */
-
 import axios from "axios";
 
 export interface STKScenario {
@@ -112,11 +111,7 @@ export class STKService {
   /**
    * Create a new scenario
    */
-  async createScenario(
-    name: string,
-    startTime: Date,
-    stopTime: Date
-  ): Promise<STKScenario> {
+  async createScenario(name: string, startTime: Date, stopTime: Date): Promise<STKScenario> {
     const scenario: STKScenario = {
       id: `scenario_${Date.now()}`,
       name,
@@ -156,7 +151,7 @@ export class STKService {
       tle?: { line1: string; line2: string };
       elements?: any;
       propagator?: "SGP4" | "HPOP" | "J2" | "J4";
-    }
+    },
   ): Promise<STKObject> {
     const satellite: STKObject = {
       id: `sat_${Date.now()}`,
@@ -192,7 +187,7 @@ export class STKService {
       longitude: number;
       altitude: number;
       minElevation?: number;
-    }
+    },
   ): Promise<STKObject> {
     const facility: STKObject = {
       id: `fac_${Date.now()}`,
@@ -227,7 +222,7 @@ export class STKService {
       lightTimeDelay?: boolean;
       aberration?: boolean;
       minElevation?: number;
-    }
+    },
   ): Promise<AccessInterval[]> {
     try {
       const response = await axios.post(`${this.baseUrl}/analysis/access`, {
@@ -261,7 +256,7 @@ export class STKService {
     options?: {
       gridResolution?: number;
       timeStep?: number;
-    }
+    },
   ): Promise<CoverageData> {
     try {
       const response = await axios.post(`${this.baseUrl}/analysis/coverage`, {
@@ -298,7 +293,7 @@ export class STKService {
       systemLosses?: number;
       dataRate?: number;
       modulation?: string;
-    }
+    },
   ): Promise<LinkBudgetData> {
     try {
       const response = await axios.post(`${this.baseUrl}/analysis/linkbudget`, {
@@ -328,7 +323,7 @@ export class STKService {
       altitude?: number;
       inclination?: number;
       satellites?: string[];
-    }
+    },
   ): Promise<STKObject> {
     const constellation: STKObject = {
       id: `const_${Date.now()}`,
@@ -372,7 +367,7 @@ export class STKService {
       metric: string;
       operator: ">" | "<" | "=" | ">=" | "<=";
       value: number;
-    }[]
+    }[],
   ): Promise<{
     optimal: Record<string, any>;
     alternatives: Record<string, any>[];
@@ -402,7 +397,7 @@ export class STKService {
       format?: "PDF" | "HTML" | "CSV" | "JSON";
       template?: string;
       objects?: string[];
-    }
+    },
   ): Promise<{ url: string; data?: any }> {
     try {
       const response = await axios.post(`${this.baseUrl}/report/generate`, {
@@ -424,10 +419,7 @@ export class STKService {
   /**
    * Export scenario
    */
-  async exportScenario(
-    scenarioId: string,
-    format: "VDF" | "CZML" | "KML" | "COLLADA"
-  ): Promise<string> {
+  async exportScenario(scenarioId: string, format: "VDF" | "CZML" | "KML" | "COLLADA"): Promise<string> {
     try {
       const response = await axios.post(`${this.baseUrl}/scenario/export`, {
         scenarioId,

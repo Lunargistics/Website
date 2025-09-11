@@ -15,18 +15,15 @@ import {
   Settings,
 } from "lucide-react";
 import { useAccount } from "wagmi";
-import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+// import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import orekitService, { OrekitOrbitData, OrekitPropagationResult } from "~~/services/orekit/orekitService";
 
 // Dynamic import for WorldWind component
-const WorldWindGlobe = dynamic(
-  () => import("~~/components/visualization/WorldWindGlobe"),
-  { ssr: false }
-);
+const WorldWindGlobe = dynamic(() => import("~~/components/visualization/WorldWindGlobe"), { ssr: false });
 
 enum MissionType {
   EARTH_OBSERVATION = "EARTH_OBSERVATION",
-  COMMUNICATION = "COMMUNICATION", 
+  COMMUNICATION = "COMMUNICATION",
   NAVIGATION = "NAVIGATION",
   SCIENTIFIC = "SCIENTIFIC",
   EXPLORATION = "EXPLORATION",
@@ -109,13 +106,13 @@ export function MissionPlanningDashboardPro() {
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationTime, setSimulationTime] = useState(new Date());
   const [simulationSpeed, setSimulationSpeed] = useState(1);
-  
+
   // Orbital mechanics state
   const [propagatedPositions, setPropagatedPositions] = useState<OrekitPropagationResult[]>([]);
   const [groundPasses, setGroundPasses] = useState<any[]>([]);
   const [maneuvers, setManeuvers] = useState<any[]>([]);
   // const [eclipseEvents, setEclipseEvents] = useState<any[]>([]); // For future eclipse prediction feature
-  
+
   // Visualization state
   const [satellites, setSatellites] = useState<any[]>([]);
   const [trajectories, setTrajectories] = useState<any[]>([]);
@@ -125,8 +122,8 @@ export function MissionPlanningDashboardPro() {
   const [tleLine1, setTleLine1] = useState("");
   const [tleLine2, setTleLine2] = useState("");
 
-  // Contract interaction
-  const { writeContractAsync: writeMissionRegistry } = useScaffoldWriteContract("MissionRegistry" as any);
+  // Contract interaction - MissionRegistry is only available on Hardhat network
+  // const { writeContractAsync: writeMissionRegistry } = useScaffoldWriteContract("MissionRegistry" as any);
   const { address } = useAccount();
 
   // Initialize Orekit service
@@ -155,7 +152,7 @@ export function MissionPlanningDashboardPro() {
           includeDrag: true,
           includeSolarPressure: true,
           stepSize: 60, // 1-minute steps
-        }
+        },
       );
 
       setPropagatedPositions(results);
@@ -201,10 +198,10 @@ export function MissionPlanningDashboardPro() {
               minElevation: 10,
             },
             simulationTime,
-            new Date(simulationTime.getTime() + 24 * 60 * 60 * 1000)
+            new Date(simulationTime.getTime() + 24 * 60 * 60 * 1000),
           );
           return { station, passes: stationPasses };
-        })
+        }),
       );
       setGroundPasses(passes);
     } catch (error) {
@@ -219,7 +216,7 @@ export function MissionPlanningDashboardPro() {
     try {
       const keplerianElements = await orekitService.tleToKeplerian(tleLine1, tleLine2);
       setMission(prev => ({ ...prev, orbit: keplerianElements }));
-      
+
       // Immediately propagate the new orbit
       await propagateOrbit();
     } catch (error) {
@@ -232,11 +229,7 @@ export function MissionPlanningDashboardPro() {
     if (!mission.orbit) return;
 
     try {
-      const maneuver = await orekitService.calculateManeuver(
-        mission.orbit,
-        targetOrbit,
-        "HOHMANN"
-      );
+      const maneuver = await orekitService.calculateManeuver(mission.orbit, targetOrbit, "HOHMANN");
       setManeuvers(prev => [...prev, maneuver]);
     } catch (error) {
       console.error("Maneuver calculation failed:", error);
@@ -281,19 +274,19 @@ export function MissionPlanningDashboardPro() {
       };
 
       // Pin to IPFS (mock for now)
-      const ipfsHash = "QmMockHash" + Date.now();
+      const _ipfsHash = "QmMockHash" + Date.now();
 
-      // Save to blockchain
-      await writeMissionRegistry({
-        functionName: "createMission" as any,
-        args: [
-          mission.name,
-          Object.values(MissionType).indexOf(mission.type) as any,
-          ipfsHash,
-          BigInt(new Date(mission.launchDate).getTime() / 1000) as any,
-          BigInt(new Date(mission.endDate).getTime() / 1000) as any,
-        ],
-      });
+      // Save to blockchain - Only available on Hardhat network
+      // await writeMissionRegistry({
+      //   functionName: "createMission" as any,
+      //   args: [
+      //     mission.name,
+      //     Object.values(MissionType).indexOf(mission.type) as any,
+      //     ipfsHash,
+      //     BigInt(new Date(mission.launchDate).getTime() / 1000) as any,
+      //     BigInt(new Date(mission.endDate).getTime() / 1000) as any,
+      //   ],
+      // });
 
       console.log("Mission saved to blockchain:", missionData);
     } catch (error) {
@@ -311,9 +304,7 @@ export function MissionPlanningDashboardPro() {
               <Rocket className="h-8 w-8 text-purple-500" />
               Mission Planning Dashboard Pro
             </h1>
-            <p className="text-gray-400 mt-1">
-              Professional mission design with NASA WorldWind & Orekit
-            </p>
+            <p className="text-gray-400 mt-1">Professional mission design with NASA WorldWind & Orekit</p>
           </div>
           <div className="flex gap-4">
             <button
@@ -388,7 +379,7 @@ export function MissionPlanningDashboardPro() {
             {activeTab === "orbit" && (
               <div className="bg-gray-800 rounded-lg p-6">
                 <h2 className="text-xl font-semibold mb-4">Orbital Mechanics (Orekit)</h2>
-                
+
                 {/* TLE Input */}
                 <div className="mb-6">
                   <h3 className="font-semibold mb-2">Import TLE</h3>
@@ -406,10 +397,7 @@ export function MissionPlanningDashboardPro() {
                     onChange={e => setTleLine2(e.target.value)}
                     className="w-full bg-gray-700 px-3 py-2 rounded mb-2"
                   />
-                  <button
-                    onClick={parseTLE}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded transition"
-                  >
+                  <button onClick={parseTLE} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded transition">
                     Parse TLE
                   </button>
                 </div>
@@ -428,7 +416,7 @@ export function MissionPlanningDashboardPro() {
                         <p>True Anomaly: {mission.orbit.trueAnomaly?.toFixed(2)}°</p>
                       </div>
                     </div>
-                    
+
                     <div className="bg-gray-700 p-4 rounded">
                       <h3 className="font-semibold mb-2">Orbit Analysis</h3>
                       <button
@@ -486,7 +474,7 @@ export function MissionPlanningDashboardPro() {
                       placeholder="Enter mission name"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium mb-1">Mission Type</label>
                     <select
@@ -501,7 +489,7 @@ export function MissionPlanningDashboardPro() {
                       ))}
                     </select>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium mb-1">Description</label>
                     <textarea
@@ -511,7 +499,7 @@ export function MissionPlanningDashboardPro() {
                       placeholder="Enter mission description"
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium mb-1">Launch Date</label>
@@ -555,9 +543,7 @@ export function MissionPlanningDashboardPro() {
                         key={speed}
                         onClick={() => setSimulationSpeed(speed)}
                         className={`px-3 py-1 rounded text-sm ${
-                          simulationSpeed === speed
-                            ? "bg-purple-600"
-                            : "bg-gray-700 hover:bg-gray-600"
+                          simulationSpeed === speed ? "bg-purple-600" : "bg-gray-700 hover:bg-gray-600"
                         } transition`}
                       >
                         {speed}x
@@ -579,8 +565,7 @@ export function MissionPlanningDashboardPro() {
                       <div className="text-xs text-gray-400 mt-1">
                         {stationData.passes.slice(0, 3).map((pass: any, pidx: number) => (
                           <div key={pidx}>
-                            {new Date(pass.startTime).toLocaleTimeString()} - 
-                            Max El: {pass.maxElevation.toFixed(1)}°
+                            {new Date(pass.startTime).toLocaleTimeString()} - Max El: {pass.maxElevation.toFixed(1)}°
                           </div>
                         ))}
                       </div>
@@ -612,9 +597,7 @@ export function MissionPlanningDashboardPro() {
                     <div key={idx} className="bg-gray-700 p-3 rounded">
                       <p className="font-semibold text-sm">{maneuver.type}</p>
                       <p className="text-xs text-gray-400">ΔV: {maneuver.deltaV.toFixed(2)} m/s</p>
-                      <p className="text-xs text-gray-400">
-                        Epoch: {new Date(maneuver.epoch).toLocaleString()}
-                      </p>
+                      <p className="text-xs text-gray-400">Epoch: {new Date(maneuver.epoch).toLocaleString()}</p>
                     </div>
                   ))}
                 </div>

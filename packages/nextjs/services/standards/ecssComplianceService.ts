@@ -151,17 +151,13 @@ export class ECSSComplianceService {
       depth?: "BASIC" | "DETAILED" | "FULL";
       includeRecommended?: boolean;
       generateEvidence?: boolean;
-    }
+    },
   ): Promise<ComplianceReport> {
     const checks: ComplianceCheck[] = [];
     const startTime = Date.now();
 
     for (const standard of standards) {
-      const standardChecks = await this.checkStandard(
-        missionData,
-        standard,
-        options
-      );
+      const standardChecks = await this.checkStandard(missionData, standard, options);
       checks.push(...standardChecks);
     }
 
@@ -175,17 +171,13 @@ export class ECSSComplianceService {
     };
 
     const totalApplicable = summary.compliant + summary.nonCompliant + summary.partial;
-    const overallCompliance = totalApplicable > 0
-      ? (summary.compliant / totalApplicable) * 100
-      : 0;
+    const overallCompliance = totalApplicable > 0 ? (summary.compliant / totalApplicable) * 100 : 0;
 
     // Generate recommendations
     const recommendations = this.generateRecommendations(checks);
 
     // Check certification readiness
-    const mandatoryNonCompliant = checks.filter(
-      c => c.category === "MANDATORY" && c.status === "NON_COMPLIANT"
-    );
+    const mandatoryNonCompliant = checks.filter(c => c.category === "MANDATORY" && c.status === "NON_COMPLIANT");
     const certificationReady = mandatoryNonCompliant.length === 0;
 
     const report: ComplianceReport = {
@@ -206,11 +198,7 @@ export class ECSSComplianceService {
   /**
    * Check specific standard
    */
-  private async checkStandard(
-    missionData: any,
-    standard: string,
-    options?: any
-  ): Promise<ComplianceCheck[]> {
+  private async checkStandard(missionData: any, standard: string, options?: any): Promise<ComplianceCheck[]> {
     const checks: ComplianceCheck[] = [];
 
     switch (standard) {
@@ -377,11 +365,7 @@ export class ECSSComplianceService {
   /**
    * Generate ECSS-compliant document
    */
-  async generateDocument(
-    type: ECSSDocument["type"],
-    missionData: any,
-    template?: string
-  ): Promise<ECSSDocument> {
+  async generateDocument(type: ECSSDocument["type"], missionData: any, template?: string): Promise<ECSSDocument> {
     const document: ECSSDocument = {
       type,
       standard: this.getStandardForDocumentType(type),
@@ -425,16 +409,16 @@ export class ECSSComplianceService {
       type?: number;
       secHeader?: boolean;
       sequenceCount?: number;
-    }
+    },
   ): CCSDSPacket {
     const packet: CCSDSPacket = {
       header: {
         version: options?.version || 0,
         type: options?.type || 0,
         secHeaderFlag: options?.secHeader || false,
-        apid: apid & 0x7FF, // 11 bits
+        apid: apid & 0x7ff, // 11 bits
         sequenceFlags: 3, // Unsegmented
-        sequenceCount: (options?.sequenceCount || 0) & 0x3FFF, // 14 bits
+        sequenceCount: (options?.sequenceCount || 0) & 0x3fff, // 14 bits
         packetLength: data.length - 1, // CCSDS convention
       },
       data,
@@ -452,27 +436,25 @@ export class ECSSComplianceService {
   validateCCSDSPacket(packet: CCSDSPacket): boolean {
     // Check header fields
     if (packet.header.version > 7) return false;
-    if (packet.header.apid > 0x7FF) return false;
-    if (packet.header.sequenceCount > 0x3FFF) return false;
-    
+    if (packet.header.apid > 0x7ff) return false;
+    if (packet.header.sequenceCount > 0x3fff) return false;
+
     // Check packet length
     if (packet.data.length !== packet.header.packetLength + 1) return false;
-    
+
     // Verify CRC if present
     if (packet.crc) {
       const calculatedCRC = this.calculateCRC(packet);
       if (packet.crc !== calculatedCRC) return false;
     }
-    
+
     return true;
   }
 
   /**
    * Generate compliance matrix
    */
-  generateComplianceMatrix(
-    checks: ComplianceCheck[]
-  ): {
+  generateComplianceMatrix(checks: ComplianceCheck[]): {
     headers: string[];
     rows: Array<{
       requirement: string;
@@ -499,11 +481,11 @@ export class ECSSComplianceService {
    */
   async exportComplianceReport(
     report: ComplianceReport,
-    format: "PDF" | "DOCX" | "HTML" | "JSON"
+    format: "PDF" | "DOCX" | "HTML" | "JSON",
   ): Promise<{ url: string; data?: any }> {
     // Format report based on requested format
     let exportData: any;
-    
+
     switch (format) {
       case "JSON":
         exportData = report;
@@ -563,22 +545,20 @@ export class ECSSComplianceService {
 
   private generateRecommendations(checks: ComplianceCheck[]): string[] {
     const recommendations: string[] = [];
-    
+
     const nonCompliant = checks.filter(c => c.status === "NON_COMPLIANT");
-    
+
     nonCompliant.forEach(check => {
       if (check.category === "MANDATORY") {
         recommendations.push(
-          `CRITICAL: Address non-compliance with ${check.standard} ${check.clause}: ${check.requirement}`
+          `CRITICAL: Address non-compliance with ${check.standard} ${check.clause}: ${check.requirement}`,
         );
       }
     });
 
     const partial = checks.filter(c => c.status === "PARTIAL");
     partial.forEach(check => {
-      recommendations.push(
-        `IMPROVEMENT: Complete implementation of ${check.standard} ${check.clause}`
-      );
+      recommendations.push(`IMPROVEMENT: Complete implementation of ${check.standard} ${check.clause}`);
     });
 
     return recommendations;
@@ -656,11 +636,8 @@ export class ECSSComplianceService {
 
   private calculateCRC(packet: CCSDSPacket): number {
     // Simplified CRC-16-CCITT calculation
-    let crc = 0xFFFF;
-    const data = Buffer.concat([
-      this.serializeHeader(packet.header),
-      packet.data,
-    ]);
+    let crc = 0xffff;
+    const data = Buffer.concat([this.serializeHeader(packet.header), packet.data]);
 
     for (const byte of data) {
       crc ^= byte << 8;
@@ -673,28 +650,22 @@ export class ECSSComplianceService {
       }
     }
 
-    return crc & 0xFFFF;
+    return crc & 0xffff;
   }
 
   private serializeHeader(header: CCSDSPacket["header"]): Buffer {
     const buffer = Buffer.alloc(6);
-    
+
     // Pack header fields according to CCSDS standard
     buffer.writeUInt16BE(
-      (header.version << 13) |
-      (header.type << 12) |
-      (header.secHeaderFlag ? 0x800 : 0) |
-      header.apid,
-      0
+      (header.version << 13) | (header.type << 12) | (header.secHeaderFlag ? 0x800 : 0) | header.apid,
+      0,
     );
-    
-    buffer.writeUInt16BE(
-      (header.sequenceFlags << 14) | header.sequenceCount,
-      2
-    );
-    
+
+    buffer.writeUInt16BE((header.sequenceFlags << 14) | header.sequenceCount, 2);
+
     buffer.writeUInt16BE(header.packetLength, 4);
-    
+
     return buffer;
   }
 

@@ -291,7 +291,7 @@ DocumentSchema.index({ publishedAt: -1 });
 
 // Virtual for access check
 DocumentSchema.virtual("hasAccess").get(function (this: IDocument) {
-  return function (userId: string) {
+  return (userId: string) => {
     return (
       this.publicAccess ||
       this.owner.toString() === userId ||
@@ -318,8 +318,8 @@ DocumentSchema.methods.addReview = async function (
 
   if (
     status === "APPROVED" &&
-    this.reviewers.every(r =>
-      this.reviews.some(rev => rev.reviewer.toString() === r.toString() && rev.status === "APPROVED"),
+    this.reviewers.every((r: mongoose.Types.ObjectId) =>
+      this.reviews.some((rev: Review) => rev.reviewer.toString() === r.toString() && rev.status === "APPROVED"),
     )
   ) {
     this.status = DocumentStatus.APPROVED;

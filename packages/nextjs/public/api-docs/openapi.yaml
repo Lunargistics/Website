@@ -4,10 +4,10 @@ info:
   description: |
     REST API for the Lunargistics Mission Planning Suite, providing endpoints for mission management,
     orbital calculations, document generation, and blockchain integration.
-    
+
     ## Authentication
     All endpoints require authentication via Bearer token in the Authorization header.
-    
+
     ## Rate Limiting
     API endpoints are rate-limited to prevent abuse. Rate limit headers are included in all responses.
   version: 1.0.0
@@ -222,8 +222,8 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
-    
+            $ref: "#/components/schemas/Error"
+
     RateLimited:
       description: Rate limit exceeded
       headers:
@@ -247,7 +247,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/RateLimitError'
+            $ref: "#/components/schemas/RateLimitError"
 
 security:
   - bearerAuth: []
@@ -296,7 +296,7 @@ paths:
             maximum: 100
           description: Number of items per page
       responses:
-        '200':
+        "200":
           description: Successful response
           headers:
             X-RateLimit-Limit:
@@ -313,7 +313,7 @@ paths:
                   missions:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Mission'
+                      $ref: "#/components/schemas/Mission"
                   total:
                     type: integer
                     description: Total number of missions
@@ -323,10 +323,10 @@ paths:
                   pages:
                     type: integer
                     description: Total pages
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '429':
-          $ref: '#/components/responses/RateLimited'
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
 
     post:
       tags:
@@ -338,9 +338,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Mission'
+              $ref: "#/components/schemas/Mission"
       responses:
-        '201':
+        "201":
           description: Mission created successfully
           content:
             application/json:
@@ -354,17 +354,17 @@ paths:
                   message:
                     type: string
                   mission:
-                    $ref: '#/components/schemas/Mission'
-        '400':
+                    $ref: "#/components/schemas/Mission"
+        "400":
           description: Invalid request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '429':
-          $ref: '#/components/responses/RateLimited'
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
 
   /missions/{id}:
     put:
@@ -383,9 +383,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Mission'
+              $ref: "#/components/schemas/Mission"
       responses:
-        '200':
+        "200":
           description: Mission updated successfully
           content:
             application/json:
@@ -398,10 +398,10 @@ paths:
                     type: string
                   message:
                     type: string
-        '404':
+        "404":
           description: Mission not found
-        '429':
-          $ref: '#/components/responses/RateLimited'
+        "429":
+          $ref: "#/components/responses/RateLimited"
 
     delete:
       tags:
@@ -415,12 +415,12 @@ paths:
             type: string
           description: Mission ID
       responses:
-        '200':
+        "200":
           description: Mission deleted successfully
-        '404':
+        "404":
           description: Mission not found
-        '429':
-          $ref: '#/components/responses/RateLimited'
+        "429":
+          $ref: "#/components/responses/RateLimited"
 
   /orbit/propagate:
     post:
@@ -438,13 +438,13 @@ paths:
                 - orbitalElements
               properties:
                 orbitalElements:
-                  $ref: '#/components/schemas/OrbitalElements'
+                  $ref: "#/components/schemas/OrbitalElements"
                 timeMinutes:
                   type: number
                   description: Time offset in minutes
                   default: 0
       responses:
-        '200':
+        "200":
           description: Propagation result
           content:
             application/json:
@@ -452,11 +452,11 @@ paths:
                 type: object
                 properties:
                   propagation:
-                    $ref: '#/components/schemas/PropagationResult'
-        '400':
+                    $ref: "#/components/schemas/PropagationResult"
+        "400":
           description: Invalid orbital elements
-        '429':
-          $ref: '#/components/responses/RateLimited'
+        "429":
+          $ref: "#/components/responses/RateLimited"
 
   /orekit:
     post:
@@ -482,17 +482,17 @@ paths:
                   type: object
                   description: Input data for the calculation
       responses:
-        '200':
+        "200":
           description: Calculation result
           content:
             application/json:
               schema:
                 type: object
                 description: Result varies based on action type
-        '400':
+        "400":
           description: Invalid input data
-        '429':
-          $ref: '#/components/responses/RateLimited'
+        "429":
+          $ref: "#/components/responses/RateLimited"
 
   /constellation:
     post:
@@ -526,10 +526,10 @@ paths:
                       type: number
                       description: Inclination in degrees
       responses:
-        '200':
+        "200":
           description: Constellation analysis result
-        '429':
-          $ref: '#/components/responses/RateLimited'
+        "429":
+          $ref: "#/components/responses/RateLimited"
 
   /documents/generate:
     post:
@@ -559,7 +559,7 @@ paths:
                   enum: [markdown, html, pdf]
                   default: markdown
       responses:
-        '200':
+        "200":
           description: Generated document
           content:
             application/json:
@@ -574,8 +574,8 @@ paths:
                     description: Suggested filename
                   format:
                     type: string
-        '429':
-          $ref: '#/components/responses/RateLimited'
+        "429":
+          $ref: "#/components/responses/RateLimited"
 
   /venice:
     post:
@@ -604,7 +604,7 @@ paths:
                   type: integer
                   default: 2000
       responses:
-        '200':
+        "200":
           description: AI-generated mission plan
           content:
             application/json:
@@ -614,5 +614,5 @@ paths:
                   response:
                     type: string
                     description: Generated mission plan
-        '429':
-          $ref: '#/components/responses/RateLimited'
+        "429":
+          $ref: "#/components/responses/RateLimited"

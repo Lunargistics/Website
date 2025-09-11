@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
 interface AsteroidData {
@@ -21,7 +20,9 @@ interface AsteroidData {
 export function AsteroidDataFetcher() {
   const [asteroids, setAsteroids] = useState<AsteroidData[]>([]);
   const [loading, setLoading] = useState(false);
-  const { writeContractAsync: updateOracle } = useScaffoldWriteContract("AsteroidOracle" as any);
+
+  // Note: Oracle contract integration is only available on local Hardhat network
+  // For production, this component displays mock data only
 
   const fetchAsteroidData = useCallback(async () => {
     setLoading(true);
@@ -71,31 +72,16 @@ export function AsteroidDataFetcher() {
 
       setAsteroids(mockAsteroids);
 
-      // Update oracle with fetched data
-      for (const asteroid of mockAsteroids) {
-        await updateOracle({
-          functionName: "updateAsteroidData" as any,
-          args: [asteroid.id, asteroid.name, BigInt(asteroid.estimated_value), BigInt(asteroid.diameter)] as any,
-        });
-
-        // Update composition
-        const commodities = Object.keys(asteroid.composition);
-        const percentages = Object.values(asteroid.composition).map(v => BigInt(v * 100));
-
-        await updateOracle({
-          functionName: "batchUpdateComposition" as any,
-          args: [asteroid.id, commodities, percentages] as any,
-        });
-      }
-
-      notification.success("Asteroid data updated in oracle");
+      // Note: In production, this would fetch from a real API
+      // Oracle updates are only available on local Hardhat network
+      notification.success("Asteroid data loaded");
     } catch (error) {
       console.error("Failed to fetch asteroid data:", error);
       notification.error("Failed to update asteroid data");
     } finally {
       setLoading(false);
     }
-  }, [updateOracle]);
+  }, []);
 
   useEffect(() => {
     // Auto-fetch on component mount
@@ -105,7 +91,10 @@ export function AsteroidDataFetcher() {
   return (
     <div className="card bg-base-200 shadow-xl">
       <div className="card-body">
-        <h2 className="card-title">Asteroid Data Oracle</h2>
+        <h2 className="card-title">
+          Asteroid Data
+          <span className="badge badge-info badge-sm">Mock Data</span>
+        </h2>
 
         <div className="overflow-x-auto">
           <table className="table table-zebra">
@@ -149,7 +138,7 @@ export function AsteroidDataFetcher() {
             onClick={fetchAsteroidData}
             disabled={loading}
           >
-            {loading ? "Updating..." : "Refresh Data"}
+            {loading ? "Loading..." : "Refresh Data"}
           </button>
         </div>
       </div>

@@ -3,15 +3,24 @@
  * Professional test equipment integration and traceability
  * Implements automated test procedures, equipment control, and result analysis
  */
-
 import { EventEmitter } from "events";
 
 export interface TestEquipment {
   id: string;
   name: string;
-  type: "POWER_SUPPLY" | "OSCILLOSCOPE" | "SPECTRUM_ANALYZER" | "NETWORK_ANALYZER" | 
-        "SIGNAL_GENERATOR" | "MULTIMETER" | "THERMAL_CHAMBER" | "VIBRATION_TABLE" |
-        "VACUUM_CHAMBER" | "SUN_SIMULATOR" | "DATA_ACQUISITION" | "CUSTOM";
+  type:
+    | "POWER_SUPPLY"
+    | "OSCILLOSCOPE"
+    | "SPECTRUM_ANALYZER"
+    | "NETWORK_ANALYZER"
+    | "SIGNAL_GENERATOR"
+    | "MULTIMETER"
+    | "THERMAL_CHAMBER"
+    | "VIBRATION_TABLE"
+    | "VACUUM_CHAMBER"
+    | "SUN_SIMULATOR"
+    | "DATA_ACQUISITION"
+    | "CUSTOM";
   manufacturer: string;
   model: string;
   serialNumber: string;
@@ -213,16 +222,16 @@ export class AITService extends EventEmitter {
    */
   async initialize(): Promise<void> {
     console.log("🔧 Initializing AIT system...");
-    
+
     // Initialize equipment connections
     await this.initializeEquipment();
-    
+
     // Load test procedures
     await this.loadProcedures();
-    
+
     // Setup data recording
     this.setupDataRecording();
-    
+
     console.log("✅ AIT system initialized");
   }
 
@@ -231,15 +240,15 @@ export class AITService extends EventEmitter {
    */
   async registerEquipment(equipment: TestEquipment): Promise<void> {
     this.equipment.set(equipment.id, equipment);
-    
+
     // Initialize connection based on interface type
     try {
       const connection = await this.connectEquipment(equipment);
       this.equipmentConnections.set(equipment.id, connection);
-      
+
       // Perform self-test
       await this.selfTestEquipment(equipment.id);
-      
+
       console.log(`✅ Equipment ${equipment.name} registered and connected`);
     } catch (error) {
       console.error(`Failed to connect equipment ${equipment.name}:`, error);
@@ -276,7 +285,7 @@ export class AITService extends EventEmitter {
       witness?: string[];
       dryRun?: boolean;
       stopOnFailure?: boolean;
-    }
+    },
   ): Promise<TestExecution> {
     const procedure = this.procedures.get(procedureId);
     if (!procedure) throw new Error("Procedure not found");
@@ -316,11 +325,7 @@ export class AITService extends EventEmitter {
       for (const step of procedure.steps) {
         if (execution.status === "ABORTED") break;
 
-        const result = await this.executeStep(
-          step,
-          execution,
-          options?.dryRun || false
-        );
+        const result = await this.executeStep(step, execution, options?.dryRun || false);
 
         execution.results.push(result);
 
@@ -350,7 +355,7 @@ export class AITService extends EventEmitter {
       });
     } finally {
       execution.endTime = new Date();
-      
+
       // Stop data recording
       if (!options?.dryRun) {
         const dataFile = await this.stopDataRecording();
@@ -366,11 +371,7 @@ export class AITService extends EventEmitter {
   /**
    * Execute single test step
    */
-  private async executeStep(
-    step: TestStep,
-    execution: TestExecution,
-    dryRun: boolean
-  ): Promise<TestResult> {
+  private async executeStep(step: TestStep, execution: TestExecution, dryRun: boolean): Promise<TestResult> {
     const result: TestResult = {
       stepId: step.id,
       timestamp: new Date(),
@@ -385,11 +386,7 @@ export class AITService extends EventEmitter {
 
         // Verify result
         if (step.expectedResult !== undefined) {
-          const verification = this.verifyResult(
-            actionResult,
-            step.expectedResult,
-            step.tolerance
-          );
+          const verification = this.verifyResult(actionResult, step.expectedResult, step.tolerance);
           result.status = verification.passed ? "PASS" : "FAIL";
           result.expectedValue = step.expectedResult;
           result.deviation = verification.deviation;
@@ -409,7 +406,7 @@ export class AITService extends EventEmitter {
     } catch (error) {
       result.status = "FAIL";
       result.notes = `Error: ${error}`;
-      
+
       execution.anomalies.push({
         id: `anomaly_${Date.now()}`,
         stepId: step.id,
@@ -429,33 +426,24 @@ export class AITService extends EventEmitter {
   private async executeAction(action: TestAction): Promise<any> {
     switch (action.type) {
       case "CONFIGURE":
-        return this.configureEquipment(
-          action.equipment!,
-          action.parameters!
-        );
-      
+        return this.configureEquipment(action.equipment!, action.parameters!);
+
       case "MEASURE":
-        return this.measureParameter(
-          action.equipment!,
-          action.parameters!
-        );
-      
+        return this.measureParameter(action.equipment!, action.parameters!);
+
       case "STIMULATE":
-        return this.stimulateSystem(
-          action.equipment!,
-          action.parameters!
-        );
-      
+        return this.stimulateSystem(action.equipment!, action.parameters!);
+
       case "WAIT":
         await this.wait(action.parameters?.duration || 1000);
         return true;
-      
+
       case "VERIFY":
         return this.verifyCondition(action.parameters!);
-      
+
       case "RECORD":
         return this.recordData(action.parameters!);
-      
+
       default:
         throw new Error(`Unknown action type: ${action.type}`);
     }
@@ -464,10 +452,7 @@ export class AITService extends EventEmitter {
   /**
    * Configure test equipment
    */
-  private async configureEquipment(
-    equipmentId: string,
-    parameters: Record<string, any>
-  ): Promise<void> {
+  private async configureEquipment(equipmentId: string, parameters: Record<string, any>): Promise<void> {
     const equipment = this.equipment.get(equipmentId);
     if (!equipment) throw new Error(`Equipment ${equipmentId} not found`);
 
@@ -487,10 +472,7 @@ export class AITService extends EventEmitter {
   /**
    * Measure parameter
    */
-  private async measureParameter(
-    equipmentId: string,
-    parameters: Record<string, any>
-  ): Promise<MeasurementResult> {
+  private async measureParameter(equipmentId: string, parameters: Record<string, any>): Promise<MeasurementResult> {
     const equipment = this.equipment.get(equipmentId);
     if (!equipment) throw new Error(`Equipment ${equipmentId} not found`);
 
@@ -500,10 +482,10 @@ export class AITService extends EventEmitter {
     // Send measurement command
     const command = this.buildMeasureCommand(equipment, parameters);
     const response = await this.sendCommand(connection, command);
-    
+
     // Parse response
     const value = this.parseMeasurement(response, parameters.parameter);
-    
+
     return {
       equipment: equipmentId,
       parameter: parameters.parameter,
@@ -519,7 +501,7 @@ export class AITService extends EventEmitter {
    */
   async generateTestReport(
     executionId: string,
-    format: "PDF" | "EXCEL" | "JSON" | "ECSS"
+    format: "PDF" | "EXCEL" | "JSON" | "ECSS",
   ): Promise<{ url: string; data?: any }> {
     const execution = this.executions.get(executionId);
     if (!execution) throw new Error("Execution not found");
@@ -560,18 +542,16 @@ export class AITService extends EventEmitter {
   /**
    * Generate traceability matrix
    */
-  async generateTraceabilityMatrix(
-    campaignId?: string
-  ): Promise<TraceabilityMatrix> {
+  async generateTraceabilityMatrix(campaignId?: string): Promise<TraceabilityMatrix> {
     const requirements = await this.getAllRequirements();
     const traces: RequirementTrace[] = [];
 
     for (const req of requirements) {
       const procedures = this.findProceduresForRequirement(req.id);
       const executions = this.findExecutionsForRequirement(req.id);
-      
+
       const status = this.determineRequirementStatus(executions);
-      
+
       traces.push({
         requirementId: req.id,
         description: req.description,
@@ -585,9 +565,7 @@ export class AITService extends EventEmitter {
 
     const testedCount = traces.filter(t => t.status !== "NOT_TESTED").length;
     const coverage = (testedCount / traces.length) * 100;
-    const gaps = traces
-      .filter(t => t.status === "NOT_TESTED")
-      .map(t => t.requirementId);
+    const gaps = traces.filter(t => t.status === "NOT_TESTED").map(t => t.requirementId);
 
     return {
       requirements: traces,
@@ -605,7 +583,7 @@ export class AITService extends EventEmitter {
       parallel?: boolean;
       stopOnFailure?: boolean;
       operator: string;
-    }
+    },
   ): Promise<void> {
     const campaign = this.campaigns.get(campaignId);
     if (!campaign) throw new Error("Campaign not found");
@@ -626,12 +604,9 @@ export class AITService extends EventEmitter {
 
       // Execute procedure
       schedule.actualStart = new Date();
-      
+
       try {
-        const execution = await this.executeProcedure(
-          schedule.procedureId,
-          options
-        );
+        const execution = await this.executeProcedure(schedule.procedureId, options);
 
         schedule.actualEnd = new Date();
 
@@ -750,7 +725,7 @@ export class AITService extends EventEmitter {
   private verifyResult(
     measured: any,
     expected: any,
-    tolerance?: { min: number; max: number }
+    tolerance?: { min: number; max: number },
   ): { passed: boolean; deviation?: number } {
     if (tolerance) {
       const deviation = Math.abs(measured - expected);
@@ -770,10 +745,7 @@ export class AITService extends EventEmitter {
     return `/screenshots/screen_${Date.now()}.png`;
   }
 
-  private async stimulateSystem(
-    equipmentId: string,
-    parameters: Record<string, any>
-  ): Promise<void> {
+  private async stimulateSystem(equipmentId: string, parameters: Record<string, any>): Promise<void> {
     // Apply stimulus to system
   }
 
@@ -790,19 +762,12 @@ export class AITService extends EventEmitter {
     // Record data point
   }
 
-  private buildConfigCommand(
-    equipment: TestEquipment,
-    param: string,
-    value: any
-  ): string {
+  private buildConfigCommand(equipment: TestEquipment, param: string, value: any): string {
     // Build SCPI or equipment-specific command
     return `:${param} ${value}`;
   }
 
-  private buildMeasureCommand(
-    equipment: TestEquipment,
-    parameters: Record<string, any>
-  ): string {
+  private buildMeasureCommand(equipment: TestEquipment, parameters: Record<string, any>): string {
     // Build measurement command
     return `:MEASURE:${parameters.parameter}?`;
   }
@@ -830,9 +795,7 @@ export class AITService extends EventEmitter {
       failed,
       skipped,
       passRate: (passed / total) * 100,
-      duration: execution.endTime
-        ? (execution.endTime.getTime() - execution.startTime.getTime()) / 1000
-        : 0,
+      duration: execution.endTime ? (execution.endTime.getTime() - execution.startTime.getTime()) / 1000 : 0,
     };
   }
 
@@ -871,20 +834,16 @@ export class AITService extends EventEmitter {
   }
 
   private findProceduresForRequirement(reqId: string): TestProcedure[] {
-    return Array.from(this.procedures.values()).filter(p =>
-      p.requirements.includes(reqId)
-    );
+    return Array.from(this.procedures.values()).filter(p => p.requirements.includes(reqId));
   }
 
   private findExecutionsForRequirement(reqId: string): TestExecution[] {
-    return Array.from(this.executions.values()).filter(e =>
-      e.traceability.requirements.includes(reqId)
-    );
+    return Array.from(this.executions.values()).filter(e => e.traceability.requirements.includes(reqId));
   }
 
   private determineRequirementStatus(executions: TestExecution[]): RequirementTrace["status"] {
     if (executions.length === 0) return "NOT_TESTED";
-    
+
     const allPassed = executions.every(e => e.status === "COMPLETED");
     const anyFailed = executions.some(e => e.status === "FAILED");
     const anyRunning = executions.some(e => e.status === "RUNNING");

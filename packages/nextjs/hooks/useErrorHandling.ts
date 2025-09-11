@@ -2,25 +2,11 @@
  * Custom Hook for Error Handling
  * Provides unified error handling across the application
  */
-
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
-import { 
-  retry, 
-  retryWithFallback, 
-  createRetryFetch,
-  type RetryOptions 
-} from "~~/lib/retry";
-import { 
-  getUserFriendlyError, 
-  showErrorToast,
-  type ErrorContext 
-} from "~~/lib/errorMessages";
-import { 
-  reportError, 
-  addBreadcrumb,
-  useErrorTracking 
-} from "~~/lib/monitoring/sentry";
+import { type ErrorContext, getUserFriendlyError, showErrorToast } from "~~/lib/errorMessages";
+import { addBreadcrumb, reportError, useErrorTracking } from "~~/lib/monitoring/sentry";
+import { type RetryOptions, createRetryFetch, retry, retryWithFallback } from "~~/lib/retry";
 
 interface UseErrorHandlingOptions {
   showToast?: boolean;
@@ -38,23 +24,26 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
   const { reportError: trackError, addBreadcrumb: addCrumb } = useErrorTracking();
 
   // Handle error with user-friendly message
-  const handleError = useCallback((error: Error | string, context?: ErrorContext) => {
-    const errorObj = typeof error === "string" ? new Error(error) : error;
-    setError(errorObj);
+  const handleError = useCallback(
+    (error: Error | string, context?: ErrorContext) => {
+      const errorObj = typeof error === "string" ? new Error(error) : error;
+      setError(errorObj);
 
-    // Get user-friendly error
-    const userError = getUserFriendlyError(errorObj, context || options.context);
+      // Get user-friendly error
+      const userError = getUserFriendlyError(errorObj, context || options.context);
 
-    // Report to Sentry
-    trackError(errorObj, context);
+      // Report to Sentry
+      trackError(errorObj, context);
 
-    // Show toast if enabled
-    if (options.showToast !== false) {
-      showErrorToast(errorObj, context, toast);
-    }
+      // Show toast if enabled
+      if (options.showToast !== false) {
+        showErrorToast(errorObj, context, toast);
+      }
 
-    return userError;
-  }, [options, trackError]);
+      return userError;
+    },
+    [options, trackError],
+  );
 
   // Clear error
   const clearError = useCallback(() => {
@@ -62,31 +51,29 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
   }, []);
 
   // Retry failed operation
-  const retryOperation = useCallback(async <T,>(
-    operation: () => Promise<T>
-  ): Promise<T | null> => {
-    setIsRetrying(true);
-    clearError();
+  const retryOperation = useCallback(
+    async <T>(operation: () => Promise<T>): Promise<T | null> => {
+      setIsRetrying(true);
+      clearError();
 
-    try {
-      const result = options.fallback 
-        ? await retryWithFallback(operation, options.fallback, options.retryOptions)
-        : await retry(operation, options.retryOptions);
-      
-      setIsRetrying(false);
-      return result;
-    } catch (err) {
-      setIsRetrying(false);
-      handleError(err as Error);
-      return null;
-    }
-  }, [options, clearError, handleError]);
+      try {
+        const result = options.fallback
+          ? await retryWithFallback(operation, options.fallback, options.retryOptions)
+          : await retry(operation, options.retryOptions);
+
+        setIsRetrying(false);
+        return result;
+      } catch (err) {
+        setIsRetrying(false);
+        handleError(err as Error);
+        return null;
+      }
+    },
+    [options, clearError, handleError],
+  );
 
   // Create wrapped fetch with retry
-  const fetchWithRetry = useCallback(
-    createRetryFetch(options.retryOptions),
-    [options.retryOptions]
-  );
+  const fetchWithRetry = useCallback(createRetryFetch(options.retryOptions), [options.retryOptions]);
 
   return {
     error,
@@ -102,10 +89,7 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
 /**
  * Hook for async operations with error handling
  */
-export function useAsyncOperation<T = any>(
-  operation: () => Promise<T>,
-  options: UseErrorHandlingOptions = {}
-) {
+export function useAsyncOperation<T = any>(operation: () => Promise<T>, options: UseErrorHandlingOptions = {}) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
   const { error, handleError, clearError, retryOperation } = useErrorHandling(options);
@@ -143,30 +127,30 @@ export function useAsyncOperation<T = any>(
 /**
  * Hook for form submission with error handling
  */
-export function useFormSubmit<T = any>(
-  onSubmit: (data: T) => Promise<void>,
-  options: UseErrorHandlingOptions = {}
-) {
+export function useFormSubmit<T = any>(onSubmit: (data: T) => Promise<void>, options: UseErrorHandlingOptions = {}) {
   const [submitting, setSubmitting] = useState(false);
   const { error, handleError, clearError } = useErrorHandling(options);
 
-  const submit = useCallback(async (data: T) => {
-    setSubmitting(true);
-    clearError();
+  const submit = useCallback(
+    async (data: T) => {
+      setSubmitting(true);
+      clearError();
 
-    try {
-      await retry(() => onSubmit(data), {
-        maxAttempts: 2,
-        ...options.retryOptions,
-      });
-      
-      toast.success("Submitted successfully!");
-    } catch (err) {
-      handleError(err as Error, { action: "form_submit" });
-    } finally {
-      setSubmitting(false);
-    }
-  }, [onSubmit, options.retryOptions, clearError, handleError]);
+      try {
+        await retry(() => onSubmit(data), {
+          maxAttempts: 2,
+          ...options.retryOptions,
+        });
+
+        toast.success("Submitted successfully!");
+      } catch (err) {
+        handleError(err as Error, { action: "form_submit" });
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [onSubmit, options.retryOptions, clearError, handleError],
+  );
 
   return {
     submit,
@@ -179,10 +163,7 @@ export function useFormSubmit<T = any>(
 /**
  * Hook for data fetching with caching and error handling
  */
-export function useFetch<T = any>(
-  url: string,
-  options: RequestInit & UseErrorHandlingOptions = {}
-) {
+export function useFetch<T = any>(url: string, options: RequestInit & UseErrorHandlingOptions = {}) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const { error, handleError, clearError, fetchWithRetry } = useErrorHandling(options);
@@ -230,7 +211,7 @@ export function useWebSocket(
     onError?: (error: Error) => void;
     reconnect?: boolean;
     reconnectDelay?: number;
-  } = {}
+  } = {},
 ) {
   const [connected, setConnected] = useState(false);
   const [ws, setWs] = useState<WebSocket | null>(null);
@@ -253,7 +234,7 @@ export function useWebSocket(
           });
         };
 
-        socket.onmessage = (event) => {
+        socket.onmessage = event => {
           try {
             const data = JSON.parse(event.data);
             options.onMessage?.(data);
@@ -262,7 +243,7 @@ export function useWebSocket(
           }
         };
 
-        socket.onerror = (event) => {
+        socket.onerror = event => {
           const error = new Error("WebSocket error");
           handleError(error, { action: "websocket_error" });
           options.onError?.(error);
@@ -270,12 +251,9 @@ export function useWebSocket(
 
         socket.onclose = () => {
           setConnected(false);
-          
+
           if (options.reconnect !== false) {
-            reconnectTimeout = setTimeout(
-              connect,
-              options.reconnectDelay || 5000
-            );
+            reconnectTimeout = setTimeout(connect, options.reconnectDelay || 5000);
           }
         };
 
@@ -293,17 +271,20 @@ export function useWebSocket(
     };
   }, [url, options, handleError]);
 
-  const send = useCallback((data: any) => {
-    if (ws?.readyState === WebSocket.OPEN) {
-      try {
-        ws.send(JSON.stringify(data));
-      } catch (err) {
-        handleError(err as Error, { action: "websocket_send" });
+  const send = useCallback(
+    (data: any) => {
+      if (ws?.readyState === WebSocket.OPEN) {
+        try {
+          ws.send(JSON.stringify(data));
+        } catch (err) {
+          handleError(err as Error, { action: "websocket_send" });
+        }
+      } else {
+        handleError(new Error("WebSocket not connected"), { action: "websocket_send" });
       }
-    } else {
-      handleError(new Error("WebSocket not connected"), { action: "websocket_send" });
-    }
-  }, [ws, handleError]);
+    },
+    [ws, handleError],
+  );
 
   return {
     connected,
@@ -332,30 +313,24 @@ export function ExampleComponent() {
     {
       retryOptions: { maxAttempts: 3 },
       fallback: { defaultData: true },
-    }
+    },
   );
 
   // Form submission
-  const { submit, submitting } = useFormSubmit(
-    async (formData) => {
-      const response = await fetch("/api/submit", {
-        method: "POST",
-        body: JSON.stringify(formData),
-      });
-      if (!response.ok) throw new Error("Submission failed");
-    }
-  );
+  const { submit, submitting } = useFormSubmit(async formData => {
+    const response = await fetch("/api/submit", {
+      method: "POST",
+      body: JSON.stringify(formData),
+    });
+    if (!response.ok) throw new Error("Submission failed");
+  });
 
   // Data fetching
-  const { 
-    data: fetchedData, 
-    loading: fetching, 
-    refetch 
-  } = useFetch("/api/resource");
+  const { data: fetchedData, loading: fetching, refetch } = useFetch("/api/resource");
 
   // WebSocket connection
   const { connected, send } = useWebSocket("ws://localhost:3000", {
-    onMessage: (data) => console.log("Received:", data),
+    onMessage: data => console.log("Received:", data),
     reconnect: true,
   });
 
