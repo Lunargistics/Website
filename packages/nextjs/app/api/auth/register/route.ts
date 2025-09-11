@@ -57,9 +57,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log("Registration endpoint called");
     const { email, password, name } = await request.json();
-    console.log("Registration attempt for email:", email);
 
     if (!email || !password) {
       return AuthErrorHandler.createResponse(
@@ -77,13 +75,11 @@ export async function POST(request: Request) {
       return AuthErrorHandler.createResponse(AuthErrorHandler.createError("WEAK_PASSWORD", passwordValidation.message));
     }
 
-    console.log("Connecting to MongoDB...");
     await dbConnect();
-    console.log("Connected to MongoDB");
 
     // Check if email already exists (case-insensitive)
     const existingUser = await User.findOne({
-      emailLower: email.toLowerCase(),
+      email: email.toLowerCase(),
     });
 
     if (existingUser) {
@@ -91,9 +87,10 @@ export async function POST(request: Request) {
     }
 
     // Create user with email verification token
+    const userId = `USER-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const user = new User({
+      userId,
       email,
-      emailLower: email.toLowerCase(),
       password,
       name: name || email.split("@")[0],
       emailVerified: false,
@@ -109,8 +106,7 @@ export async function POST(request: Request) {
     await user.save();
 
     // In production, send verification email here
-    // For now, we'll log the token
-    console.log("Verification token:", verificationToken);
+    // For now, we'll return the verification URL for development
     console.log("Verification URL:", `${process.env.NEXTAUTH_URL}/verify-email?token=${verificationToken}`);
 
     return AuthErrorHandler.createSuccessResponse(

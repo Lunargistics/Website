@@ -1,9 +1,9 @@
 import { useRef, useState } from "react";
 import { NetworkOptions } from "./NetworkOptions";
+import { signOut, useSession } from "next-auth/react";
 import { getAddress } from "viem";
 import { Address } from "viem";
 import { useDisconnect } from "wagmi";
-import { signOut, useSession } from "next-auth/react";
 import {
   ArrowLeftOnRectangleIcon,
   ArrowTopRightOnSquareIcon,

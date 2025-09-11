@@ -12,12 +12,12 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
  * @dev Upgradeable version of MissionRegistry with UUPS pattern
  * @notice Manages space missions with on-chain registration and IPFS data storage
  */
-contract MissionRegistryV2 is 
-    Initializable, 
-    UUPSUpgradeable, 
-    OwnableUpgradeable, 
+contract MissionRegistryV2 is
+    Initializable,
+    UUPSUpgradeable,
+    OwnableUpgradeable,
     PausableUpgradeable,
-    ReentrancyGuardUpgradeable 
+    ReentrancyGuardUpgradeable
 {
     // Mission status enum
     enum MissionStatus {
@@ -50,7 +50,7 @@ contract MissionRegistryV2 is
     mapping(string => Mission) public missions;
     mapping(address => string[]) public userMissions;
     string[] public allMissionIds;
-    
+
     // V2 additions
     mapping(string => address[]) public missionCollaborators;
     mapping(string => mapping(address => bool)) public hasAccess;
@@ -58,31 +58,13 @@ contract MissionRegistryV2 is
     uint256 public constant MAX_COLLABORATORS = 50;
 
     // Events
-    event MissionCreated(
-        string indexed missionId,
-        address indexed owner,
-        string name,
-        string ipfsHash
-    );
-    
-    event MissionUpdated(
-        string indexed missionId,
-        address indexed updater,
-        string ipfsHash,
-        MissionStatus status
-    );
-    
-    event CollaboratorAdded(
-        string indexed missionId,
-        address indexed collaborator,
-        address indexed addedBy
-    );
-    
-    event CollaboratorRemoved(
-        string indexed missionId,
-        address indexed collaborator,
-        address indexed removedBy
-    );
+    event MissionCreated(string indexed missionId, address indexed owner, string name, string ipfsHash);
+
+    event MissionUpdated(string indexed missionId, address indexed updater, string ipfsHash, MissionStatus status);
+
+    event CollaboratorAdded(string indexed missionId, address indexed collaborator, address indexed addedBy);
+
+    event CollaboratorRemoved(string indexed missionId, address indexed collaborator, address indexed removedBy);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -117,10 +99,10 @@ contract MissionRegistryV2 is
     ) external whenNotPaused nonReentrant returns (string memory) {
         require(bytes(_name).length > 0, "Name required");
         require(bytes(_ipfsHash).length > 0, "IPFS hash required");
-        
+
         missionCounter++;
         string memory missionId = string(abi.encodePacked("MISSION-", _toString(missionCounter)));
-        
+
         Mission storage newMission = missions[missionId];
         newMission.id = missionId;
         newMission.name = _name;
@@ -132,13 +114,13 @@ contract MissionRegistryV2 is
         newMission.missionType = _missionType;
         newMission.launchDate = _launchDate;
         newMission.tags = _tags;
-        
+
         userMissions[msg.sender].push(missionId);
         allMissionIds.push(missionId);
         hasAccess[missionId][msg.sender] = true;
-        
+
         emit MissionCreated(missionId, msg.sender, _name, _ipfsHash);
-        
+
         return missionId;
     }
 
@@ -152,49 +134,43 @@ contract MissionRegistryV2 is
     ) external whenNotPaused {
         require(hasAccess[_missionId][msg.sender], "No access");
         require(bytes(missions[_missionId].id).length > 0, "Mission not found");
-        
+
         Mission storage mission = missions[_missionId];
         mission.ipfsHash = _ipfsHash;
         mission.status = _status;
         mission.updatedAt = block.timestamp;
-        
+
         if (_status == MissionStatus.Completed) {
             mission.endDate = block.timestamp;
         }
-        
+
         emit MissionUpdated(_missionId, msg.sender, _ipfsHash, _status);
     }
 
     /**
      * @dev Add collaborator to mission (V2 feature)
      */
-    function addCollaborator(
-        string memory _missionId,
-        address _collaborator
-    ) external whenNotPaused {
+    function addCollaborator(string memory _missionId, address _collaborator) external whenNotPaused {
         require(missions[_missionId].owner == msg.sender, "Only owner");
         require(_collaborator != address(0), "Invalid address");
         require(!hasAccess[_missionId][_collaborator], "Already has access");
         require(missionCollaborators[_missionId].length < MAX_COLLABORATORS, "Max collaborators");
-        
+
         missionCollaborators[_missionId].push(_collaborator);
         hasAccess[_missionId][_collaborator] = true;
-        
+
         emit CollaboratorAdded(_missionId, _collaborator, msg.sender);
     }
 
     /**
      * @dev Remove collaborator from mission (V2 feature)
      */
-    function removeCollaborator(
-        string memory _missionId,
-        address _collaborator
-    ) external whenNotPaused {
+    function removeCollaborator(string memory _missionId, address _collaborator) external whenNotPaused {
         require(missions[_missionId].owner == msg.sender, "Only owner");
         require(hasAccess[_missionId][_collaborator], "No access to remove");
-        
+
         hasAccess[_missionId][_collaborator] = false;
-        
+
         // Remove from array
         address[] storage collaborators = missionCollaborators[_missionId];
         for (uint i = 0; i < collaborators.length; i++) {
@@ -204,18 +180,14 @@ contract MissionRegistryV2 is
                 break;
             }
         }
-        
+
         emit CollaboratorRemoved(_missionId, _collaborator, msg.sender);
     }
 
     /**
      * @dev Get mission details
      */
-    function getMission(string memory _missionId) 
-        external 
-        view 
-        returns (Mission memory) 
-    {
+    function getMission(string memory _missionId) external view returns (Mission memory) {
         require(bytes(missions[_missionId].id).length > 0, "Mission not found");
         return missions[_missionId];
     }
@@ -223,22 +195,14 @@ contract MissionRegistryV2 is
     /**
      * @dev Get user's missions
      */
-    function getUserMissions(address _user) 
-        external 
-        view 
-        returns (string[] memory) 
-    {
+    function getUserMissions(address _user) external view returns (string[] memory) {
         return userMissions[_user];
     }
 
     /**
      * @dev Get mission collaborators (V2 feature)
      */
-    function getMissionCollaborators(string memory _missionId) 
-        external 
-        view 
-        returns (address[] memory) 
-    {
+    function getMissionCollaborators(string memory _missionId) external view returns (address[] memory) {
         return missionCollaborators[_missionId];
     }
 

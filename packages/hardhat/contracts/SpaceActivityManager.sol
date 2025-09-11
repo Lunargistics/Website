@@ -43,41 +43,38 @@ contract SpaceActivityManager {
     struct ComplianceDocument {
         bytes32 id; // Using bytes32 for on-chain ID, can be generated
         string documentName;
-        string documentType; 
+        string documentType;
         string documentHashOrLink; // IPFS hash, URL, etc.
         DocComplianceStatus status;
         uint256 submittedDate; // timestamp
-        uint256 reviewDate;    // timestamp
-        uint256 expiryDate;    // timestamp
+        uint256 reviewDate; // timestamp
+        uint256 expiryDate; // timestamp
         string notes;
         string responsibleEntity;
     }
 
     struct Activity {
-        bytes32 id;          // Unique ID for the activity
-        address owner;       // Address of the user who logged the activity
+        bytes32 id; // Unique ID for the activity
+        address owner; // Address of the user who logged the activity
         ActivityType activityType;
         string name;
         string description;
         string organization;
         string projectManager;
-        uint256 startDate;     // timestamp
-        uint256 endDate;       // timestamp
+        uint256 startDate; // timestamp
+        uint256 endDate; // timestamp
         uint256 launchDateTime; // timestamp, if applicable
         ActivityStatus status;
-        
         string externalApiLaunchId; // For linking to external API data
-        string externalApiSource;   // e.g., "general", "spacex"
-
+        string externalApiSource; // e.g., "general", "spacex"
         string launchSite;
         string destination;
         string payloadDetails;
-
         ComplianceDocument[] complianceDocuments;
         // overallComplianceSummary might be better handled off-chain or via events
 
-        uint256 createdAt;     // timestamp
-        uint256 updatedAt;     // timestamp
+        uint256 createdAt; // timestamp
+        uint256 updatedAt; // timestamp
     }
 
     // --- State Variables ---
@@ -152,7 +149,7 @@ contract SpaceActivityManager {
         string memory _organization,
         string memory _projectManager,
         uint256 _startDate, // Use 0 if not applicable
-        uint256 _endDate,   // Use 0 if not applicable
+        uint256 _endDate, // Use 0 if not applicable
         uint256 _launchDateTime, // Use 0 if not applicable
         ActivityStatus _status,
         string memory _externalApiLaunchId,
@@ -162,9 +159,9 @@ contract SpaceActivityManager {
         string memory _payloadDetails
     ) external returns (bytes32 activityId) {
         require(bytes(_name).length > 0, "SAM: Activity name cannot be empty");
-        
+
         activityId = _generateActivityId(_name);
-        
+
         Activity storage newActivity = s_activities[activityId];
         newActivity.id = activityId;
         newActivity.owner = msg.sender;
@@ -206,7 +203,7 @@ contract SpaceActivityManager {
     function getAllActivityIds() external view returns (bytes32[] memory) {
         return s_allActivityIds;
     }
-    
+
     function getComplianceDocuments(bytes32 _activityId) external view returns (ComplianceDocument[] memory) {
         require(s_activities[_activityId].id != bytes32(0), "SAM: Activity does not exist");
         return s_activities[_activityId].complianceDocuments;
@@ -223,13 +220,14 @@ contract SpaceActivityManager {
         uint256 _startDate,
         uint256 _endDate,
         uint256 _launchDateTime,
-        ActivityStatus _status, 
+        ActivityStatus _status,
         string memory _externalApiLaunchId,
         string memory _externalApiSource,
         string memory _launchSite,
         string memory _destination,
         string memory _payloadDetails
-    ) external { // Removed onlyActivityOwner modifier for now
+    ) external {
+        // Removed onlyActivityOwner modifier for now
         // Explicit checks for existence and ownership
         require(s_activities[_activityId].id != bytes32(0), "SAM: Activity does not exist");
         require(s_activities[_activityId].owner == msg.sender, "SAM: Caller is not activity owner");
@@ -278,7 +276,7 @@ contract SpaceActivityManager {
             status: _status,
             submittedDate: _submittedDate, // Use 0 if not applicable
             reviewDate: 0, // Review date TBD by a reviewer role later
-            expiryDate: _expiryDate,   // Use 0 if not applicable
+            expiryDate: _expiryDate, // Use 0 if not applicable
             notes: _notes,
             responsibleEntity: _responsibleEntity
         });
@@ -295,9 +293,10 @@ contract SpaceActivityManager {
         bytes32 _documentId,
         DocComplianceStatus _newStatus,
         uint256 _reviewDate // Reviewer sets this date
-    ) external onlyActivityOwner(_activityId) { // For now, only owner. Could be a different role.
+    ) external onlyActivityOwner(_activityId) {
+        // For now, only owner. Could be a different role.
         require(s_activities[_activityId].id != bytes32(0), "SAM: Activity does not exist");
-        
+
         ComplianceDocument[] storage documents = s_activities[_activityId].complianceDocuments;
         bool found = false;
         for (uint i = 0; i < documents.length; i++) {
@@ -312,7 +311,7 @@ contract SpaceActivityManager {
         }
         require(found, "SAM: Document not found in activity");
     }
-    
+
     // Consider a function to update other fields of a compliance document if needed, by owner.
     // function updateComplianceDocumentDetails(...) internal onlyActivityOwner(_activityId) { ... }
-} 
+}

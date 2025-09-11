@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  */
 contract SpaceEquipmentNFT is ERC721, ERC721URIStorage, Ownable {
     uint256 private _tokenIdCounter;
-    
+
     enum EquipmentCategory {
         Bus,
         Payload,
@@ -26,7 +26,7 @@ contract SpaceEquipmentNFT is ERC721, ERC721URIStorage, Ownable {
         LaunchVehicle,
         Other
     }
-    
+
     enum ComplianceStandard {
         None,
         ECSS,
@@ -36,7 +36,7 @@ contract SpaceEquipmentNFT is ERC721, ERC721URIStorage, Ownable {
         MIL_STD,
         Custom
     }
-    
+
     struct EquipmentSpec {
         string name;
         string manufacturer;
@@ -53,31 +53,31 @@ contract SpaceEquipmentNFT is ERC721, ERC721URIStorage, Ownable {
         bool spaceQualified;
         string ipfsDataHash; // Detailed specs, CAD models, datasheets on IPFS
     }
-    
+
     struct Compatibility {
         uint256 equipmentId1;
         uint256 equipmentId2;
         bool isCompatible;
         string reason;
     }
-    
+
     // Token ID => Equipment Specifications
     mapping(uint256 => EquipmentSpec) public equipmentSpecs;
-    
+
     // Compatibility matrix: hash(id1, id2) => Compatibility
     mapping(bytes32 => Compatibility) public compatibilityMatrix;
-    
+
     // Category => array of token IDs
     mapping(EquipmentCategory => uint256[]) public equipmentByCategory;
-    
+
     // Events
     event EquipmentMinted(uint256 indexed tokenId, string name, EquipmentCategory category);
     event SpecsUpdated(uint256 indexed tokenId, string ipfsDataHash);
     event CompatibilityDefined(uint256 indexed id1, uint256 indexed id2, bool isCompatible);
     event HeritageUpdated(uint256 indexed tokenId, uint256 newHeritage);
-    
+
     constructor() ERC721("Space Equipment NFT", "SEQUIP") Ownable(msg.sender) {}
-    
+
     /**
      * @dev Mint new equipment NFT
      */
@@ -91,10 +91,10 @@ contract SpaceEquipmentNFT is ERC721, ERC721URIStorage, Ownable {
     ) external onlyOwner returns (uint256) {
         _tokenIdCounter++;
         uint256 tokenId = _tokenIdCounter;
-        
+
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, tokenURI);
-        
+
         EquipmentSpec storage spec = equipmentSpecs[tokenId];
         spec.name = name;
         spec.manufacturer = manufacturer;
@@ -103,14 +103,14 @@ contract SpaceEquipmentNFT is ERC721, ERC721URIStorage, Ownable {
         spec.trl = 1;
         spec.heritage = 0;
         spec.spaceQualified = false;
-        
+
         equipmentByCategory[category].push(tokenId);
-        
+
         emit EquipmentMinted(tokenId, name, category);
-        
+
         return tokenId;
     }
-    
+
     /**
      * @dev Update equipment specifications
      */
@@ -126,7 +126,7 @@ contract SpaceEquipmentNFT is ERC721, ERC721URIStorage, Ownable {
     ) external {
         require(_ownerOf(tokenId) != address(0), "Equipment does not exist");
         require(ownerOf(tokenId) == msg.sender || owner() == msg.sender, "Not authorized");
-        
+
         EquipmentSpec storage spec = equipmentSpecs[tokenId];
         spec.mass = mass;
         spec.power = power;
@@ -136,88 +136,83 @@ contract SpaceEquipmentNFT is ERC721, ERC721URIStorage, Ownable {
         spec.trl = trl;
         spec.spaceQualified = spaceQualified;
     }
-    
+
     /**
      * @dev Add compliance standard to equipment
      */
     function addComplianceStandard(uint256 tokenId, ComplianceStandard standard) external {
         require(_ownerOf(tokenId) != address(0), "Equipment does not exist");
         require(owner() == msg.sender, "Only owner can add standards");
-        
+
         equipmentSpecs[tokenId].standards.push(standard);
     }
-    
+
     /**
      * @dev Add interface to equipment
      */
     function addInterface(uint256 tokenId, string memory interfaceName) external {
         require(_ownerOf(tokenId) != address(0), "Equipment does not exist");
         require(ownerOf(tokenId) == msg.sender || owner() == msg.sender, "Not authorized");
-        
+
         equipmentSpecs[tokenId].interfaces.push(interfaceName);
     }
-    
+
     /**
      * @dev Update IPFS data hash
      */
     function updateIPFSData(uint256 tokenId, string memory newIpfsHash) external {
         require(_ownerOf(tokenId) != address(0), "Equipment does not exist");
         require(ownerOf(tokenId) == msg.sender || owner() == msg.sender, "Not authorized");
-        
+
         equipmentSpecs[tokenId].ipfsDataHash = newIpfsHash;
-        
+
         emit SpecsUpdated(tokenId, newIpfsHash);
     }
-    
+
     /**
      * @dev Update heritage (successful missions)
      */
     function updateHeritage(uint256 tokenId, uint256 newHeritage) external onlyOwner {
         require(_ownerOf(tokenId) != address(0), "Equipment does not exist");
-        
+
         equipmentSpecs[tokenId].heritage = newHeritage;
-        
+
         emit HeritageUpdated(tokenId, newHeritage);
     }
-    
+
     /**
      * @dev Define compatibility between two equipment
      */
-    function defineCompatibility(
-        uint256 id1,
-        uint256 id2,
-        bool isCompatible,
-        string memory reason
-    ) external onlyOwner {
+    function defineCompatibility(uint256 id1, uint256 id2, bool isCompatible, string memory reason) external onlyOwner {
         require(_ownerOf(id1) != address(0), "Equipment 1 does not exist");
         require(_ownerOf(id2) != address(0), "Equipment 2 does not exist");
-        
+
         bytes32 key = getCompatibilityKey(id1, id2);
-        
+
         compatibilityMatrix[key] = Compatibility({
             equipmentId1: id1,
             equipmentId2: id2,
             isCompatible: isCompatible,
             reason: reason
         });
-        
+
         emit CompatibilityDefined(id1, id2, isCompatible);
     }
-    
+
     /**
      * @dev Check compatibility between two equipment
      */
     function checkCompatibility(uint256 id1, uint256 id2) external view returns (bool, string memory) {
         bytes32 key = getCompatibilityKey(id1, id2);
         Compatibility memory compat = compatibilityMatrix[key];
-        
+
         if (compat.equipmentId1 == 0 && compat.equipmentId2 == 0) {
             return (true, "No compatibility issues defined");
         }
-        
+
         return (compat.isCompatible, compat.reason);
     }
-    
+
     /**
      * @dev Get equipment specifications
      */
@@ -225,14 +220,14 @@ contract SpaceEquipmentNFT is ERC721, ERC721URIStorage, Ownable {
         require(_ownerOf(tokenId) != address(0), "Equipment does not exist");
         return equipmentSpecs[tokenId];
     }
-    
+
     /**
      * @dev Get equipment by category
      */
     function getEquipmentByCategory(EquipmentCategory category) external view returns (uint256[] memory) {
         return equipmentByCategory[category];
     }
-    
+
     /**
      * @dev Calculate total mass for array of equipment
      */
@@ -243,7 +238,7 @@ contract SpaceEquipmentNFT is ERC721, ERC721URIStorage, Ownable {
         }
         return totalMass;
     }
-    
+
     /**
      * @dev Calculate total power for array of equipment
      */
@@ -254,7 +249,7 @@ contract SpaceEquipmentNFT is ERC721, ERC721URIStorage, Ownable {
         }
         return totalPower;
     }
-    
+
     /**
      * @dev Calculate total cost for array of equipment
      */
@@ -265,7 +260,7 @@ contract SpaceEquipmentNFT is ERC721, ERC721URIStorage, Ownable {
         }
         return totalCost;
     }
-    
+
     /**
      * @dev Get compatibility key for two equipment IDs
      */
@@ -276,23 +271,13 @@ contract SpaceEquipmentNFT is ERC721, ERC721URIStorage, Ownable {
             return keccak256(abi.encodePacked(id2, id1));
         }
     }
-    
+
     // Override functions
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override(ERC721, ERC721URIStorage)
-        returns (string memory)
-    {
+    function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
         return super.tokenURI(tokenId);
     }
-    
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721, ERC721URIStorage)
-        returns (bool)
-    {
+
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721URIStorage) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }

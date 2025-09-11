@@ -234,7 +234,7 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <div className="mt-8 text-center">
+          <div className="mt-8 text-center space-y-3">
             <button
               onClick={() => {
                 setIsLogin(!isLogin);
@@ -245,6 +245,17 @@ export default function LoginPage() {
             >
               {isLogin ? "Don't have an account? Register" : "Already have an account? Sign In"}
             </button>
+
+            <div className="text-xs text-gray-500">
+              By {isLogin ? "signing in" : "creating an account"}, you agree to our{" "}
+              <a href="/terms" className="text-indigo-600 hover:text-indigo-800 underline">
+                Terms & Conditions
+              </a>{" "}
+              and{" "}
+              <a href="/policy" className="text-indigo-600 hover:text-indigo-800 underline">
+                Privacy Policy
+              </a>
+            </div>
           </div>
         </div>
       </div>

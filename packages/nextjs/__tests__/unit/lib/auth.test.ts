@@ -1,6 +1,7 @@
 import { authOptions } from "../../../lib/auth";
 import { loginRateLimiter } from "../../../lib/rateLimiter";
 import User from "../../../models/User";
+
 jest.mock("../../../lib/database/mongodb", () => ({
   connectDB: jest.fn(),
 }));
@@ -131,7 +132,7 @@ describe("Auth Configuration", () => {
         username: "testuser",
       };
 
-      const result = await authOptions.callbacks?.session?.({ session, token } as any) as any;
+      const result = (await authOptions.callbacks?.session?.({ session, token } as any)) as any;
 
       expect(result?.user?.id).toBe("123");
       expect(result?.user?.username).toBe("testuser");

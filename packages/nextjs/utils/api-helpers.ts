@@ -16,10 +16,7 @@ export class APIError extends Error {
   }
 }
 
-export async function fetchWithRetry(
-  url: string,
-  options: FetchOptions = {}
-): Promise<Response> {
+export async function fetchWithRetry(url: string, options: FetchOptions = {}): Promise<Response> {
   const { timeout = 10000, retries = 3, retryDelay = 1000, ...fetchOptions } = options;
 
   let lastError: Error | undefined;
@@ -37,11 +34,7 @@ export async function fetchWithRetry(
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new APIError(
-          `API request failed: ${response.statusText}`,
-          response.status,
-          response.statusText
-        );
+        throw new APIError(`API request failed: ${response.statusText}`, response.status, response.statusText);
       }
 
       return response;
@@ -66,10 +59,7 @@ export async function fetchWithRetry(
   throw lastError || new Error("Failed to fetch after retries");
 }
 
-export async function fetchExternalAPI<T>(
-  url: string,
-  options: FetchOptions = {}
-): Promise<T | null> {
+export async function fetchExternalAPI<T>(url: string, options: FetchOptions = {}): Promise<T | null> {
   try {
     const response = await fetchWithRetry(url, options);
     const data = await response.json();

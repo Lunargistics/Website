@@ -8,7 +8,7 @@ contract AsteroidCommodityToken is ERC20, Ownable {
     string public asteroidId;
     string public commodity;
     uint256 public estimatedValue;
-    
+
     constructor(
         string memory _name,
         string memory _symbol,
@@ -20,11 +20,11 @@ contract AsteroidCommodityToken is ERC20, Ownable {
         commodity = _commodity;
         _mint(msg.sender, _initialSupply);
     }
-    
+
     function mint(address to, uint256 amount) external onlyOwner {
         _mint(to, amount);
     }
-    
+
     function burn(uint256 amount) external {
         _burn(msg.sender, amount);
     }

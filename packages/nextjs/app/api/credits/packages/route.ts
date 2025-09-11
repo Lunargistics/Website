@@ -4,8 +4,8 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { withPublic } from "~~/lib/creditMiddleware";
-import { StripeService } from "~~/services/stripe/stripeService";
 import dbConnect from "~~/lib/mongodb";
+import { StripeService } from "~~/services/stripe/stripeService";
 
 // GET /api/credits/packages - Get available credit packages
 export async function GET(request: NextRequest) {
@@ -13,10 +13,10 @@ export async function GET(request: NextRequest) {
     try {
       // Ensure database connection
       await dbConnect();
-      
+
       // Initialize packages if they don't exist
       let packages = await StripeService.getCreditPackages();
-      
+
       // If no packages exist, initialize them
       if (!packages || packages.length === 0) {
         console.log("No credit packages found, initializing default packages...");

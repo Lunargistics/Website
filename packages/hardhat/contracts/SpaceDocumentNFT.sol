@@ -20,31 +20,15 @@ contract SpaceDocumentNFT is ERC1155, ERC1155Supply, Ownable {
     mapping(address => uint256[]) public userDocuments;
     mapping(uint256 => mapping(address => bool)) public authorizedMinters;
 
-    event DocumentCreated(
-        uint256 indexed tokenId,
-        address indexed admin,
-        string metadataURI,
-        string documentType
-    );
+    event DocumentCreated(uint256 indexed tokenId, address indexed admin, string metadataURI, string documentType);
 
-    event MinterAuthorized(
-        uint256 indexed tokenId,
-        address indexed minter,
-        bool authorized
-    );
+    event MinterAuthorized(uint256 indexed tokenId, address indexed minter, bool authorized);
 
-    event DocumentMinted(
-        uint256 indexed tokenId,
-        address indexed to,
-        uint256 amount
-    );
+    event DocumentMinted(uint256 indexed tokenId, address indexed to, uint256 amount);
 
     constructor() ERC1155("") Ownable(msg.sender) {}
 
-    function createDocument(
-        string memory metadataURI,
-        string memory documentType
-    ) external returns (uint256) {
+    function createDocument(string memory metadataURI, string memory documentType) external returns (uint256) {
         _currentTokenId++;
         uint256 newTokenId = _currentTokenId;
 
@@ -66,38 +50,24 @@ contract SpaceDocumentNFT is ERC1155, ERC1155Supply, Ownable {
     function authorizeMinter(uint256 tokenId, address minter, bool authorized) external {
         require(documents[tokenId].admin == msg.sender, "Only document admin can authorize");
         authorizedMinters[tokenId][minter] = authorized;
-        
+
         emit MinterAuthorized(tokenId, minter, authorized);
     }
 
-    function mintDocument(
-        uint256 tokenId,
-        address to,
-        uint256 amount
-    ) external {
+    function mintDocument(uint256 tokenId, address to, uint256 amount) external {
         Document memory doc = documents[tokenId];
         require(doc.active, "Document not active");
-        require(
-            msg.sender == doc.admin || authorizedMinters[tokenId][msg.sender],
-            "Not authorized to mint"
-        );
+        require(msg.sender == doc.admin || authorizedMinters[tokenId][msg.sender], "Not authorized to mint");
 
         _mint(to, tokenId, amount, "");
-        
+
         emit DocumentMinted(tokenId, to, amount);
     }
 
-    function mintBatch(
-        uint256 tokenId,
-        address[] memory recipients,
-        uint256[] memory amounts
-    ) external {
+    function mintBatch(uint256 tokenId, address[] memory recipients, uint256[] memory amounts) external {
         Document memory doc = documents[tokenId];
         require(doc.active, "Document not active");
-        require(
-            msg.sender == doc.admin || authorizedMinters[tokenId][msg.sender],
-            "Not authorized to mint"
-        );
+        require(msg.sender == doc.admin || authorizedMinters[tokenId][msg.sender], "Not authorized to mint");
         require(recipients.length == amounts.length, "Arrays length mismatch");
 
         for (uint256 i = 0; i < recipients.length; i++) {

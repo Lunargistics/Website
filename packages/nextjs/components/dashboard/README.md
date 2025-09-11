@@ -5,6 +5,7 @@ A comprehensive mission control dashboard component for space engineers and miss
 ## Features
 
 ### 1. Mission Status Overview
+
 - Active missions with real-time countdown timers
 - Mission health indicators (green/yellow/red status)
 - Progress tracking with visual progress bars
@@ -12,12 +13,14 @@ A comprehensive mission control dashboard component for space engineers and miss
 - Quick actions for mission management
 
 ### 2. Real-time Satellite Tracking
+
 - Active satellites count with operational status
 - Next ground station passes (AOS/LOS times)
 - Link budget status monitoring
 - Signal strength visualization with 24-hour charts
 
 ### 3. Daily Tasks & Reminders
+
 - Today's scheduled activities
 - Upcoming compliance deadlines
 - Test procedures due
@@ -25,6 +28,7 @@ A comprehensive mission control dashboard component for space engineers and miss
 - Priority-based task organization
 
 ### 4. System Health Monitor
+
 - Ground station connectivity status
 - API usage and credits remaining
 - Data storage usage tracking
@@ -32,18 +36,21 @@ A comprehensive mission control dashboard component for space engineers and miss
 - Real-time resource usage charts
 
 ### 5. Interactive Charts
+
 - Signal strength over time (Area Chart)
 - Orbital parameters tracking (Line Chart)
 - System resource usage (Pie Chart + Progress Bars)
 - Real-time data visualization with Recharts
 
 ### 6. Quick Launch Panels
+
 - Launch new mission planning
 - Run orbit propagation
 - Schedule ground pass
 - Generate compliance report
 
 ### 7. Activity Feed
+
 - Latest mission updates
 - Team collaboration events
 - System notifications
@@ -99,6 +106,7 @@ The component currently uses mock data but is designed to easily integrate with 
 ## Styling
 
 The component uses a professional aerospace industry aesthetic with:
+
 - Dark theme optimized for mission control environments
 - Color-coded status indicators
 - Responsive grid layouts

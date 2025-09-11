@@ -5,7 +5,7 @@ async function main() {
 
   const [deployer] = await ethers.getSigners();
   console.log("Deploying with account:", deployer.address);
-  
+
   const balance = await ethers.provider.getBalance(deployer.address);
   console.log("Account balance:", ethers.formatEther(balance), "TEA\n");
 
@@ -24,7 +24,6 @@ async function main() {
 
     console.log("\n🌐 View on TEA Sepolia Explorer:");
     console.log(`   https://testnet.explorer.tea.xyz/address/${docAddress}`);
-
   } catch (error) {
     console.error("❌ Deployment failed:", error);
     process.exit(1);
@@ -33,7 +32,7 @@ async function main() {
 
 main()
   .then(() => process.exit(0))
-  .catch((error) => {
+  .catch(error => {
     console.error(error);
     process.exit(1);
   });

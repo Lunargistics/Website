@@ -8,7 +8,6 @@ import {
   CodeBracketIcon,
   CommandLineIcon,
   CpuChipIcon,
-  CreditCardIcon,
   CubeIcon,
   DocumentCheckIcon,
   GlobeAltIcon,
@@ -18,7 +17,6 @@ import {
   SparklesIcon,
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
-import GDPRConsent from "~~/components/GDPRConsent";
 
 const Home: NextPage = () => {
   const platformCapabilities = [
@@ -227,9 +225,8 @@ const Home: NextPage = () => {
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 text-white drop-shadow-2xl">
-            Space Launch Simplified™
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mt-2">
-              Planning Platform
+              Space Launch Simplified™
             </span>
           </h1>
 
@@ -238,7 +235,7 @@ const Home: NextPage = () => {
             you need to design, build, and launch space missions
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto mb-12">
             {userTypes.map((type, idx) => (
               <Link
                 key={idx}
@@ -249,17 +246,6 @@ const Home: NextPage = () => {
                 {type.cta}
               </Link>
             ))}
-          </div>
-
-          {/* Whitepaper Link */}
-          <div className="mb-12">
-            <Link
-              href="/whitepaper"
-              className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors"
-            >
-              <DocumentCheckIcon className="w-5 h-5" />
-              <span className="underline underline-offset-4">Read our Whitepaper</span>
-            </Link>
           </div>
 
           {/* Stats Bar */}
@@ -459,9 +445,9 @@ const Home: NextPage = () => {
               <CommandLineIcon className="w-5 h-5 mr-2" />
               Start Building
             </Link>
-            <Link href="/pricing" className="btn btn-secondary btn-lg w-full">
-              <CreditCardIcon className="w-5 h-5 mr-2" />
-              View Pricing
+            <Link href="/pnt-marketplace" className="btn btn-secondary btn-lg w-full">
+              <CubeIcon className="w-5 h-5 mr-2" />
+              Browse SpacElements
             </Link>
             <Link href="/api-docs" className="btn btn-accent btn-lg w-full">
               <DocumentCheckIcon className="w-5 h-5 mr-2" />
@@ -569,9 +555,6 @@ const Home: NextPage = () => {
           </div>
         </div>
       </section>
-
-      {/* GDPR Consent Popup */}
-      <GDPRConsent />
     </div>
   );
 };

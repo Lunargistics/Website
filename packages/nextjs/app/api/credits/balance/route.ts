@@ -4,8 +4,8 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "~~/lib/creditMiddleware";
-import { CreditsService } from "~~/services/credits/creditsService";
 import dbConnect from "~~/lib/mongodb";
+import { CreditsService } from "~~/services/credits/creditsService";
 
 // GET /api/credits/balance - Get user's credit balance
 export async function GET(request: NextRequest) {

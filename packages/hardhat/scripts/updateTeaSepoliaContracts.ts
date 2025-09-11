@@ -21,10 +21,7 @@ const TEA_SEPOLIA_CHAIN_ID = 10218;
 async function updateContracts() {
   console.log("📝 Updating TEA Sepolia contracts in deployedContracts.ts...");
 
-  const deployedContractsPath = path.join(
-    __dirname,
-    "../../nextjs/contracts/deployedContracts.ts"
-  );
+  const deployedContractsPath = path.join(__dirname, "../../nextjs/contracts/deployedContracts.ts");
 
   // Read the existing file
   let content = fs.readFileSync(deployedContractsPath, "utf8");
@@ -32,13 +29,13 @@ async function updateContracts() {
   // Update each contract address for TEA Sepolia network
   for (const [contractName, address] of Object.entries(TEA_SEPOLIA_CONTRACTS)) {
     console.log(`  - Updating ${contractName}: ${address}`);
-    
+
     // Find and update the address for this contract in the TEA Sepolia section
     const pattern = new RegExp(
       `(${TEA_SEPOLIA_CHAIN_ID}:\\s*{[^}]*${contractName}:\\s*{\\s*address:\\s*")0x[a-fA-F0-9]{40}(")`,
-      "gs"
+      "gs",
     );
-    
+
     if (content.match(pattern)) {
       content = content.replace(pattern, `$1${address}$2`);
       console.log(`    ✅ Updated existing ${contractName}`);
@@ -54,19 +51,16 @@ async function updateContracts() {
   // Verify the updates
   console.log("\n📋 Verifying updates...");
   const updatedContent = fs.readFileSync(deployedContractsPath, "utf8");
-  
+
   for (const [contractName, expectedAddress] of Object.entries(TEA_SEPOLIA_CONTRACTS)) {
-    const pattern = new RegExp(
-      `${contractName}:\\s*{\\s*address:\\s*"(0x[a-fA-F0-9]{40})"`,
-      "g"
-    );
+    const pattern = new RegExp(`${contractName}:\\s*{\\s*address:\\s*"(0x[a-fA-F0-9]{40})"`, "g");
     const matches = [...updatedContent.matchAll(pattern)];
-    const teaSepoliaMatch = matches.find((match) => {
+    const teaSepoliaMatch = matches.find(match => {
       // Check if this match is in the TEA Sepolia section (should be first occurrence)
       const beforeMatch = updatedContent.substring(0, match.index || 0);
       return beforeMatch.includes(`${TEA_SEPOLIA_CHAIN_ID}:`);
     });
-    
+
     if (teaSepoliaMatch && teaSepoliaMatch[1] === expectedAddress) {
       console.log(`  ✅ ${contractName}: ${expectedAddress}`);
     } else if (teaSepoliaMatch) {

@@ -10,7 +10,7 @@ async function main() {
 
   // Get the current proxy address (this should be stored/retrieved from deployment)
   const PROXY_ADDRESS = process.env.MISSION_REGISTRY_PROXY_ADDRESS || "";
-  
+
   if (!PROXY_ADDRESS) {
     throw new Error("Please set MISSION_REGISTRY_PROXY_ADDRESS in environment");
   }
@@ -24,14 +24,14 @@ async function main() {
   // Deploy new implementation
   console.log("\n🚀 Deploying new implementation...");
   const MissionRegistryV2 = await ethers.getContractFactory("MissionRegistryV2");
-  
+
   // Upgrade the proxy to point to new implementation
   const upgraded = await upgrades.upgradeProxy(PROXY_ADDRESS, MissionRegistryV2, {
-    kind: 'uups'
+    kind: "uups",
   });
-  
+
   await upgraded.deployed();
-  
+
   // Get new implementation address
   const newImplAddress = await upgrades.erc1967.getImplementationAddress(PROXY_ADDRESS);
   console.log("✅ New implementation deployed:", newImplAddress);
@@ -63,7 +63,7 @@ async function main() {
 
 main()
   .then(() => process.exit(0))
-  .catch((error) => {
+  .catch(error => {
     console.error("❌ Upgrade failed:", error);
     process.exit(1);
   });

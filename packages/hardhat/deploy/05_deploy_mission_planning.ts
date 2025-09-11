@@ -46,7 +46,7 @@ const deployMissionPlanning: DeployFunction = async function (hre: HardhatRuntim
 
   // Initialize with sample standards (ECSS standards)
   console.log("📝 Adding initial standards...");
-  
+
   const standards = [
     {
       code: "ECSS-E-ST-50C",
@@ -92,7 +92,7 @@ const deployMissionPlanning: DeployFunction = async function (hre: HardhatRuntim
         standard.title,
         standard.type,
         standard.version,
-        standard.hash
+        standard.hash,
       );
       console.log(`  ✅ Added standard: ${standard.code}`);
     } catch (error) {
@@ -149,7 +149,7 @@ const deployMissionPlanning: DeployFunction = async function (hre: HardhatRuntim
         equipment.manufacturer,
         equipment.category,
         equipment.uri,
-        equipment.dataHash
+        equipment.dataHash,
       );
       await tx.wait();
       console.log(`  ✅ Minted equipment NFT: ${equipment.name}`);

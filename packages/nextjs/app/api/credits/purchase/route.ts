@@ -6,9 +6,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~~/lib/auth";
 import { withAuth } from "~~/lib/creditMiddleware";
+import dbConnect from "~~/lib/mongodb";
 import { CreditsService } from "~~/services/credits/creditsService";
 import { StripeService } from "~~/services/stripe/stripeService";
-import dbConnect from "~~/lib/mongodb";
 
 // POST /api/credits/purchase - Create checkout session
 export async function POST(request: NextRequest) {
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     try {
       // Ensure database connection
       await dbConnect();
-      
+
       const body = await request.json();
       const { packageId, returnUrl } = body;
 
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
     try {
       // Ensure database connection
       await dbConnect();
-      
+
       const searchParams = request.nextUrl.searchParams;
       const limit = parseInt(searchParams.get("limit") || "20");
       const offset = parseInt(searchParams.get("offset") || "0");

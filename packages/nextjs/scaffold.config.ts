@@ -14,11 +14,11 @@ const teaSepolia = {
   },
   rpcUrls: {
     // Use only the CORS-friendly RPC endpoint
-    public: { 
-      http: [teaRpcUrl] 
+    public: {
+      http: [teaRpcUrl],
     },
-    default: { 
-      http: [teaRpcUrl] 
+    default: {
+      http: [teaRpcUrl],
     },
   },
   blockExplorers: {

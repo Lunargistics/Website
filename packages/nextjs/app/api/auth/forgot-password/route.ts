@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
     await dbConnect();
 
-    const user = await User.findOne({ emailLower: email.toLowerCase() });
+    const user = await User.findOne({ email: email.toLowerCase() });
 
     // Always return success message to prevent email enumeration
     if (!user) {

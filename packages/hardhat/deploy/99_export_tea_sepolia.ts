@@ -54,10 +54,7 @@ const exportTeaSepoliaContracts: DeployFunction = async function (hre: HardhatRu
   }
 
   // Write to deployedContracts.ts
-  const deployedContractsPath = path.join(
-    __dirname,
-    "../../nextjs/contracts/teaSepoliaContracts.ts"
-  );
+  const deployedContractsPath = path.join(__dirname, "../../nextjs/contracts/teaSepoliaContracts.ts");
 
   const content = `/**
  * TEA Sepolia Deployed Contracts

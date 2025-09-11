@@ -114,10 +114,7 @@ export const Header = () => {
       <div className="navbar-end grow mr-4 flex items-center gap-2">
         {/* Primary auth: NextAuth sign in */}
         {!session ? (
-          <button
-            onClick={() => signIn()}
-            className="btn btn-primary btn-sm flex items-center gap-2"
-          >
+          <button onClick={() => signIn()} className="btn btn-primary btn-sm flex items-center gap-2">
             <UserCircleIcon className="w-4 h-4" />
             Sign In
           </button>
@@ -125,17 +122,20 @@ export const Header = () => {
           <div className="dropdown dropdown-end">
             <label tabIndex={0} className="btn btn-ghost btn-sm rounded-btn flex items-center gap-2">
               <UserCircleIcon className="w-5 h-5" />
-              <span className="hidden sm:inline">{session.user?.email?.split('@')[0]}</span>
+              <span className="hidden sm:inline">{session.user?.email?.split("@")[0]}</span>
             </label>
-            <ul tabIndex={0} className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
-              <li className="text-sm text-base-content/60 px-2 py-1">
-                {session.user?.email}
+            <ul
+              tabIndex={0}
+              className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"
+            >
+              <li className="text-sm text-base-content/60 px-2 py-1">{session.user?.email}</li>
+              <li>
+                <a onClick={() => signOut()}>Sign Out</a>
               </li>
-              <li><a onClick={() => signOut()}>Sign Out</a></li>
             </ul>
           </div>
         )}
-        
+
         {/* Optional: Wallet connection - available but not required */}
         {session && (
           <>
@@ -154,7 +154,7 @@ export const Header = () => {
             </details>
           </>
         )}
-        
+
         {isLocalNetwork && isConnected && <FaucetButton />}
       </div>
     </div>

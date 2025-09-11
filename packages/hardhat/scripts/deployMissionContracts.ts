@@ -5,7 +5,7 @@ async function main() {
 
   const [deployer] = await ethers.getSigners();
   console.log("Deploying with account:", deployer.address);
-  
+
   const balance = await ethers.provider.getBalance(deployer.address);
   console.log("Account balance:", ethers.formatEther(balance), "TEA\n");
 
@@ -51,18 +51,14 @@ async function main() {
     console.log(JSON.stringify(deploymentInfo, null, 2));
 
     // Save to file
-    const fs = require('fs');
-    fs.writeFileSync(
-      'deployments/teaSepolia/missionContracts.json',
-      JSON.stringify(deploymentInfo, null, 2)
-    );
+    const fs = require("fs");
+    fs.writeFileSync("deployments/teaSepolia/missionContracts.json", JSON.stringify(deploymentInfo, null, 2));
 
     console.log("\n✅ All Mission Planning contracts deployed successfully!");
     console.log("\n🌐 View on TEA Sepolia Explorer:");
     console.log(`   MissionRegistry: https://testnet.explorer.tea.xyz/address/${missionAddress}`);
     console.log(`   SpaceEquipmentNFT: https://testnet.explorer.tea.xyz/address/${equipmentAddress}`);
     console.log(`   StandardsCompliance: https://testnet.explorer.tea.xyz/address/${standardsAddress}`);
-
   } catch (error) {
     console.error("❌ Deployment failed:", error);
     process.exit(1);
@@ -71,7 +67,7 @@ async function main() {
 
 main()
   .then(() => process.exit(0))
-  .catch((error) => {
+  .catch(error => {
     console.error(error);
     process.exit(1);
   });

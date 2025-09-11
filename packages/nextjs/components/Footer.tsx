@@ -59,8 +59,20 @@ export const Footer = () => {
             </div>
             <span>·</span>
             <div className="text-center">
+              <a href="/terms" className="link hover:text-primary">
+                Terms
+              </a>
+            </div>
+            <span>·</span>
+            <div className="text-center">
               <a href="/dashboard" className="link hover:text-primary">
                 Dashboard
+              </a>
+            </div>
+            <span>·</span>
+            <div className="text-center">
+              <a href="/policy" className="link hover:text-primary">
+                Privacy Policy
               </a>
             </div>
           </div>

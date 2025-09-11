@@ -47,9 +47,9 @@ contract ERC6551Registry is IERC6551Registry {
             mstore(add(ptr, 0x58), chainId)
             mstore(add(ptr, 0x78), tokenContract)
             mstore(add(ptr, 0x98), tokenId)
-            
+
             let account := create2(0, ptr, 0x37, salt)
-            
+
             if iszero(account) {
                 mstore(0x00, 0x20188a59)
                 revert(0x1c, 0x04)
@@ -74,11 +74,7 @@ contract ERC6551Registry is IERC6551Registry {
             abi.encode(salt, chainId, tokenContract, tokenId)
         );
 
-        return address(uint160(uint256(keccak256(abi.encodePacked(
-            bytes1(0xff),
-            address(this),
-            salt,
-            keccak256(code)
-        )))));
+        return
+            address(uint160(uint256(keccak256(abi.encodePacked(bytes1(0xff), address(this), salt, keccak256(code))))));
     }
 }

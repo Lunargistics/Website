@@ -22,18 +22,18 @@ import {
   Zap,
 } from "lucide-react";
 import {
-  AreaChart,
   Area,
+  AreaChart,
+  CartesianGrid,
+  Cell,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
 
 // Types
@@ -259,7 +259,7 @@ const generateMockData = () => {
   const signalStrengthData: ChartDataPoint[] = Array.from({ length: 24 }, (_, i) => {
     const time = new Date(Date.now() - (23 - i) * 60 * 60 * 1000);
     return {
-      time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       value: 85 + Math.random() * 15 + Math.sin(i * 0.5) * 5,
       timestamp: time.getTime(),
     };
@@ -269,7 +269,7 @@ const generateMockData = () => {
   const orbitData: OrbitDataPoint[] = Array.from({ length: 12 }, (_, i) => {
     const time = new Date(Date.now() - (11 - i) * 60 * 60 * 1000);
     return {
-      time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       altitude: 408 + Math.sin(i * 0.8) * 15 + Math.random() * 5,
       velocity: 7.66 + Math.cos(i * 0.6) * 0.1 + Math.random() * 0.05,
       timestamp: time.getTime(),
@@ -284,15 +284,15 @@ const generateMockData = () => {
     { name: "Network", value: 34, color: "#EF4444" },
   ];
 
-  return { 
-    missions, 
-    satellites, 
-    tasks, 
-    systemHealth, 
-    activityFeed, 
-    signalStrengthData, 
-    orbitData, 
-    resourceUsage 
+  return {
+    missions,
+    satellites,
+    tasks,
+    systemHealth,
+    activityFeed,
+    signalStrengthData,
+    orbitData,
+    resourceUsage,
   };
 };
 
@@ -300,18 +300,18 @@ const generateMockData = () => {
 const formatCountdown = (targetDate: Date): string => {
   const now = new Date();
   const diff = targetDate.getTime() - now.getTime();
-  
+
   if (diff <= 0) return "00:00:00";
-  
+
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-  
+
   if (hours > 24) {
     const days = Math.floor(hours / 24);
     return `${days}d ${hours % 24}h`;
   }
-  
+
   return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 };
 
@@ -437,16 +437,15 @@ const SpaceEngineerDashboard: React.FC = () => {
             </h2>
             <button className="text-blue-400 hover:text-blue-300 text-sm">View All</button>
           </div>
-          
+
           <div className="space-y-4">
-            {data.missions.map((mission) => (
-              <div
-                key={mission.id}
-                className={`p-4 rounded-lg border ${getStatusBgColor(mission.healthIndicator)}`}
-              >
+            {data.missions.map(mission => (
+              <div key={mission.id} className={`p-4 rounded-lg border ${getStatusBgColor(mission.healthIndicator)}`}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-3">
-                    <div className={`w-3 h-3 rounded-full ${getStatusColor(mission.healthIndicator).replace('text-', 'bg-')}`}></div>
+                    <div
+                      className={`w-3 h-3 rounded-full ${getStatusColor(mission.healthIndicator).replace("text-", "bg-")}`}
+                    ></div>
                     <h3 className="font-semibold">{mission.name}</h3>
                     <span className="text-xs bg-gray-700 px-2 py-1 rounded">{mission.phase}</span>
                   </div>
@@ -455,7 +454,7 @@ const SpaceEngineerDashboard: React.FC = () => {
                     <div className="text-xs text-gray-400">to {mission.nextMilestone}</div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex-1 mr-4">
                     <div className="w-full bg-gray-700 rounded-full h-2">
@@ -486,22 +485,23 @@ const SpaceEngineerDashboard: React.FC = () => {
             <Activity className="mr-2" size={20} />
             System Health
           </h2>
-          
+
           <div className="space-y-4">
             {data.systemHealth.map((system, index) => (
               <div key={index} className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className={`w-2 h-2 rounded-full ${getStatusColor(system.status).replace('text-', 'bg-')}`}></div>
+                  <div
+                    className={`w-2 h-2 rounded-full ${getStatusColor(system.status).replace("text-", "bg-")}`}
+                  ></div>
                   <div>
                     <div className="text-sm font-medium">{system.component}</div>
-                    <div className="text-xs text-gray-400">
-                      Updated {system.lastUpdate.toLocaleTimeString()}
-                    </div>
+                    <div className="text-xs text-gray-400">Updated {system.lastUpdate.toLocaleTimeString()}</div>
                   </div>
                 </div>
                 <div className="text-right">
                   <div className={`font-semibold ${getStatusColor(system.status)}`}>
-                    {system.value}{system.unit}
+                    {system.value}
+                    {system.unit}
                   </div>
                 </div>
               </div>
@@ -520,9 +520,9 @@ const SpaceEngineerDashboard: React.FC = () => {
             </h2>
             <div className="text-sm text-gray-400">{data.satellites.length} Active</div>
           </div>
-          
+
           <div className="space-y-4">
-            {data.satellites.map((satellite) => (
+            {data.satellites.map(satellite => (
               <div key={satellite.id} className="p-4 bg-gray-700/50 rounded-lg">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-3">
@@ -536,7 +536,7 @@ const SpaceEngineerDashboard: React.FC = () => {
                     {satellite.status}
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <div className="text-gray-400">Next Pass:</div>
@@ -568,14 +568,19 @@ const SpaceEngineerDashboard: React.FC = () => {
             </h2>
             <button className="text-blue-400 hover:text-blue-300 text-sm">Add Task</button>
           </div>
-          
+
           <div className="space-y-3">
-            {data.tasks.map((task) => (
+            {data.tasks.map(task => (
               <div key={task.id} className="flex items-center space-x-3 p-3 bg-gray-700/50 rounded-lg">
-                <div className={`w-3 h-3 rounded-full ${
-                  task.priority === 'high' ? 'bg-red-400' :
-                  task.priority === 'medium' ? 'bg-yellow-400' : 'bg-green-400'
-                }`}></div>
+                <div
+                  className={`w-3 h-3 rounded-full ${
+                    task.priority === "high"
+                      ? "bg-red-400"
+                      : task.priority === "medium"
+                        ? "bg-yellow-400"
+                        : "bg-green-400"
+                  }`}
+                ></div>
                 <div className="flex-1">
                   <div className="font-medium">{task.title}</div>
                   <div className="text-xs text-gray-400 flex items-center space-x-2">
@@ -585,9 +590,9 @@ const SpaceEngineerDashboard: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex items-center space-x-1">
-                  {task.type === 'compliance' && <Shield size={16} className="text-purple-400" />}
-                  {task.type === 'test' && <Zap size={16} className="text-orange-400" />}
-                  {task.type === 'review' && <CheckCircle size={16} className="text-blue-400" />}
+                  {task.type === "compliance" && <Shield size={16} className="text-purple-400" />}
+                  {task.type === "test" && <Zap size={16} className="text-orange-400" />}
+                  {task.type === "review" && <CheckCircle size={16} className="text-blue-400" />}
                 </div>
               </div>
             ))}
@@ -607,31 +612,22 @@ const SpaceEngineerDashboard: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data.signalStrengthData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis 
-                  dataKey="time" 
-                  stroke="#9CA3AF" 
-                  fontSize={12}
-                  interval="preserveStartEnd"
-                />
-                <YAxis 
-                  stroke="#9CA3AF" 
-                  fontSize={12}
-                  domain={[70, 100]}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#1F2937', 
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                    color: '#F3F4F6'
+                <XAxis dataKey="time" stroke="#9CA3AF" fontSize={12} interval="preserveStartEnd" />
+                <YAxis stroke="#9CA3AF" fontSize={12} domain={[70, 100]} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1F2937",
+                    border: "1px solid #374151",
+                    borderRadius: "8px",
+                    color: "#F3F4F6",
                   }}
-                  formatter={(value: number) => [`${value.toFixed(1)} dB`, 'Signal Strength']}
+                  formatter={(value: number) => [`${value.toFixed(1)} dB`, "Signal Strength"]}
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="value" 
-                  stroke="#3B82F6" 
-                  fill="#3B82F6" 
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#3B82F6"
+                  fill="#3B82F6"
                   fillOpacity={0.3}
                   strokeWidth={2}
                 />
@@ -650,49 +646,34 @@ const SpaceEngineerDashboard: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.orbitData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis 
-                  dataKey="time" 
-                  stroke="#9CA3AF" 
-                  fontSize={12}
-                />
-                <YAxis 
-                  yAxisId="altitude"
-                  stroke="#10B981" 
-                  fontSize={12}
-                  domain={[390, 430]}
-                />
-                <YAxis 
-                  yAxisId="velocity"
-                  orientation="right"
-                  stroke="#F59E0B" 
-                  fontSize={12}
-                  domain={[7.5, 7.8]}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#1F2937', 
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                    color: '#F3F4F6'
+                <XAxis dataKey="time" stroke="#9CA3AF" fontSize={12} />
+                <YAxis yAxisId="altitude" stroke="#10B981" fontSize={12} domain={[390, 430]} />
+                <YAxis yAxisId="velocity" orientation="right" stroke="#F59E0B" fontSize={12} domain={[7.5, 7.8]} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1F2937",
+                    border: "1px solid #374151",
+                    borderRadius: "8px",
+                    color: "#F3F4F6",
                   }}
                   formatter={(value: number, name: string) => [
-                    name === 'altitude' ? `${value.toFixed(1)} km` : `${value.toFixed(2)} km/s`,
-                    name === 'altitude' ? 'Altitude' : 'Velocity'
+                    name === "altitude" ? `${value.toFixed(1)} km` : `${value.toFixed(2)} km/s`,
+                    name === "altitude" ? "Altitude" : "Velocity",
                   ]}
                 />
-                <Line 
+                <Line
                   yAxisId="altitude"
-                  type="monotone" 
-                  dataKey="altitude" 
-                  stroke="#10B981" 
+                  type="monotone"
+                  dataKey="altitude"
+                  stroke="#10B981"
                   strokeWidth={2}
                   dot={false}
                 />
-                <Line 
+                <Line
                   yAxisId="velocity"
-                  type="monotone" 
-                  dataKey="velocity" 
-                  stroke="#F59E0B" 
+                  type="monotone"
+                  dataKey="velocity"
+                  stroke="#F59E0B"
                   strokeWidth={2}
                   dot={false}
                 />
@@ -726,14 +707,14 @@ const SpaceEngineerDashboard: React.FC = () => {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#1F2937', 
-                      border: '1px solid #374151',
-                      borderRadius: '8px',
-                      color: '#F3F4F6'
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#1F2937",
+                      border: "1px solid #374151",
+                      borderRadius: "8px",
+                      color: "#F3F4F6",
                     }}
-                    formatter={(value: number) => [`${value}%`, 'Usage']}
+                    formatter={(value: number) => [`${value}%`, "Usage"]}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -742,25 +723,20 @@ const SpaceEngineerDashboard: React.FC = () => {
               {data.resourceUsage.map((resource, index) => (
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div 
-                      className="w-4 h-4 rounded-full" 
-                      style={{ backgroundColor: resource.color }}
-                    ></div>
+                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: resource.color }}></div>
                     <span className="font-medium">{resource.name}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <div className="w-32 bg-gray-700 rounded-full h-2">
                       <div
                         className="h-2 rounded-full transition-all duration-300"
-                        style={{ 
+                        style={{
                           width: `${resource.value}%`,
-                          backgroundColor: resource.color
+                          backgroundColor: resource.color,
                         }}
                       ></div>
                     </div>
-                    <span className="text-sm font-medium w-12 text-right">
-                      {resource.value}%
-                    </span>
+                    <span className="text-sm font-medium w-12 text-right">{resource.value}%</span>
                   </div>
                 </div>
               ))}
@@ -776,7 +752,7 @@ const SpaceEngineerDashboard: React.FC = () => {
             <Target className="mr-2" size={20} />
             Quick Actions
           </h2>
-          
+
           <div className="grid grid-cols-2 gap-3">
             <button className="p-4 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors text-center">
               <Rocket size={20} className="mx-auto mb-2" />
@@ -806,15 +782,24 @@ const SpaceEngineerDashboard: React.FC = () => {
             </h2>
             <button className="text-blue-400 hover:text-blue-300 text-sm">View All</button>
           </div>
-          
+
           <div className="space-y-4 max-h-80 overflow-y-auto">
-            {data.activityFeed.map((item) => (
-              <div key={item.id} className="flex items-start space-x-3 p-3 hover:bg-gray-700/50 rounded-lg transition-colors">
-                <div className={`mt-1 w-2 h-2 rounded-full ${
-                  item.severity === 'success' ? 'bg-green-400' :
-                  item.severity === 'warning' ? 'bg-yellow-400' :
-                  item.severity === 'error' ? 'bg-red-400' : 'bg-blue-400'
-                }`}></div>
+            {data.activityFeed.map(item => (
+              <div
+                key={item.id}
+                className="flex items-start space-x-3 p-3 hover:bg-gray-700/50 rounded-lg transition-colors"
+              >
+                <div
+                  className={`mt-1 w-2 h-2 rounded-full ${
+                    item.severity === "success"
+                      ? "bg-green-400"
+                      : item.severity === "warning"
+                        ? "bg-yellow-400"
+                        : item.severity === "error"
+                          ? "bg-red-400"
+                          : "bg-blue-400"
+                  }`}
+                ></div>
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-1">
                     <span className="font-medium">{item.title}</span>

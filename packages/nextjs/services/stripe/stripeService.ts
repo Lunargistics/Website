@@ -155,7 +155,7 @@ export class StripeService {
     url: string;
   }> {
     this.ensureStripeConfigured();
-    
+
     const creditPackage = await CreditPackage.findById(params.packageId);
     if (!creditPackage) {
       throw new Error("Credit package not found");

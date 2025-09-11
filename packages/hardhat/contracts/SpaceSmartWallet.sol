@@ -10,21 +10,11 @@ import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 interface IERC6551Account {
     receive() external payable;
 
-    function token()
-        external
-        view
-        returns (
-            uint256 chainId,
-            address tokenContract,
-            uint256 tokenId
-        );
+    function token() external view returns (uint256 chainId, address tokenContract, uint256 tokenId);
 
     function state() external view returns (uint256);
 
-    function isValidSigner(address signer, bytes calldata context)
-        external
-        view
-        returns (bytes4 magicValue);
+    function isValidSigner(address signer, bytes calldata context) external view returns (bytes4 magicValue);
 }
 
 interface IERC6551Executable {
@@ -36,13 +26,7 @@ interface IERC6551Executable {
     ) external payable returns (bytes memory);
 }
 
-contract SpaceSmartWallet is
-    IERC165,
-    IERC6551Account,
-    IERC6551Executable,
-    IERC721Receiver,
-    IERC1155Receiver
-{
+contract SpaceSmartWallet is IERC165, IERC6551Account, IERC6551Executable, IERC721Receiver, IERC1155Receiver {
     uint256 public state;
 
     receive() external payable {}
@@ -59,7 +43,7 @@ contract SpaceSmartWallet is
         state++;
 
         bool success;
-        (success, result) = to.call{value: value}(data);
+        (success, result) = to.call{ value: value }(data);
 
         if (!success) {
             assembly {
@@ -68,16 +52,7 @@ contract SpaceSmartWallet is
         }
     }
 
-    function token()
-        public
-        view
-        virtual
-        returns (
-            uint256,
-            address,
-            uint256
-        )
-    {
+    function token() public view virtual returns (uint256, address, uint256) {
         bytes memory footer = new bytes(0x60);
 
         assembly {
@@ -98,12 +73,7 @@ contract SpaceSmartWallet is
         return signer == owner();
     }
 
-    function isValidSigner(address signer, bytes calldata)
-        external
-        view
-        virtual
-        returns (bytes4)
-    {
+    function isValidSigner(address signer, bytes calldata) external view virtual returns (bytes4) {
         if (_isValidSigner(signer)) {
             return IERC6551Account.isValidSigner.selector;
         }
@@ -111,13 +81,7 @@ contract SpaceSmartWallet is
         return bytes4(0);
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        pure
-        virtual
-        override(IERC165)
-        returns (bool)
-    {
+    function supportsInterface(bytes4 interfaceId) public pure virtual override(IERC165) returns (bool) {
         return
             interfaceId == type(IERC165).interfaceId ||
             interfaceId == type(IERC6551Account).interfaceId ||
@@ -126,12 +90,7 @@ contract SpaceSmartWallet is
             interfaceId == type(IERC1155Receiver).interfaceId;
     }
 
-    function onERC721Received(
-        address,
-        address,
-        uint256,
-        bytes calldata
-    ) external pure override returns (bytes4) {
+    function onERC721Received(address, address, uint256, bytes calldata) external pure override returns (bytes4) {
         return IERC721Receiver.onERC721Received.selector;
     }
 

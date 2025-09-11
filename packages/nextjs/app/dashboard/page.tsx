@@ -46,9 +46,12 @@ const MissionPlanningDashboard = dynamic(
 const ImplementSpace = dynamic(() => import("../implement-space/page"), { ssr: false });
 const CreditsManager = dynamic(() => import("~~/components/CreditsManager"), { ssr: false });
 const CreditNotifications = dynamic(() => import("~~/components/CreditNotifications"), { ssr: false });
-const SpaceEngineerDashboard = dynamic(() => import("~~/components/dashboard/SpaceEngineerDashboard").then(mod => mod.default), {
-  ssr: false,
-});
+const SpaceEngineerDashboard = dynamic(
+  () => import("~~/components/dashboard/SpaceEngineerDashboard").then(mod => mod.default),
+  {
+    ssr: false,
+  },
+);
 
 const menuCategories = [
   {
@@ -89,9 +92,7 @@ const menuCategories = [
   },
   {
     name: "Developer",
-    items: [
-      { id: "test-panel", label: "Test Panel", icon: "🧪" },
-    ],
+    items: [{ id: "test-panel", label: "Test Panel", icon: "🧪" }],
   },
 ];
 
@@ -119,9 +120,7 @@ export default function DashboardPage() {
   if (!session) return null;
 
   const toggleCategory = (category: string) => {
-    setExpandedCategories(prev =>
-      prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category],
-    );
+    setExpandedCategories(prev => (prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]));
   };
 
   const renderContent = () => {
@@ -230,9 +229,7 @@ export default function DashboardPage() {
                         className="w-full flex items-center justify-between px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-300 transition"
                       >
                         <span>{category.name}</span>
-                        <span className="text-gray-600">
-                          {expandedCategories.includes(category.name) ? "−" : "+"}
-                        </span>
+                        <span className="text-gray-600">{expandedCategories.includes(category.name) ? "−" : "+"}</span>
                       </button>
                       {expandedCategories.includes(category.name) && (
                         <div className="mt-2 space-y-1">

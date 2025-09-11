@@ -1,20 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchWithRetry } from "~~/utils/api-helpers";
 
-const ALLOWED_DOMAINS = [
-  "api.satoshiverse.io",
-  "api.web3modal.org",
-];
+const ALLOWED_DOMAINS = ["api.satoshiverse.io", "api.web3modal.org"];
 
 export async function GET(request: NextRequest) {
   try {
     const url = request.nextUrl.searchParams.get("url");
 
     if (!url) {
-      return NextResponse.json(
-        { error: "URL parameter is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "URL parameter is required" }, { status: 400 });
     }
 
     // Validate URL
@@ -22,22 +16,14 @@ export async function GET(request: NextRequest) {
     try {
       parsedUrl = new URL(url);
     } catch {
-      return NextResponse.json(
-        { error: "Invalid URL" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
     }
 
     // Check if domain is allowed
-    const isAllowed = ALLOWED_DOMAINS.some(domain => 
-      parsedUrl.hostname.includes(domain)
-    );
+    const isAllowed = ALLOWED_DOMAINS.some(domain => parsedUrl.hostname.includes(domain));
 
     if (!isAllowed) {
-      return NextResponse.json(
-        { error: "Domain not allowed" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Domain not allowed" }, { status: 403 });
     }
 
     // Fetch data from external API
@@ -62,10 +48,10 @@ export async function GET(request: NextRequest) {
     }
   } catch (error) {
     console.error("Proxy error:", error);
-    
+
     // Return cached/fallback data for known endpoints
     const url = request.nextUrl.searchParams.get("url");
-    
+
     if (url?.includes("satoshiverse.io/metadata")) {
       // Return placeholder metadata
       return NextResponse.json({
@@ -74,14 +60,11 @@ export async function GET(request: NextRequest) {
         image: "/images/placeholder-nft.png",
         attributes: [
           { trait_type: "Type", value: "Legionnaire" },
-          { trait_type: "Status", value: "Loading" }
-        ]
+          { trait_type: "Status", value: "Loading" },
+        ],
       });
     }
 
-    return NextResponse.json(
-      { error: "Failed to fetch external resource" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch external resource" }, { status: 500 });
   }
 }
