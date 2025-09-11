@@ -8,6 +8,7 @@ import {
   CodeBracketIcon,
   CommandLineIcon,
   CpuChipIcon,
+  CreditCardIcon,
   CubeIcon,
   DocumentCheckIcon,
   GlobeAltIcon,
@@ -17,6 +18,7 @@ import {
   SparklesIcon,
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
+import GDPRConsent from "~~/components/GDPRConsent";
 
 const Home: NextPage = () => {
   const platformCapabilities = [
@@ -80,7 +82,8 @@ const Home: NextPage = () => {
       features: [
         {
           title: "PNT Elements NFT Marketplace",
-          description: "Trade Position Navigation Timing widgets as verifiable assets with 7.5% automatic royalty distribution",
+          description:
+            "Trade Position Navigation Timing widgets as verifiable assets with 7.5% automatic royalty distribution",
           link: "/pnt-marketplace",
           highlight: "SeaPort Compatible",
         },
@@ -220,24 +223,22 @@ const Home: NextPage = () => {
         <div className="max-w-7xl mx-auto text-center relative z-10 px-4">
           <div className="mb-6 inline-flex items-center gap-2 bg-primary/20 backdrop-blur-sm px-4 py-2 rounded-full">
             <SparklesIcon className="w-5 h-5 text-primary" />
-            <span className="text-sm font-semibold text-primary">
-               Free ICD & Driver Generation for a Limited Time
-            </span>
+            <span className="text-sm font-semibold text-primary">Free ICD & Driver Generation for a Limited Time</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 text-white drop-shadow-2xl">
-            Complete Space Mission
+            Space Launch Simplified™
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mt-2">
               Planning Platform
             </span>
           </h1>
 
           <p className="text-xl md:text-2xl lg:text-3xl text-white/90 mb-8 max-w-4xl mx-auto leading-relaxed drop-shadow-lg">
-            From orbital mechanics to hardware drivers, from blockchain verification to launch marketplaces – everything you
-            need to design, build, and launch space missions
+            From orbital mechanics to hardware drivers, from blockchain verification to launch marketplaces – everything
+            you need to design, build, and launch space missions
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto mb-8">
             {userTypes.map((type, idx) => (
               <Link
                 key={idx}
@@ -248,6 +249,17 @@ const Home: NextPage = () => {
                 {type.cta}
               </Link>
             ))}
+          </div>
+
+          {/* Whitepaper Link */}
+          <div className="mb-12">
+            <Link
+              href="/whitepaper"
+              className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors"
+            >
+              <DocumentCheckIcon className="w-5 h-5" />
+              <span className="underline underline-offset-4">Read our Whitepaper</span>
+            </Link>
           </div>
 
           {/* Stats Bar */}
@@ -447,9 +459,9 @@ const Home: NextPage = () => {
               <CommandLineIcon className="w-5 h-5 mr-2" />
               Start Building
             </Link>
-            <Link href="/pnt-marketplace" className="btn btn-secondary btn-lg w-full">
-              <CubeIcon className="w-5 h-5 mr-2" />
-              Browse SpacElements
+            <Link href="/pricing" className="btn btn-secondary btn-lg w-full">
+              <CreditCardIcon className="w-5 h-5 mr-2" />
+              View Pricing
             </Link>
             <Link href="/api-docs" className="btn btn-accent btn-lg w-full">
               <DocumentCheckIcon className="w-5 h-5 mr-2" />
@@ -557,6 +569,9 @@ const Home: NextPage = () => {
           </div>
         </div>
       </section>
+
+      {/* GDPR Consent Popup */}
+      <GDPRConsent />
     </div>
   );
 };
