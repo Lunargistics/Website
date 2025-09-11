@@ -17,23 +17,41 @@ export const wagmiConfig = createConfig({
   connectors: wagmiConnectors,
   ssr: true,
   client({ chain }) {
-    let rpcFallbacks = [http()];
+    let rpcFallbacks = [];
 
-    const rpcOverrideUrl = (scaffoldConfig.rpcOverrides as ScaffoldConfig["rpcOverrides"])?.[chain.id];
-    if (rpcOverrideUrl) {
-      rpcFallbacks = [http(rpcOverrideUrl), http()];
+    // For TEA Sepolia, use multiple fallback endpoints
+    if (chain.id === 10218) {
+      rpcFallbacks = [
+        http("https://tea-sepolia.g.alchemy.com/public", {
+          timeout: 10000,
+        }),
+        http("https://rpc-testnet.tea.xyz", {
+          timeout: 10000,
+        }),
+      ];
     } else {
-      const alchemyHttpUrl = getAlchemyHttpUrl(chain.id);
-      if (alchemyHttpUrl) {
-        const isUsingDefaultKey = scaffoldConfig.alchemyApiKey === DEFAULT_ALCHEMY_API_KEY;
-        // If using default Scaffold-ETH 2 API key, we prioritize the default RPC
-        rpcFallbacks = isUsingDefaultKey ? [http(), http(alchemyHttpUrl)] : [http(alchemyHttpUrl), http()];
+      const rpcOverrideUrl = (scaffoldConfig.rpcOverrides as ScaffoldConfig["rpcOverrides"])?.[chain.id];
+      if (rpcOverrideUrl) {
+        rpcFallbacks = [http(rpcOverrideUrl), http()];
+      } else {
+        const alchemyHttpUrl = getAlchemyHttpUrl(chain.id);
+        if (alchemyHttpUrl) {
+          const isUsingDefaultKey = scaffoldConfig.alchemyApiKey === DEFAULT_ALCHEMY_API_KEY;
+          // If using default Scaffold-ETH 2 API key, we prioritize the default RPC
+          rpcFallbacks = isUsingDefaultKey ? [http(), http(alchemyHttpUrl)] : [http(alchemyHttpUrl), http()];
+        } else {
+          rpcFallbacks = [http()];
+        }
       }
     }
 
     return createClient({
       chain,
-      transport: fallback(rpcFallbacks),
+      transport: fallback(rpcFallbacks, {
+        rank: true,
+        retryCount: 5,
+        retryDelay: 1000,
+      }),
       ...(chain.id !== (hardhat as Chain).id
         ? {
             pollingInterval: scaffoldConfig.pollingInterval,

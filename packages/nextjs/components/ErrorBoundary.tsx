@@ -94,6 +94,18 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   private shouldAutoRetry(error: Error): boolean {
+    // Don't retry external API errors
+    const externalAPIErrors = [
+      "satoshiverse",
+      "web3modal",
+      "alchemy.com",
+      "tea-sepolia",
+    ];
+    
+    if (externalAPIErrors.some(api => error.message?.toLowerCase().includes(api))) {
+      return false;
+    }
+
     // Auto-retry network errors and certain known transient errors
     const transientErrors = [
       "NetworkError",

@@ -307,7 +307,7 @@ export default function PNTMarketplacePage() {
             PNT SpaceElements Marketplace
           </h1>
           <p className="text-xl text-purple-200">
-            Buy, sell, and deploy Position Navigation Timing widgets as NFTs with built-in royalties
+            Buy, sell, and deploy Position Navigation Timing widgets as verifiable assets with built-in royalties
           </p>
         </div>
 

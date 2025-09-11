@@ -80,7 +80,7 @@ const Home: NextPage = () => {
       features: [
         {
           title: "PNT Elements NFT Marketplace",
-          description: "Trade Position Navigation Timing widgets as NFTs with 7.5% automatic royalty distribution",
+          description: "Trade Position Navigation Timing widgets as verifiable assets with 7.5% automatic royalty distribution",
           link: "/pnt-marketplace",
           highlight: "SeaPort Compatible",
         },
@@ -221,7 +221,7 @@ const Home: NextPage = () => {
           <div className="mb-6 inline-flex items-center gap-2 bg-primary/20 backdrop-blur-sm px-4 py-2 rounded-full">
             <SparklesIcon className="w-5 h-5 text-primary" />
             <span className="text-sm font-semibold text-primary">
-              65% Production Ready • ICD & Driver Generation Live
+               Free ICD & Driver Generation for a Limited Time
             </span>
           </div>
 
@@ -233,7 +233,7 @@ const Home: NextPage = () => {
           </h1>
 
           <p className="text-xl md:text-2xl lg:text-3xl text-white/90 mb-8 max-w-4xl mx-auto leading-relaxed drop-shadow-lg">
-            From orbital mechanics to hardware drivers, from blockchain NFTs to launch marketplaces – everything you
+            From orbital mechanics to hardware drivers, from blockchain verification to launch marketplaces – everything you
             need to design, build, and launch space missions
           </p>
 
@@ -449,7 +449,7 @@ const Home: NextPage = () => {
             </Link>
             <Link href="/pnt-marketplace" className="btn btn-secondary btn-lg w-full">
               <CubeIcon className="w-5 h-5 mr-2" />
-              Browse NFTs
+              Browse SpacElements
             </Link>
             <Link href="/api-docs" className="btn btn-accent btn-lg w-full">
               <DocumentCheckIcon className="w-5 h-5 mr-2" />

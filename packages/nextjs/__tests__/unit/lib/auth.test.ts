@@ -1,30 +1,27 @@
 import { authOptions } from "../../../lib/auth";
-import { connectDB } from "../../../lib/database/mongodb";
 import { loginRateLimiter } from "../../../lib/rateLimiter";
 import User from "../../../models/User";
-import { vi } from "vitest";
-
-vi.mock("../../../lib/database/mongodb", () => ({
-  connectDB: vi.fn(),
+jest.mock("../../../lib/database/mongodb", () => ({
+  connectDB: jest.fn(),
 }));
 
-vi.mock("../../../models/User", () => ({
+jest.mock("../../../models/User", () => ({
   default: {
-    findOne: vi.fn(),
-    findById: vi.fn(),
-    create: vi.fn(),
+    findOne: jest.fn(),
+    findById: jest.fn(),
+    create: jest.fn(),
   },
 }));
 
-vi.mock("../../../lib/rateLimiter", () => ({
+jest.mock("../../../lib/rateLimiter", () => ({
   loginRateLimiter: {
-    check: vi.fn(),
+    check: jest.fn(),
   },
 }));
 
 describe("Auth Configuration", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   describe("Credentials Provider", () => {
@@ -71,8 +68,8 @@ describe("Auth Configuration", () => {
 
       (loginRateLimiter.check as any).mockReturnValue({ allowed: true });
       (User.findOne as any).mockReturnValue({
-        select: vi.fn().mockResolvedValue({
-          comparePassword: vi.fn().mockResolvedValue(false),
+        select: jest.fn().mockResolvedValue({
+          comparePassword: jest.fn().mockResolvedValue(false),
         }),
       });
 
@@ -86,7 +83,7 @@ describe("Auth Configuration", () => {
 
       (loginRateLimiter.check as any).mockReturnValue({ allowed: true });
       (User.findOne as any).mockReturnValue({
-        select: vi.fn().mockResolvedValue({
+        select: jest.fn().mockResolvedValue({
           comparePassword: jest.fn().mockResolvedValue(true),
           emailVerified: false,
         }),
@@ -110,7 +107,7 @@ describe("Auth Configuration", () => {
 
       (loginRateLimiter.check as any).mockReturnValue({ allowed: true });
       (User.findOne as any).mockReturnValue({
-        select: vi.fn().mockResolvedValue(mockUser),
+        select: jest.fn().mockResolvedValue(mockUser),
       });
 
       const result = await authorize?.({ email: "test@example.com", password: "password" }, {} as any);

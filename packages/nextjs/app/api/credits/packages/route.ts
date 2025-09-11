@@ -5,12 +5,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withPublic } from "~~/lib/creditMiddleware";
 import { StripeService } from "~~/services/stripe/stripeService";
+import dbConnect from "~~/lib/mongodb";
 
 // GET /api/credits/packages - Get available credit packages
 export async function GET(request: NextRequest) {
   return withPublic(request, async () => {
     try {
-      const packages = await StripeService.getCreditPackages();
+      // Ensure database connection
+      await dbConnect();
+      
+      // Initialize packages if they don't exist
+      let packages = await StripeService.getCreditPackages();
+      
+      // If no packages exist, initialize them
+      if (!packages || packages.length === 0) {
+        console.log("No credit packages found, initializing default packages...");
+        packages = await StripeService.initializeCreditPackages();
+      }
 
       const formattedPackages = packages.map(pkg => ({
         id: pkg._id,
@@ -19,7 +30,7 @@ export async function GET(request: NextRequest) {
         bonusCredits: pkg.bonusCredits || 0,
         totalCredits: pkg.credits + (pkg.bonusCredits || 0),
         price: pkg.price,
-        pricePerCredit: (pkg.price / (pkg.credits + (pkg.bonusCredits || 0))).toFixed(4),
+        pricePerCredit: (pkg.price / 100 / (pkg.credits + (pkg.bonusCredits || 0))).toFixed(4),
         description: pkg.description,
         popular: pkg.popular || false,
         savings: pkg.bonusCredits

@@ -4,9 +4,10 @@ import React, { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { hardhat } from "viem/chains";
 import { useAccount } from "wagmi";
-import { Bars3Icon, RocketLaunchIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, RocketLaunchIcon, UserCircleIcon, WalletIcon } from "@heroicons/react/24/outline";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
 
@@ -29,16 +30,16 @@ export const menuLinks: HeaderMenuLink[] = [
 ];
 
 export const HeaderMenuLinks = () => {
-  const { isConnected } = useAccount();
+  const { data: session } = useSession();
   const pathname = usePathname();
 
   return (
     <>
       {menuLinks
         .filter(({ href }) => {
-          // Always show Home link; other links require wallet connection
+          // Always show Home link; other links require authentication
           if (href === "/") return true;
-          return isConnected;
+          return session;
         })
         .map(({ label, href, icon }) => {
           const isActive = pathname === href;
@@ -65,6 +66,8 @@ export const HeaderMenuLinks = () => {
  * Site header
  */
 export const Header = () => {
+  const { data: session } = useSession();
+  const { isConnected } = useAccount();
   const { targetNetwork } = useTargetNetwork();
   const isLocalNetwork = targetNetwork.id === hardhat.id;
 
@@ -108,9 +111,51 @@ export const Header = () => {
           <HeaderMenuLinks />
         </ul>
       </div>
-      <div className="navbar-end grow mr-4">
-        <RainbowKitCustomConnectButton />
-        {isLocalNetwork && <FaucetButton />}
+      <div className="navbar-end grow mr-4 flex items-center gap-2">
+        {/* Primary auth: NextAuth sign in */}
+        {!session ? (
+          <button
+            onClick={() => signIn()}
+            className="btn btn-primary btn-sm flex items-center gap-2"
+          >
+            <UserCircleIcon className="w-4 h-4" />
+            Sign In
+          </button>
+        ) : (
+          <div className="dropdown dropdown-end">
+            <label tabIndex={0} className="btn btn-ghost btn-sm rounded-btn flex items-center gap-2">
+              <UserCircleIcon className="w-5 h-5" />
+              <span className="hidden sm:inline">{session.user?.email?.split('@')[0]}</span>
+            </label>
+            <ul tabIndex={0} className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
+              <li className="text-sm text-base-content/60 px-2 py-1">
+                {session.user?.email}
+              </li>
+              <li><a onClick={() => signOut()}>Sign Out</a></li>
+            </ul>
+          </div>
+        )}
+        
+        {/* Optional: Wallet connection - available but not required */}
+        {session && (
+          <>
+            <div className="divider divider-horizontal mx-0 h-6"></div>
+            <details className="dropdown dropdown-end">
+              <summary className="btn btn-ghost btn-sm">
+                <WalletIcon className="w-5 h-5" />
+                <span className="hidden sm:inline">Wallet (Optional)</span>
+              </summary>
+              <div className="dropdown-content z-[1] p-4 shadow bg-base-100 rounded-box w-64 mt-3">
+                <p className="text-sm text-base-content/60 mb-3">
+                  Connect a wallet for blockchain features (NFTs, smart contracts). This is optional.
+                </p>
+                <RainbowKitCustomConnectButton />
+              </div>
+            </details>
+          </>
+        )}
+        
+        {isLocalNetwork && isConnected && <FaucetButton />}
       </div>
     </div>
   );

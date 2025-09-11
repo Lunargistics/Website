@@ -5,11 +5,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "~~/lib/creditMiddleware";
 import { CreditsService } from "~~/services/credits/creditsService";
+import dbConnect from "~~/lib/mongodb";
 
 // GET /api/credits/balance - Get user's credit balance
 export async function GET(request: NextRequest) {
   return withAuth(request, async userId => {
     try {
+      // Ensure database connection
+      await dbConnect();
       const balance = await CreditsService.getUserBalance(userId);
       const analytics = await CreditsService.getUsageAnalytics(userId, 30);
 

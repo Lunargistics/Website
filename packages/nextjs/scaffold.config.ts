@@ -1,7 +1,7 @@
 import { Chain } from "viem";
 import * as chains from "viem/chains";
 
-// Define TEA Sepolia network
+// Define TEA Sepolia network with multiple RPC endpoints for fallback
 const teaSepolia = {
   id: 10218,
   name: "TEA Sepolia",
@@ -11,8 +11,18 @@ const teaSepolia = {
     symbol: "TEA",
   },
   rpcUrls: {
-    public: { http: ["https://tea-sepolia.g.alchemy.com/public"] },
-    default: { http: ["https://tea-sepolia.g.alchemy.com/public"] },
+    public: { 
+      http: [
+        "https://tea-sepolia.g.alchemy.com/public",
+        "https://rpc-testnet.tea.xyz",
+      ] 
+    },
+    default: { 
+      http: [
+        "https://tea-sepolia.g.alchemy.com/public",
+        "https://rpc-testnet.tea.xyz",
+      ] 
+    },
   },
   blockExplorers: {
     default: {

@@ -46,12 +46,16 @@ const MissionPlanningDashboard = dynamic(
 const ImplementSpace = dynamic(() => import("../implement-space/page"), { ssr: false });
 const CreditsManager = dynamic(() => import("~~/components/CreditsManager"), { ssr: false });
 const CreditNotifications = dynamic(() => import("~~/components/CreditNotifications"), { ssr: false });
+const SpaceEngineerDashboard = dynamic(() => import("~~/components/dashboard/SpaceEngineerDashboard").then(mod => mod.default), {
+  ssr: false,
+});
 
 const menuCategories = [
   {
     name: "Main",
     items: [
       { id: "overview", label: "Overview", icon: "🏠" },
+      { id: "space-engineer", label: "Space Engineer", icon: "🛰️" },
       { id: "profile", label: "Profile", icon: "👤" },
       { id: "feed", label: "Social Feed", icon: "🌐" },
     ],
@@ -123,51 +127,9 @@ export default function DashboardPage() {
   const renderContent = () => {
     switch (activeTab) {
       case "overview":
-        return (
-          <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white">Welcome to Lunargistics Dashboard</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div
-                onClick={() => setActiveTab("mission-planning")}
-                className="bg-gray-800 border border-gray-700 p-6 rounded-xl hover:border-purple-500/50 transition-all duration-200 cursor-pointer"
-              >
-                <h3 className="text-lg font-semibold mb-2 text-white">Mission Planning</h3>
-                <p className="text-gray-400">End-to-end mission design and analysis suite</p>
-              </div>
-              <div 
-                onClick={() => setActiveTab("implement-space")}
-                className="bg-gray-800 border border-gray-700 p-6 rounded-xl hover:border-purple-500/50 transition-all duration-200 cursor-pointer"
-              >
-                <h3 className="text-lg font-semibold mb-2 text-white">Implement Space</h3>
-                <p className="text-gray-400">Professional space implementation tools</p>
-              </div>
-              <div className="bg-gray-800 border border-gray-700 p-6 rounded-xl hover:border-purple-500/50 transition-all duration-200">
-                <h3 className="text-lg font-semibold mb-2 text-white">Smart Wallets</h3>
-                <p className="text-gray-400">Manage your ERC-6551 smart wallets</p>
-              </div>
-              <div className="bg-gray-800 border border-gray-700 p-6 rounded-xl hover:border-purple-500/50 transition-all duration-200">
-                <h3 className="text-lg font-semibold mb-2 text-white">Documents</h3>
-                <p className="text-gray-400">Upload and mint space documents as NFTs</p>
-              </div>
-              <div className="bg-gray-800 border border-gray-700 p-6 rounded-xl hover:border-purple-500/50 transition-all duration-200">
-                <h3 className="text-lg font-semibold mb-2 text-white">Asteroids</h3>
-                <p className="text-gray-400">Track and trade asteroid commodities</p>
-              </div>
-              <div className="bg-gray-800 border border-gray-700 p-6 rounded-xl hover:border-purple-500/50 transition-all duration-200">
-                <h3 className="text-lg font-semibold mb-2 text-white">Launches</h3>
-                <p className="text-gray-400">Monitor space launch activities</p>
-              </div>
-              <div className="bg-gray-800 border border-gray-700 p-6 rounded-xl hover:border-purple-500/50 transition-all duration-200">
-                <h3 className="text-lg font-semibold mb-2 text-white">Licensing</h3>
-                <p className="text-gray-400">Manage space operation licenses</p>
-              </div>
-              <div className="bg-gray-800 border border-gray-700 p-6 rounded-xl hover:border-purple-500/50 transition-all duration-200">
-                <h3 className="text-lg font-semibold mb-2 text-white">Logistics</h3>
-                <p className="text-gray-400">Track space logistics operations</p>
-              </div>
-            </div>
-          </div>
-        );
+        return <SpaceEngineerDashboard />;
+      case "space-engineer":
+        return <SpaceEngineerDashboard />;
       case "mission-planning":
         return <MissionPlanningDashboard />;
       case "implement-space":

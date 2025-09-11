@@ -159,7 +159,7 @@ export default function CreditsManager() {
   return (
     <div className="space-y-8">
       {/* Credit Balance Overview */}
-      {balance && (
+      {balance ? (
         <div className="bg-white/10 backdrop-blur-lg rounded-lg p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -243,6 +243,21 @@ export default function CreditsManager() {
             </div>
           )}
         </div>
+      ) : (
+        !loading && (
+          <div className="bg-white/10 backdrop-blur-lg rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-white mb-4">Credits Overview</h2>
+            <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-yellow-400">
+                <ExclamationTriangleIcon className="h-5 w-5" />
+                <span className="font-medium">Unable to load balance</span>
+              </div>
+              <p className="text-yellow-300 mt-1">
+                Your credit balance is being initialized. You&apos;ll receive 100 free starter credits on first use.
+              </p>
+            </div>
+          </div>
+        )
       )}
 
       {/* Credit Packages */}

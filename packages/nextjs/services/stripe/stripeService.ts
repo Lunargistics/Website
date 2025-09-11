@@ -36,6 +36,7 @@ export class StripeService {
    * Create default credit packages in Stripe and database
    */
   static async initializeCreditPackages(): Promise<ICreditPackage[]> {
+    const useStripe = process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== "sk_test_dummy_key_for_build";
     const packages = [
       {
         name: "Starter Pack",
@@ -82,34 +83,47 @@ export class StripeService {
           continue;
         }
 
-        // Create Stripe product
-        const product = await stripe.products.create({
-          name: pkg.name,
-          description: pkg.description,
-          metadata: {
-            credits: pkg.credits.toString(),
-            bonusCredits: pkg.bonusCredits.toString(),
-          },
-        });
+        let stripePriceId = "price_dummy_" + pkg.name.toLowerCase().replace(/\s+/g, "_");
+        let stripeProductId = "prod_dummy_" + pkg.name.toLowerCase().replace(/\s+/g, "_");
 
-        // Create Stripe price
-        const price = await stripe.prices.create({
-          product: product.id,
-          unit_amount: pkg.price,
-          currency: "usd",
-          metadata: {
-            credits: pkg.credits.toString(),
-            bonusCredits: pkg.bonusCredits.toString(),
-          },
-        });
+        // Only create Stripe products if Stripe is configured
+        if (useStripe) {
+          try {
+            // Create Stripe product
+            const product = await stripe.products.create({
+              name: pkg.name,
+              description: pkg.description,
+              metadata: {
+                credits: pkg.credits.toString(),
+                bonusCredits: pkg.bonusCredits.toString(),
+              },
+            });
+
+            // Create Stripe price
+            const price = await stripe.prices.create({
+              product: product.id,
+              unit_amount: pkg.price,
+              currency: "usd",
+              metadata: {
+                credits: pkg.credits.toString(),
+                bonusCredits: pkg.bonusCredits.toString(),
+              },
+            });
+
+            stripePriceId = price.id;
+            stripeProductId = product.id;
+          } catch (stripeError) {
+            console.warn(`Stripe error for ${pkg.name}, using dummy IDs:`, stripeError);
+          }
+        }
 
         // Save to database
         const creditPackage = new CreditPackage({
           name: pkg.name,
           credits: pkg.credits,
           price: pkg.price,
-          stripePriceId: price.id,
-          stripeProductId: product.id,
+          stripePriceId,
+          stripeProductId,
           description: pkg.description,
           popular: pkg.popular,
           bonusCredits: pkg.bonusCredits,
@@ -140,6 +154,8 @@ export class StripeService {
     sessionId: string;
     url: string;
   }> {
+    this.ensureStripeConfigured();
+    
     const creditPackage = await CreditPackage.findById(params.packageId);
     if (!creditPackage) {
       throw new Error("Credit package not found");
