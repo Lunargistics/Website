@@ -3,6 +3,7 @@ import { NetworkOptions } from "./NetworkOptions";
 import { getAddress } from "viem";
 import { Address } from "viem";
 import { useDisconnect } from "wagmi";
+import { signOut, useSession } from "next-auth/react";
 import {
   ArrowLeftOnRectangleIcon,
   ArrowTopRightOnSquareIcon,
@@ -11,6 +12,7 @@ import {
   ChevronDownIcon,
   DocumentDuplicateIcon,
   QrCodeIcon,
+  UserIcon,
 } from "@heroicons/react/24/outline";
 import { BlockieAvatar, isENS } from "~~/components/scaffold-eth";
 import { useCopyToClipboard, useOutsideClick } from "~~/hooks/scaffold-eth";
@@ -32,6 +34,7 @@ export const AddressInfoDropdown = ({
   blockExplorerAddressLink,
 }: AddressInfoDropdownProps) => {
   const { disconnect } = useDisconnect();
+  const { data: session } = useSession();
   const checkSumAddress = getAddress(address);
 
   const { copyToClipboard: copyAddressToClipboard, isCopiedToClipboard: isAddressCopiedToClipboard } =
@@ -117,6 +120,17 @@ export const AddressInfoDropdown = ({
               <ArrowLeftOnRectangleIcon className="h-6 w-4 ml-2 sm:ml-0" /> <span>Disconnect</span>
             </button>
           </li>
+          {session?.user?.email && (
+            <li className={selectingNetwork ? "hidden" : ""}>
+              <button
+                className="menu-item text-warning h-8 btn-sm rounded-xl! flex gap-3 py-3"
+                type="button"
+                onClick={() => signOut({ callbackUrl: "/login" })}
+              >
+                <UserIcon className="h-6 w-4 ml-2 sm:ml-0" /> <span>Logout Email</span>
+              </button>
+            </li>
+          )}
         </ul>
       </details>
     </>

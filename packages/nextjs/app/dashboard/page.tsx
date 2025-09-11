@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 // Dynamically import components to avoid SSR issues
 const SmartWalletCreator = dynamic(
@@ -43,25 +43,52 @@ const MissionPlanningDashboard = dynamic(
   () => import("~~/components/dashboard/MissionPlanningDashboard").then(mod => mod.MissionPlanningDashboard),
   { ssr: false },
 );
+const ImplementSpace = dynamic(() => import("../implement-space/page"), { ssr: false });
 const CreditsManager = dynamic(() => import("~~/components/CreditsManager"), { ssr: false });
 const CreditNotifications = dynamic(() => import("~~/components/CreditNotifications"), { ssr: false });
 
-const menuItems = [
-  { id: "overview", label: "Overview", icon: "🏠" },
-  { id: "mission-planning", label: "Mission Planning", icon: "🛸" },
-  { id: "credits", label: "Credits", icon: "⚡" },
-  { id: "feed", label: "Social Feed", icon: "🌐" },
-  { id: "profile", label: "Profile", icon: "👤" },
-  { id: "outputs", label: "My Outputs", icon: "📊" },
-  { id: "smart-wallets", label: "Smart Wallets", icon: "💳" },
-  { id: "document-upload", label: "Document Upload", icon: "📄" },
-  { id: "document-minter", label: "Document Minter", icon: "🎫" },
-  { id: "asteroids", label: "Asteroids", icon: "☄️" },
-  { id: "licensing", label: "Licensing", icon: "📜" },
-  { id: "launches", label: "Launches", icon: "🚀" },
-  { id: "activities", label: "Activities", icon: "📊" },
-  { id: "logistics", label: "Logistics", icon: "📦" },
-  { id: "test-panel", label: "Test Panel", icon: "🧪" },
+const menuCategories = [
+  {
+    name: "Main",
+    items: [
+      { id: "overview", label: "Overview", icon: "🏠" },
+      { id: "profile", label: "Profile", icon: "👤" },
+      { id: "feed", label: "Social Feed", icon: "🌐" },
+    ],
+  },
+  {
+    name: "Mission & Operations",
+    items: [
+      { id: "mission-planning", label: "Mission Planning", icon: "🛸" },
+      { id: "implement-space", label: "Implement Space", icon: "✨" },
+      { id: "launches", label: "Launches", icon: "🚀" },
+      { id: "activities", label: "Activities", icon: "📊" },
+    ],
+  },
+  {
+    name: "Assets & Finance",
+    items: [
+      { id: "credits", label: "Credits", icon: "⚡" },
+      { id: "smart-wallets", label: "Smart Wallets", icon: "💳" },
+      { id: "asteroids", label: "Asteroids", icon: "☄️" },
+      { id: "outputs", label: "My Outputs", icon: "📊" },
+    ],
+  },
+  {
+    name: "Documents & Legal",
+    items: [
+      { id: "document-upload", label: "Document Upload", icon: "📄" },
+      { id: "document-minter", label: "Document Minter", icon: "🎫" },
+      { id: "licensing", label: "Licensing", icon: "📜" },
+      { id: "logistics", label: "Logistics", icon: "📦" },
+    ],
+  },
+  {
+    name: "Developer",
+    items: [
+      { id: "test-panel", label: "Test Panel", icon: "🧪" },
+    ],
+  },
 ];
 
 export default function DashboardPage() {
@@ -69,6 +96,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(["Main"]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -86,6 +114,12 @@ export default function DashboardPage() {
 
   if (!session) return null;
 
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev =>
+      prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category],
+    );
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case "overview":
@@ -99,6 +133,13 @@ export default function DashboardPage() {
               >
                 <h3 className="text-lg font-semibold mb-2 text-white">Mission Planning</h3>
                 <p className="text-gray-400">End-to-end mission design and analysis suite</p>
+              </div>
+              <div 
+                onClick={() => setActiveTab("implement-space")}
+                className="bg-gray-800 border border-gray-700 p-6 rounded-xl hover:border-purple-500/50 transition-all duration-200 cursor-pointer"
+              >
+                <h3 className="text-lg font-semibold mb-2 text-white">Implement Space</h3>
+                <p className="text-gray-400">Professional space implementation tools</p>
               </div>
               <div className="bg-gray-800 border border-gray-700 p-6 rounded-xl hover:border-purple-500/50 transition-all duration-200">
                 <h3 className="text-lg font-semibold mb-2 text-white">Smart Wallets</h3>
@@ -129,6 +170,12 @@ export default function DashboardPage() {
         );
       case "mission-planning":
         return <MissionPlanningDashboard />;
+      case "implement-space":
+        return (
+          <div className="space-y-6">
+            <ImplementSpace />
+          </div>
+        );
       case "credits":
         return (
           <div className="space-y-6">
@@ -195,48 +242,86 @@ export default function DashboardPage() {
     <div className="min-h-screen flex bg-gray-900">
       {/* Sidebar */}
       <aside
-        className={`${sidebarOpen ? "w-64" : "w-20"} bg-gray-800 border-r border-gray-700 transition-all duration-300 ease-in-out`}
+        className={`${
+          sidebarOpen ? "w-64" : "w-20"
+        } bg-gray-800 border-r border-gray-700 transition-all duration-300 ease-in-out flex flex-col`}
       >
-        <div className="p-4">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className={`font-bold text-xl text-white ${!sidebarOpen && "hidden"}`}>Lunargistics</h1>
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="text-gray-400 hover:text-white hover:bg-gray-700 p-2 rounded-lg transition"
-            >
-              {sidebarOpen ? "←" : "→"}
-            </button>
-          </div>
-
-          <nav className="space-y-2">
-            {menuItems.map(item => (
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-8">
+              <h1 className={`font-bold text-xl text-white ${!sidebarOpen && "hidden"}`}>Lunargistics</h1>
               <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                  activeTab === item.id
-                    ? "bg-purple-600/20 text-white border-l-4 border-purple-500"
-                    : "text-gray-400 hover:bg-gray-700 hover:text-white"
-                }`}
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="text-gray-400 hover:text-white hover:bg-gray-700 p-2 rounded-lg transition"
               >
-                <span className={`text-xl ${activeTab === item.id ? "text-purple-400" : ""}`}>{item.icon}</span>
-                {sidebarOpen && <span>{item.label}</span>}
+                {sidebarOpen ? "←" : "→"}
               </button>
-            ))}
-          </nav>
+            </div>
+
+            <nav className="space-y-4">
+              {menuCategories.map(category => (
+                <div key={category.name}>
+                  {sidebarOpen ? (
+                    <>
+                      <button
+                        onClick={() => toggleCategory(category.name)}
+                        className="w-full flex items-center justify-between px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-300 transition"
+                      >
+                        <span>{category.name}</span>
+                        <span className="text-gray-600">
+                          {expandedCategories.includes(category.name) ? "−" : "+"}
+                        </span>
+                      </button>
+                      {expandedCategories.includes(category.name) && (
+                        <div className="mt-2 space-y-1">
+                          {category.items.map(item => (
+                            <button
+                              key={item.id}
+                              onClick={() => setActiveTab(item.id)}
+                              className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-200 ${
+                                activeTab === item.id
+                                  ? "bg-purple-600/20 text-white border-l-4 border-purple-500"
+                                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                              }`}
+                            >
+                              <span className={`text-lg ${activeTab === item.id ? "text-purple-400" : ""}`}>
+                                {item.icon}
+                              </span>
+                              <span className="text-sm">{item.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="space-y-1">
+                      {category.items.map(item => (
+                        <button
+                          key={item.id}
+                          onClick={() => setActiveTab(item.id)}
+                          title={item.label}
+                          className={`w-full flex items-center justify-center px-2 py-2 rounded-lg transition-all duration-200 ${
+                            activeTab === item.id
+                              ? "bg-purple-600/20 text-purple-400 border-l-4 border-purple-500"
+                              : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                          }`}
+                        >
+                          <span className="text-lg">{item.icon}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </nav>
+          </div>
         </div>
 
-        <div className="absolute bottom-0 w-full p-4 border-t border-gray-700">
-          <div className={`${!sidebarOpen && "hidden"} mb-4`}>
-            <p className="text-sm text-gray-400">Logged in as:</p>
-            <p className="font-semibold text-white truncate">{session.user.email}</p>
+        <div className="p-4 border-t border-gray-700">
+          <div className={`${!sidebarOpen && "hidden"} mb-2`}>
+            <p className="text-xs text-gray-400">Logged in as:</p>
+            <p className="text-sm font-semibold text-white truncate">{session.user.email}</p>
           </div>
-          <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            className="w-full bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/50 py-2 px-4 rounded-lg transition-all duration-200"
-          >
-            {sidebarOpen ? "Sign Out" : "↪"}
-          </button>
         </div>
       </aside>
 
