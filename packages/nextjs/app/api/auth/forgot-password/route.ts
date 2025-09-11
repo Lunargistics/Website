@@ -44,9 +44,13 @@ export async function POST(request: Request) {
       );
     }
 
+    // TODO: Implement password reset token generation
     // Generate reset token
-    const resetToken = user.createPasswordResetToken();
-    await user.save({ validateBeforeSave: false });
+    // const resetToken = user.createPasswordResetToken();
+    // await user.save({ validateBeforeSave: false });
+
+    // Temporary: Generate a simple token
+    const resetToken = Math.random().toString(36).substring(2, 15);
 
     // In production, send email here
     // For now, log the reset URL

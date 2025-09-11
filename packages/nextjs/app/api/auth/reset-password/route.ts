@@ -80,8 +80,9 @@ export async function POST(request: Request) {
 
     // Update password and clear reset token
     user.password = password;
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
+    // TODO: Implement password reset token clearing
+    // user.passwordResetToken = undefined;
+    // user.passwordResetExpires = undefined;
     await user.save();
 
     return NextResponse.json(

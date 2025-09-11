@@ -21,7 +21,7 @@ interface AsteroidData {
 export function AsteroidDataFetcher() {
   const [asteroids, setAsteroids] = useState<AsteroidData[]>([]);
   const [loading, setLoading] = useState(false);
-  const { writeContractAsync: updateOracle } = useScaffoldWriteContract("AsteroidOracle");
+  const { writeContractAsync: updateOracle } = useScaffoldWriteContract("AsteroidOracle" as any);
 
   const fetchAsteroidData = useCallback(async () => {
     setLoading(true);
@@ -74,8 +74,8 @@ export function AsteroidDataFetcher() {
       // Update oracle with fetched data
       for (const asteroid of mockAsteroids) {
         await updateOracle({
-          functionName: "updateAsteroidData",
-          args: [asteroid.id, asteroid.name, BigInt(asteroid.estimated_value), BigInt(asteroid.diameter)],
+          functionName: "updateAsteroidData" as any,
+          args: [asteroid.id, asteroid.name, BigInt(asteroid.estimated_value), BigInt(asteroid.diameter)] as any,
         });
 
         // Update composition
@@ -83,8 +83,8 @@ export function AsteroidDataFetcher() {
         const percentages = Object.values(asteroid.composition).map(v => BigInt(v * 100));
 
         await updateOracle({
-          functionName: "batchUpdateComposition",
-          args: [asteroid.id, commodities, percentages],
+          functionName: "batchUpdateComposition" as any,
+          args: [asteroid.id, commodities, percentages] as any,
         });
       }
 

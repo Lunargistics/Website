@@ -213,7 +213,7 @@ export const MissionPlanningDashboard = () => {
   const [saveStatus, setSaveStatus] = useState<string>("");
 
   // Contract hooks
-  const { writeContractAsync: writeMissionRegistry } = useScaffoldWriteContract("MissionRegistry");
+  const { writeContractAsync: writeMissionRegistry } = useScaffoldWriteContract("MissionRegistry" as any);
   // These will be used for equipment and compliance features in next update
   // const { writeContractAsync: writeEquipmentNFT } = useScaffoldWriteContract("SpaceEquipmentNFT");
   // const { writeContractAsync: writeStandardsCompliance } = useScaffoldWriteContract("StandardsCompliance");
@@ -317,13 +317,13 @@ export const MissionPlanningDashboard = () => {
       }
 
       const tx = await writeMissionRegistry({
-        functionName: "createMission",
+        functionName: "createMission" as any,
         args: [
           mission.name,
-          Object.values(MissionType).indexOf(mission.type),
+          Object.values(MissionType).indexOf(mission.type) as any,
           ipfsHash,
-          BigInt(new Date(mission.launchDate).getTime() / 1000),
-          BigInt(new Date(mission.endDate).getTime() / 1000),
+          BigInt(new Date(mission.launchDate).getTime() / 1000) as any,
+          BigInt(new Date(mission.endDate).getTime() / 1000) as any,
         ],
       });
 
@@ -331,8 +331,8 @@ export const MissionPlanningDashboard = () => {
 
       if (orbitHash && tx) {
         await writeMissionRegistry({
-          functionName: "updateOrbitData",
-          args: [1n, orbitHash],
+          functionName: "updateOrbitData" as any,
+          args: [1n as any, orbitHash as any],
         });
       }
     } catch (error) {

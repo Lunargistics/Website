@@ -105,7 +105,7 @@ const ActivityDetailPage: NextPage = () => {
   } = useScaffoldReadContract({
     contractName: "SpaceActivityManager",
     functionName: "getActivityById",
-    args: readContractArgs,
+    args: readContractArgs as readonly [`0x${string}` | undefined],
   });
 
   useEffect(() => {

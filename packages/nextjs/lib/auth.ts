@@ -1,4 +1,4 @@
-import dbConnect from "./mongodb";
+import { connectDB } from "./database/mongodb";
 import { loginRateLimiter } from "./rateLimiter";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -33,9 +33,9 @@ export const authOptions: NextAuthOptions = {
           throw new Error(`Too many login attempts. Please try again after ${resetDate.toLocaleTimeString()}.`);
         }
 
-        await dbConnect();
+        await connectDB();
 
-        const user = await User.findOne({ emailLower: credentials.email.toLowerCase() });
+        const user = await User.findOne({ email: credentials.email.toLowerCase() }).select("+password");
 
         if (!user) {
           throw new Error("Invalid email or password");
@@ -95,10 +95,10 @@ export const authOptions: NextAuthOptions = {
             return false;
           }
 
-          await dbConnect();
+          await connectDB();
 
           // Check if user already exists
-          const existingUser = await User.findOne({ emailLower: user.email.toLowerCase() });
+          const existingUser = await User.findOne({ email: user.email.toLowerCase() });
 
           if (existingUser) {
             // Update user info if needed
@@ -121,16 +121,13 @@ export const authOptions: NextAuthOptions = {
           let counter = 1;
 
           // Ensure unique username
-          while (await User.findOne({ usernameLower: username.toLowerCase() })) {
+          while (await User.findOne({ name: username.toLowerCase() })) {
             username = `${baseUsername}${counter}`;
             counter++;
           }
 
           const newUser = new User({
             email: user.email,
-            emailLower: user.email.toLowerCase(),
-            username: username,
-            usernameLower: username.toLowerCase(),
             name: user.name || user.email.split("@")[0],
             emailVerified: true, // Social logins are pre-verified
             password: Math.random().toString(36), // Dummy password for social users

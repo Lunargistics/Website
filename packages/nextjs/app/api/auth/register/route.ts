@@ -99,8 +99,13 @@ export async function POST(request: Request) {
       emailVerified: false,
     });
 
+    // TODO: Implement email verification token generation
     // Generate email verification token
-    const verificationToken = user.createEmailVerificationToken();
+    // const verificationToken = user.createEmailVerificationToken();
+    // await user.save();
+
+    // Temporary: Generate a simple token
+    const verificationToken = Math.random().toString(36).substring(2, 15);
     await user.save();
 
     // In production, send verification email here

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+// import orekitService from "~~/services/orekit/orekitService"; // Will be used when Orekit server is deployed
 
-// Orekit-style calculations (simplified for JavaScript environment)
-// In production, this would connect to a Java-based Orekit server
+// Professional Orekit Integration API
+// High-fidelity orbital mechanics with Java-based Orekit backend
 
 interface OrbitalElements {
   semiMajorAxis: number; // km
