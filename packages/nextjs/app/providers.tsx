@@ -60,30 +60,12 @@ function RainbowKitProviderWrapper({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     setIsMounted(true);
-    
-    // Clear WalletConnect modal state to prevent auto-opening
-    if (typeof window !== "undefined") {
-      // Clear any WalletConnect v2 sessions that might trigger auto-opening
-      const wcKeys = Object.keys(localStorage).filter(key => 
-        key.includes("wc@2") || 
-        key.includes("walletconnect") || 
-        key.includes("WALLETCONNECT") ||
-        key.includes("wagmi.recentConnectorId")
-      );
-      wcKeys.forEach(key => {
-        if (key.includes("wc@2:client") || key.includes("wc@2:universal_provider")) {
-          // Don't remove the core client data, just the session data
-          return;
-        }
-        localStorage.removeItem(key);
-      });
-    }
   }, []);
 
   return (
     <RainbowKitProvider 
       theme={isMounted && isDarkMode ? darkTheme() : lightTheme()} 
-      showRecentTransactions={true}
+      showRecentTransactions={false}
       modalSize="compact"
       initialChain={undefined}
     >

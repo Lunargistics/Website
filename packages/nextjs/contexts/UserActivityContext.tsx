@@ -175,7 +175,7 @@ export const UserActivityProvider = ({ children }: { children: ReactNode }) => {
   const { address: connectedAddress, chainId: connectedChainId } = useAccount();
   const { data: walletClient } = useWalletClient();
 
-  const { writeContractAsync: writeSAMAsync } = useScaffoldWriteContract(CONTRACT_NAME_SAM);
+  const { writeContractAsync: writeSAMAsync } = useScaffoldWriteContract({ contractName: CONTRACT_NAME_SAM });
 
   // Initialize EAS when wallet client becomes available
   useEffect(() => {

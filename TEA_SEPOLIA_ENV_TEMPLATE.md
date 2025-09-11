@@ -8,7 +8,7 @@ Create a `.env.local` file in `packages/nextjs/` with the following configuratio
 # TEA Sepolia Network Configuration
 NEXT_PUBLIC_NETWORK=teaSepolia
 NEXT_PUBLIC_CHAIN_ID=10218
-NEXT_PUBLIC_RPC_URL=https://tea-sepolia.g.alchemy.com/public
+NEXT_PUBLIC_TEA_RPC_URL=https://tea-testnet.rpc.thirdweb.com
 
 # Contract Addresses (TEA Sepolia - DEPLOYED)
 NEXT_PUBLIC_YOUR_CONTRACT_ADDRESS=0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1

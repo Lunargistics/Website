@@ -25,10 +25,10 @@ describe("Auth Configuration", () => {
   });
 
   describe("Credentials Provider", () => {
-    const credentialsProvider = authOptions.providers.find(provider => provider.id === "credentials");
+    const credentialsProvider = authOptions.providers.find(provider => provider.id === "credentials") as any;
 
     it("should reject login with missing credentials", async () => {
-      const authorize = credentialsProvider?.authorize;
+      const authorize = credentialsProvider?.options?.authorize;
 
       await expect(authorize?.({}, {} as any)).rejects.toThrow("Invalid credentials");
 
@@ -38,7 +38,7 @@ describe("Auth Configuration", () => {
     });
 
     it("should reject login when rate limited", async () => {
-      const authorize = credentialsProvider?.authorize;
+      const authorize = credentialsProvider?.options?.authorize;
 
       (loginRateLimiter.check as any).mockReturnValue({
         allowed: false,
@@ -53,7 +53,7 @@ describe("Auth Configuration", () => {
     });
 
     it("should reject login with invalid email", async () => {
-      const authorize = credentialsProvider?.authorize;
+      const authorize = credentialsProvider?.options?.authorize;
 
       (loginRateLimiter.check as any).mockReturnValue({ allowed: true });
       (User.findOne as any).mockResolvedValue(null);
@@ -64,7 +64,7 @@ describe("Auth Configuration", () => {
     });
 
     it("should reject login with invalid password", async () => {
-      const authorize = credentialsProvider?.authorize;
+      const authorize = credentialsProvider?.options?.authorize;
 
       (loginRateLimiter.check as any).mockReturnValue({ allowed: true });
       (User.findOne as any).mockReturnValue({
@@ -79,7 +79,7 @@ describe("Auth Configuration", () => {
     });
 
     it("should reject login for unverified email", async () => {
-      const authorize = credentialsProvider?.authorize;
+      const authorize = credentialsProvider?.options?.authorize;
 
       (loginRateLimiter.check as any).mockReturnValue({ allowed: true });
       (User.findOne as any).mockReturnValue({
@@ -95,7 +95,7 @@ describe("Auth Configuration", () => {
     });
 
     it("should successfully authenticate valid user", async () => {
-      const authorize = credentialsProvider?.authorize;
+      const authorize = credentialsProvider?.options?.authorize;
 
       const mockUser = {
         _id: "123",
@@ -131,10 +131,10 @@ describe("Auth Configuration", () => {
         username: "testuser",
       };
 
-      const result = await authOptions.callbacks?.session?.({ session, token } as any);
+      const result = await authOptions.callbacks?.session?.({ session, token } as any) as any;
 
-      expect(result.user.id).toBe("123");
-      expect(result.user.username).toBe("testuser");
+      expect(result?.user?.id).toBe("123");
+      expect(result?.user?.username).toBe("testuser");
     });
   });
 
@@ -149,8 +149,8 @@ describe("Auth Configuration", () => {
 
       const result = await authOptions.callbacks?.jwt?.({ token, user } as any);
 
-      expect(result.id).toBe("123");
-      expect(result.username).toBe("testuser");
+      expect(result?.id).toBe("123");
+      expect(result?.username).toBe("testuser");
     });
   });
 });

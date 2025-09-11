@@ -34,6 +34,7 @@ export const RPC_CHAIN_NAMES: Record<number, string> = {
   [chains.baseSepolia.id]: "base-sepolia",
   [chains.celo.id]: "celo-mainnet",
   [chains.celoAlfajores.id]: "celo-alfajores",
+  // Note: TEA Sepolia (10218) is not supported by Alchemy
 };
 
 export const getAlchemyHttpUrl = (chainId: number) => {
@@ -45,6 +46,10 @@ export const getAlchemyHttpUrl = (chainId: number) => {
 export const NETWORKS_EXTRA_DATA: Record<string, ChainAttributes> = {
   [chains.hardhat.id]: {
     color: "#b8af0c",
+  },
+  // TEA Sepolia
+  [10218]: {
+    color: ["#2e7d32", "#66bb6a"],
   },
   [chains.mainnet.id]: {
     color: "#ff8b9e",

@@ -1,7 +1,7 @@
 import { wagmiConnectors } from "./wagmiConnectors";
 import { Chain, createClient, fallback, http } from "viem";
 import { hardhat, mainnet } from "viem/chains";
-import { createConfig } from "wagmi";
+import { createConfig, createStorage } from "wagmi";
 import scaffoldConfig, { DEFAULT_ALCHEMY_API_KEY, ScaffoldConfig } from "~~/scaffold.config";
 import { getAlchemyHttpUrl } from "~~/utils/scaffold-eth";
 
@@ -12,11 +12,22 @@ export const enabledChains = targetNetworks.find((network: Chain) => network.id 
   ? targetNetworks
   : ([...targetNetworks, mainnet] as const);
 
+// Custom storage to prevent auto-reconnect on page load
+const noopStorage = {
+  getItem: (_key: string) => null,
+  setItem: (_key: string, _value: string) => {},
+  removeItem: (_key: string) => {},
+};
+
 export const wagmiConfig = createConfig({
   chains: enabledChains,
   connectors: wagmiConnectors,
   ssr: true,
   syncConnectedChain: false,
+  // Use noop storage to prevent auto-reconnect
+  storage: createStorage({
+    storage: typeof window !== "undefined" ? noopStorage : undefined,
+  }),
   client({ chain }) {
     let rpcFallbacks = [];
 
@@ -31,7 +42,7 @@ export const wagmiConfig = createConfig({
     } else {
       const rpcOverrideUrl = (scaffoldConfig.rpcOverrides as ScaffoldConfig["rpcOverrides"])?.[chain.id];
       if (rpcOverrideUrl) {
-        rpcFallbacks = [http(rpcOverrideUrl), http()];
+        rpcFallbacks = [http(rpcOverrideUrl)];
       } else {
         const alchemyHttpUrl = getAlchemyHttpUrl(chain.id);
         if (alchemyHttpUrl) {

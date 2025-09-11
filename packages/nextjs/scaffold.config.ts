@@ -13,6 +13,7 @@ const teaSepolia = {
     symbol: "TEA",
   },
   rpcUrls: {
+    // Use only the CORS-friendly RPC endpoint
     public: { 
       http: [teaRpcUrl] 
     },
