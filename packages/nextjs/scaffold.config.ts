@@ -1,7 +1,9 @@
 import { Chain } from "viem";
 import * as chains from "viem/chains";
 
-// Define TEA Sepolia network with multiple RPC endpoints for fallback
+// Define TEA Sepolia network with CORS-friendly RPC endpoint
+const teaRpcUrl = process.env.NEXT_PUBLIC_TEA_RPC_URL || "https://tea-testnet.rpc.thirdweb.com";
+
 const teaSepolia = {
   id: 10218,
   name: "TEA Sepolia",
@@ -12,16 +14,10 @@ const teaSepolia = {
   },
   rpcUrls: {
     public: { 
-      http: [
-        "https://tea-sepolia.g.alchemy.com/public",
-        "https://rpc-testnet.tea.xyz",
-      ] 
+      http: [teaRpcUrl] 
     },
     default: { 
-      http: [
-        "https://tea-sepolia.g.alchemy.com/public",
-        "https://rpc-testnet.tea.xyz",
-      ] 
+      http: [teaRpcUrl] 
     },
   },
   blockExplorers: {
@@ -61,8 +57,8 @@ const scaffoldConfig = {
   // If you want to use a different RPC for a specific network, you can add it here.
   // The key is the chain ID, and the value is the HTTP RPC URL
   rpcOverrides: {
-    // TEA Sepolia RPC
-    10218: "https://tea-sepolia.g.alchemy.com/public",
+    // TEA Sepolia RPC - using CORS-friendly endpoint from env or default
+    10218: teaRpcUrl,
   },
 
   // This is ours WalletConnect's default project ID.

@@ -16,16 +16,15 @@ export const wagmiConfig = createConfig({
   chains: enabledChains,
   connectors: wagmiConnectors,
   ssr: true,
+  syncConnectedChain: false,
   client({ chain }) {
     let rpcFallbacks = [];
 
-    // For TEA Sepolia, use multiple fallback endpoints
+    // For TEA Sepolia, use the configured RPC endpoint
     if (chain.id === 10218) {
+      const teaRpcUrl = process.env.NEXT_PUBLIC_TEA_RPC_URL || "https://tea-testnet.rpc.thirdweb.com";
       rpcFallbacks = [
-        http("https://tea-sepolia.g.alchemy.com/public", {
-          timeout: 10000,
-        }),
-        http("https://rpc-testnet.tea.xyz", {
+        http(teaRpcUrl, {
           timeout: 10000,
         }),
       ];

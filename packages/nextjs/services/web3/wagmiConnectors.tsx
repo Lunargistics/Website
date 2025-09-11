@@ -35,7 +35,6 @@ export const wagmiConnectors = connectorsForWallets(
       wallets,
     },
   ],
-
   {
     appName: "Lunargistics",
     projectId: scaffoldConfig.walletConnectProjectId,

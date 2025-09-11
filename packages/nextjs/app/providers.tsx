@@ -63,7 +63,12 @@ function RainbowKitProviderWrapper({ children }: { children: React.ReactNode }) 
   }, []);
 
   return (
-    <RainbowKitProvider theme={isMounted && isDarkMode ? darkTheme() : lightTheme()} showRecentTransactions={true}>
+    <RainbowKitProvider 
+      theme={isMounted && isDarkMode ? darkTheme() : lightTheme()} 
+      showRecentTransactions={true}
+      modalSize="compact"
+      initialChain={undefined}
+    >
       {children}
     </RainbowKitProvider>
   );
