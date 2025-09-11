@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { ArrowRightIcon, BoltIcon, CheckIcon, CreditCardIcon, StarIcon } from "@heroicons/react/24/outline";
+import { CheckIcon } from "@heroicons/react/24/solid";
 
 interface CreditPackage {
   id: string;
@@ -18,35 +18,57 @@ interface CreditPackage {
   savings: number;
 }
 
-const features = [
-  "High-precision orbital mechanics calculations",
-  "Advanced mission planning tools",
-  "3D visualization and analysis",
-  "Document generation (PDR, CDR, FRR)",
-  "ICD and driver generation",
-  "Constellation analysis",
-  "AI-powered mission optimization",
-  "Real-time API access",
-  "Priority support",
-];
-
-const apiEndpoints = [
-  { name: "Mission Operations", cost: 1, description: "Basic mission CRUD operations" },
-  { name: "Mission Creation", cost: 5, description: "Create new missions with validation" },
-  { name: "Orbital Calculations", cost: 3, description: "Propagation and analysis" },
-  { name: "Advanced Orekit", cost: 10, description: "High-fidelity orbital mechanics" },
-  { name: "Constellation Analysis", cost: 15, description: "Multi-satellite optimization" },
-  { name: "Document Generation", cost: 5, description: "Professional reports (PDR/CDR/FRR)" },
-  { name: "AI Mission Planning", cost: 20, description: "Venice AI-powered planning" },
-  { name: "ICD Generation", cost: 8, description: "Interface control documents" },
-  { name: "Driver Generation", cost: 12, description: "Multi-language driver code" },
-];
-
-export default function PricingPage() {
+const PricingPage = () => {
+  const router = useRouter();
   const { data: session } = useSession();
-  const [packages, setPackages] = useState<CreditPackage[]>([]);
+  const [creditPackages, setCreditPackages] = useState<CreditPackage[]>([]);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<string | null>(null);
+
+  const saasPlans = [
+    {
+      name: "Free",
+      price: 0,
+      period: "month",
+      features: ["100 credits on signup", "Basic support", "Community access", "Standard processing speed"],
+      notIncluded: ["Priority support", "Advanced analytics", "API access", "Custom integrations"],
+      cta: "Get Started",
+    },
+    {
+      name: "Pro",
+      price: 29,
+      period: "month",
+      popular: true,
+      features: [
+        "100 credits per month",
+        "Priority support",
+        "Advanced analytics",
+        "API access",
+        "Faster processing speed",
+        "Export capabilities",
+      ],
+      notIncluded: ["Custom integrations", "Dedicated account manager"],
+      cta: "Start Free Trial",
+    },
+    {
+      name: "Business",
+      price: 99,
+      period: "month",
+      features: [
+        "500 credits per month",
+        "Priority support",
+        "Advanced analytics",
+        "API access",
+        "Fastest processing speed",
+        "Export capabilities",
+        "Custom integrations",
+        "Dedicated account manager",
+        "SLA guarantee",
+      ],
+      notIncluded: [],
+      cta: "Contact Sales",
+    },
+  ];
 
   useEffect(() => {
     fetchPackages();
@@ -57,7 +79,7 @@ export default function PricingPage() {
       const response = await fetch("/api/credits/packages");
       if (response.ok) {
         const data = await response.json();
-        setPackages(data.packages);
+        setCreditPackages(data.packages);
       }
     } catch (error) {
       console.error("Error fetching packages:", error);
@@ -68,7 +90,7 @@ export default function PricingPage() {
 
   const handlePurchase = async (packageId: string) => {
     if (!session) {
-      window.location.href = "/login?callbackUrl=" + encodeURIComponent("/pricing");
+      router.push("/login?callbackUrl=" + encodeURIComponent("/pricing"));
       return;
     }
 
@@ -101,103 +123,67 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Header */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-white mb-4">Mission Planning Credits</h1>
-          <p className="text-xl text-purple-200 max-w-3xl mx-auto">
-            Pay-as-you-use credits for professional space mission planning. No monthly subscriptions, just purchase what
-            you need.
+    <div className="min-h-screen bg-base-100">
+      <div className="container mx-auto px-4 py-16">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h1 className="text-5xl font-bold mb-4">Simple, Transparent Pricing</h1>
+          <p className="text-xl text-base-content/70">
+            Choose the plan that fits your needs. Pay as you go or save with monthly plans.
           </p>
         </div>
 
         {/* Credit Packages */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold text-white text-center mb-8">Choose Your Package</h2>
-
+        <div className="mb-20">
+          <h2 className="text-3xl font-bold text-center mb-12">Credit Packages</h2>
+          <p className="text-center text-base-content/70 mb-8">
+            One-time purchase. Credits never expire. Use them at your own pace.
+          </p>
           {loading ? (
             <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+              <div className="loading loading-spinner loading-lg"></div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-              {packages.map(pkg => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {creditPackages.map(pkg => (
                 <div
                   key={pkg.id}
-                  className={`relative bg-white/10 backdrop-blur-lg rounded-xl p-6 border-2 transition-all duration-300 hover:scale-105 ${
-                    pkg.popular
-                      ? "border-purple-500 ring-4 ring-purple-500/20 shadow-2xl"
-                      : "border-white/20 hover:border-purple-400"
-                  }`}
+                  className={`card bg-base-200 shadow-xl relative ${pkg.popular ? "ring-2 ring-primary" : ""}`}
                 >
                   {pkg.popular && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-1">
-                        <StarIcon className="h-4 w-4" />
-                        Most Popular
-                      </div>
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className="badge badge-primary badge-lg">Most Popular</span>
                     </div>
                   )}
-
-                  <div className="text-center">
-                    <h3 className="text-2xl font-bold text-white mb-2">{pkg.name}</h3>
-
-                    <div className="mb-6">
-                      <span className="text-4xl font-bold text-white">${(pkg.price / 100).toFixed(0)}</span>
-                      <span className="text-purple-200 text-lg">.{(pkg.price % 100).toString().padStart(2, "0")}</span>
-                    </div>
-
-                    <div className="space-y-3 mb-6">
-                      <div className="flex justify-between items-center">
-                        <span className="text-purple-200">Base Credits:</span>
-                        <span className="text-white font-medium">{pkg.credits.toLocaleString()}</span>
-                      </div>
-
-                      {pkg.bonusCredits > 0 && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-purple-200">Bonus Credits:</span>
-                          <span className="text-green-400 font-medium">+{pkg.bonusCredits.toLocaleString()}</span>
-                        </div>
-                      )}
-
-                      <div className="flex justify-between items-center border-t border-white/20 pt-3">
-                        <span className="text-purple-200 font-medium">Total Credits:</span>
-                        <span className="text-white font-bold text-lg">{pkg.totalCredits.toLocaleString()}</span>
-                      </div>
-
-                      <div className="text-center">
-                        <span className="text-purple-300 text-sm">${pkg.pricePerCredit} per credit</span>
+                  <div className="card-body pt-8">
+                    <h3 className="text-xl font-bold">{pkg.name}</h3>
+                    {pkg.savings > 0 && <span className="badge badge-success">{pkg.savings}% Extra Credits Free!</span>}
+                    <div className="my-4">
+                      <p className="text-4xl font-bold">${(pkg.price / 100).toFixed(2)}</p>
+                      <div className="space-y-1">
+                        <p className="text-base-content/70">{pkg.credits.toLocaleString()} base credits</p>
+                        {pkg.bonusCredits > 0 && (
+                          <p className="text-success">+ {pkg.bonusCredits.toLocaleString()} bonus credits</p>
+                        )}
+                        <p className="text-sm font-medium text-primary">
+                          {pkg.totalCredits.toLocaleString()} total credits
+                        </p>
+                        <p className="text-sm text-base-content/50">${pkg.pricePerCredit} per credit</p>
                       </div>
                     </div>
-
-                    {pkg.savings > 0 && (
-                      <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-2 mb-4">
-                        <span className="text-green-400 text-sm font-bold">{pkg.savings}% Extra Credits Free!</span>
-                      </div>
-                    )}
-
-                    <p className="text-purple-200 text-sm mb-6">{pkg.description}</p>
-
+                    <p className="text-sm text-base-content/60 mb-4">{pkg.description}</p>
                     <button
+                      className="btn btn-primary w-full"
                       onClick={() => handlePurchase(pkg.id)}
                       disabled={purchasing === pkg.id}
-                      className={`w-full py-3 px-6 rounded-lg font-bold transition-all duration-200 flex items-center justify-center gap-2 ${
-                        pkg.popular
-                          ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg"
-                          : "bg-white/10 hover:bg-white/20 text-white border-2 border-white/20 hover:border-purple-400"
-                      } disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
                       {purchasing === pkg.id ? (
                         <>
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                          <span className="loading loading-spinner loading-sm"></span>
                           Processing...
                         </>
                       ) : (
-                        <>
-                          <CreditCardIcon className="h-5 w-5" />
-                          Purchase Credits
-                        </>
+                        "Buy Now"
                       )}
                     </button>
                   </div>
@@ -207,67 +193,173 @@ export default function PricingPage() {
           )}
         </div>
 
-        {/* API Costs Breakdown */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 mb-16">
-          <h2 className="text-3xl font-bold text-white text-center mb-8">API Credit Costs</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {apiEndpoints.map(endpoint => (
-              <div key={endpoint.name} className="bg-white/5 rounded-lg p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-white font-semibold">{endpoint.name}</h3>
-                  <div className="flex items-center gap-1">
-                    <BoltIcon className="h-4 w-4 text-purple-400" />
-                    <span className="text-purple-300 font-bold">{endpoint.cost}</span>
+        {/* SaaS Plans */}
+        <div>
+          <h2 className="text-3xl font-bold text-center mb-12">Monthly Plans</h2>
+          <p className="text-center text-base-content/70 mb-8">
+            Predictable monthly billing. Cancel anytime. Includes monthly credit allowance.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {saasPlans.map(plan => (
+              <div
+                key={plan.name}
+                className={`card bg-base-200 shadow-xl ${plan.popular ? "ring-2 ring-primary scale-105" : ""}`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                    <span className="badge badge-primary badge-lg">Recommended</span>
                   </div>
+                )}
+                <div className="card-body pt-10">
+                  <h3 className="text-2xl font-bold">{plan.name}</h3>
+                  <div className="my-6">
+                    <p className="text-5xl font-bold">
+                      ${plan.price}
+                      <span className="text-lg text-base-content/70">/{plan.period}</span>
+                    </p>
+                  </div>
+                  <ul className="space-y-3 mb-8 flex-grow">
+                    {plan.features.map(feature => (
+                      <li key={feature} className="flex items-start gap-2">
+                        <CheckIcon className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
+                        <span className="text-sm">{feature}</span>
+                      </li>
+                    ))}
+                    {plan.notIncluded.map(feature => (
+                      <li key={feature} className="flex items-start gap-2 opacity-50">
+                        <span className="w-5 h-5 mt-0.5 flex-shrink-0 text-center">✕</span>
+                        <span className="text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    className={`btn w-full ${plan.popular ? "btn-primary" : "btn-outline btn-primary"}`}
+                    onClick={() => {
+                      if (plan.name === "Business") {
+                        window.location.href = "mailto:sales@lunargistics.com";
+                      } else {
+                        router.push("/dashboard");
+                      }
+                    }}
+                  >
+                    {plan.cta}
+                  </button>
                 </div>
-                <p className="text-purple-200 text-sm">{endpoint.description}</p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Features */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 mb-16">
-          <h2 className="text-3xl font-bold text-white text-center mb-8">What&apos;s Included</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {features.map((feature, index) => (
-              <div key={index} className="flex items-center gap-3">
-                <CheckIcon className="h-5 w-5 text-green-400 flex-shrink-0" />
-                <span className="text-purple-200">{feature}</span>
-              </div>
-            ))}
+        {/* API Credit Costs */}
+        <div className="mb-20">
+          <h2 className="text-3xl font-bold text-center mb-12">API Credit Costs</h2>
+          <p className="text-center text-base-content/70 mb-8">
+            Understanding how credits are consumed across our platform
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="card bg-base-200 p-6">
+              <h3 className="font-bold text-lg mb-3">Basic Operations</h3>
+              <ul className="space-y-2 text-sm">
+                <li className="flex justify-between">
+                  <span>Mission CRUD Operations</span>
+                  <span className="badge badge-neutral">1 credit</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>Orbital Calculations</span>
+                  <span className="badge badge-neutral">3 credits</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>Mission Creation</span>
+                  <span className="badge badge-neutral">5 credits</span>
+                </li>
+              </ul>
+            </div>
+            <div className="card bg-base-200 p-6">
+              <h3 className="font-bold text-lg mb-3">Advanced Features</h3>
+              <ul className="space-y-2 text-sm">
+                <li className="flex justify-between">
+                  <span>Document Generation</span>
+                  <span className="badge badge-warning">5 credits</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>ICD Generation</span>
+                  <span className="badge badge-warning">8 credits</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>Advanced Orekit</span>
+                  <span className="badge badge-warning">10 credits</span>
+                </li>
+              </ul>
+            </div>
+            <div className="card bg-base-200 p-6">
+              <h3 className="font-bold text-lg mb-3">Premium Services</h3>
+              <ul className="space-y-2 text-sm">
+                <li className="flex justify-between">
+                  <span>Driver Generation</span>
+                  <span className="badge badge-error">12 credits</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>Constellation Analysis</span>
+                  <span className="badge badge-error">15 credits</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>AI Mission Planning</span>
+                  <span className="badge badge-error">20 credits</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
-        {/* CTA Section */}
-        <div className="text-center">
-          {!session ? (
-            <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/50 rounded-xl p-8">
-              <h3 className="text-2xl font-bold text-white mb-4">Ready to Start Planning Missions?</h3>
-              <p className="text-purple-200 mb-6">Sign up today and get 100 free credits to explore our platform.</p>
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-200"
-              >
-                Get Started Free
-                <ArrowRightIcon className="h-5 w-5" />
-              </Link>
+        {/* FAQ Section */}
+        <div className="mt-20 max-w-3xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            <div className="collapse collapse-plus bg-base-200">
+              <input type="radio" name="faq-accordion" defaultChecked />
+              <div className="collapse-title text-xl font-medium">What are credits used for?</div>
+              <div className="collapse-content">
+                <p>
+                  Credits are used to access our services. Each action consumes a certain number of credits based on
+                  complexity and resource usage. You can view your credit balance in your dashboard.
+                </p>
+              </div>
             </div>
-          ) : (
-            <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/50 rounded-xl p-8">
-              <h3 className="text-2xl font-bold text-white mb-4">Welcome back!</h3>
-              <p className="text-purple-200 mb-6">Manage your credits and view your usage in the dashboard.</p>
-              <Link
-                href="/dashboard?tab=credits"
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-200"
-              >
-                Go to Dashboard
-                <ArrowRightIcon className="h-5 w-5" />
-              </Link>
+            <div className="collapse collapse-plus bg-base-200">
+              <input type="radio" name="faq-accordion" />
+              <div className="collapse-title text-xl font-medium">Do credits expire?</div>
+              <div className="collapse-content">
+                <p>
+                  Purchased credits never expire and can be used at any time. Monthly plan credits refresh each billing
+                  cycle and don&apos;t roll over to the next month.
+                </p>
+              </div>
             </div>
-          )}
+            <div className="collapse collapse-plus bg-base-200">
+              <input type="radio" name="faq-accordion" />
+              <div className="collapse-title text-xl font-medium">Can I change my plan anytime?</div>
+              <div className="collapse-content">
+                <p>
+                  Yes! You can upgrade, downgrade, or cancel your monthly plan at any time. Changes take effect at the
+                  next billing cycle. Purchased credit packages are non-refundable.
+                </p>
+              </div>
+            </div>
+            <div className="collapse collapse-plus bg-base-200">
+              <input type="radio" name="faq-accordion" />
+              <div className="collapse-title text-xl font-medium">What payment methods do you accept?</div>
+              <div className="collapse-content">
+                <p>
+                  We accept all major credit cards, debit cards, and cryptocurrency payments through our secure payment
+                  processing partners.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default PricingPage;
