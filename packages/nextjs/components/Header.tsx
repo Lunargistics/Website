@@ -7,9 +7,9 @@ import { usePathname } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
 import { hardhat } from "viem/chains";
 import { useAccount } from "wagmi";
-import { Bars3Icon, RocketLaunchIcon, WalletIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, RocketLaunchIcon } from "@heroicons/react/24/outline";
 import { PrivyAuthButton } from "~~/components/PrivyAuthButton";
-import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
+import { FaucetButton } from "~~/components/scaffold-eth";
 import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
 
 type HeaderMenuLink = {
@@ -67,7 +67,6 @@ export const HeaderMenuLinks = () => {
  * Site header
  */
 export const Header = () => {
-  const { authenticated } = usePrivy();
   const { isConnected } = useAccount();
   const { targetNetwork } = useTargetNetwork();
   const isLocalNetwork = targetNetwork.id === hardhat.id;
@@ -113,27 +112,8 @@ export const Header = () => {
         </ul>
       </div>
       <div className="navbar-end grow mr-4 flex items-center gap-2">
-        {/* Privy Authentication */}
+        {/* Privy Authentication - handles both email and wallet connections */}
         <PrivyAuthButton />
-
-        {/* Optional: RainbowKit wallet connection for additional wallets */}
-        {authenticated && (
-          <>
-            <div className="divider divider-horizontal mx-0 h-6"></div>
-            <details className="dropdown dropdown-end">
-              <summary className="btn btn-ghost btn-sm">
-                <WalletIcon className="w-5 h-5" />
-                <span className="hidden sm:inline">Wallet (Optional)</span>
-              </summary>
-              <div className="dropdown-content z-[1] p-4 shadow bg-base-100 rounded-box w-64 mt-3">
-                <p className="text-sm text-base-content/60 mb-3">
-                  Connect a wallet for blockchain features (NFTs, smart contracts). This is optional.
-                </p>
-                <RainbowKitCustomConnectButton />
-              </div>
-            </details>
-          </>
-        )}
 
         {isLocalNetwork && isConnected && <FaucetButton />}
       </div>

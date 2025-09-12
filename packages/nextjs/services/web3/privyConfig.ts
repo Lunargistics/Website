@@ -39,7 +39,8 @@ export const privyConfig = {
       showWalletLoginFirst: false,
     },
     loginMethods: ["email", "wallet", "google", "github", "discord", "twitter"] as LoginMethod[],
-    walletConnectCloudProjectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID,
+    // Disable WalletConnect to prevent Reown popup
+    walletList: ["metamask", "coinbase_wallet", "embedded"],
     embeddedWallets: {
       createOnLogin: "users-without-wallets" as const,
       noPromptOnSignature: false,
