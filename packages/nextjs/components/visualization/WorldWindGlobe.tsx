@@ -111,17 +111,19 @@ export function WorldWindGlobe({
       }
     };
 
-    canvasRef.current.addEventListener("click", handlePick);
+    // Store the canvas element in a variable for cleanup
+    const canvas = canvasRef.current;
+    canvas.addEventListener("click", handlePick);
 
     setWwd(worldWindow);
 
     // Cleanup
     return () => {
-      if (canvasRef.current) {
-        canvasRef.current.removeEventListener("click", handlePick);
+      if (canvas) {
+        canvas.removeEventListener("click", handlePick);
       }
     };
-  }, [config]);
+  }, [config, onLocationPick, onSatelliteClick]);
 
   // Update satellites
   useEffect(() => {

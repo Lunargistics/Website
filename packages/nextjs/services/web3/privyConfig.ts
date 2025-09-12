@@ -1,5 +1,7 @@
 import { defineChain } from "viem";
 
+type LoginMethod = "email" | "line" | "wallet" | "apple" | "discord" | "github" | "google" | "instagram" | "linkedin" | "spotify" | "twitter" | "sms" | "tiktok" | "farcaster" | "telegram" | "passkey";
+
 // Define TEA Sepolia chain
 export const teaSepolia = defineChain({
   id: 10218,
@@ -33,13 +35,13 @@ export const privyConfig = {
     logo: "/logo.svg",
     appearance: {
       theme: "auto" as const,
-      accentColor: "#6366F1",
+      accentColor: "#6366F1" as `#${string}`,
       showWalletLoginFirst: false,
     },
-    loginMethods: ["email", "wallet", "google", "github", "discord", "twitter"],
+    loginMethods: ["email", "wallet", "google", "github", "discord", "twitter"] as LoginMethod[],
     walletConnectCloudProjectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID,
     embeddedWallets: {
-      createOnLogin: "users-without-wallets",
+      createOnLogin: "users-without-wallets" as const,
       noPromptOnSignature: false,
     },
     mfa: {

@@ -500,9 +500,10 @@ export default function WhitepaperPage() {
                 <h2 className="text-3xl font-bold text-white mb-6">9. Conclusion</h2>
                 <div className="prose prose-invert max-w-none">
                   <p className="text-gray-300 leading-relaxed">
-                    Lunargistics represents more than just a platform; it&apos;s a movement to democratize space and unlock
-                    the vast potential of the space economy for everyone. By combining blockchain technology with space
-                    industry expertise, we&apos;re creating the infrastructure needed for humanity&apos;s expansion beyond Earth.
+                    Lunargistics represents more than just a platform; it&apos;s a movement to democratize space and
+                    unlock the vast potential of the space economy for everyone. By combining blockchain technology with
+                    space industry expertise, we&apos;re creating the infrastructure needed for humanity&apos;s
+                    expansion beyond Earth.
                   </p>
 
                   <p className="text-gray-300 leading-relaxed mt-4">
