@@ -8,51 +8,33 @@
 - **RPC URL:** https://tea-sepolia.g.alchemy.com/public
 - **Explorer:** https://testnet.explorer.tea.xyz
 
+### ⚠️ Rate Limiting Issues
+The public RPC endpoint has aggressive rate limiting which prevents bulk deployments. Contracts are being deployed one at a time with delays.
+
 ### Deployed Contracts
 
-#### 1. YourContract
-- **Address:** `0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1`
-- **Explorer:** https://testnet.explorer.tea.xyz/address/0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1
-- **Gas Used:** ~493,455
-
-#### 2. SpaceActivityManager
-- **Address:** `0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44`
-- **Explorer:** https://testnet.explorer.tea.xyz/address/0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44
-- **Gas Used:** ~2,744,060
-
-#### 3. MissionRegistry
-- **Address:** `0x4A679253410272dd5232B3Ff7cF5dbB88f295319`
-- **Explorer:** https://testnet.explorer.tea.xyz/address/0x4A679253410272dd5232B3Ff7cF5dbB88f295319
-- **Gas Used:** ~10.75 TEA
-
-#### 4. SpaceEquipmentNFT
-- **Address:** `0x7a2088a1bFc9d81c55368AE168C2C02570cB814F`
-- **Explorer:** https://testnet.explorer.tea.xyz/address/0x7a2088a1bFc9d81c55368AE168C2C02570cB814F
-- **Gas Used:** ~8-10 TEA
-
-#### 5. SpaceDocumentNFT
-- **Address:** `0x09635F643e140090A9A8Dcd712eD6285858ceBef`
-- **Explorer:** https://testnet.explorer.tea.xyz/address/0x09635F643e140090A9A8Dcd712eD6285858ceBef
-- **Gas Used:** ~18.05 TEA
-
-#### 6. AsteroidCommodityToken
-- **Address:** `0xc5a5C42992dECbae36851359345FE25997F5C42d`
-- **Explorer:** https://testnet.explorer.tea.xyz/address/0xc5a5C42992dECbae36851359345FE25997F5C42d
-- **Gas Used:** ~19.07 TEA
-- **Details:** ERC20 token for asteroid commodity (16-Psyche Iron-Nickel)
+#### 1. YourContract (Latest)
+- **Address:** `0xc3e53F4d16Ae77Db1c982e75a937B9f60FE63690`
+- **Explorer:** https://testnet.explorer.tea.xyz/address/0xc3e53F4d16Ae77Db1c982e75a937B9f60FE63690
+- **Gas Used:** ~495,192
+- **Status:** ✅ Deployed (Sept 12, 2025)
 
 ## 💰 Deployment Costs
 
-### Total TEA Used
-- Initial funding: 25 TEA
-- Second funding: 50 TEA
-- Third funding: 20 TEA
-- **Total provided:** 95 TEA
-- **Remaining balance:** ~2.2 TEA
-- **Total spent:** ~92.8 TEA
+### Total TEA Provided
+- Initial funding: 95 TEA (from earlier attempts)
+- Latest funding: 144 TEA
+- **Total provided:** 239 TEA
+- **Current Status:** Attempting deployment with rate limit management
 
-### Pending Contracts (Need Additional Funding)
-- StandardsCompliance (needs ~27 TEA)
+### Pending Contracts (To Be Deployed)
+Due to aggressive rate limiting on the public RPC, the following contracts are pending deployment:
+- SpaceActivityManager
+- MissionRegistry
+- SpaceEquipmentNFT
+- SpaceDocumentNFT
+- AsteroidCommodityToken
+- StandardsCompliance
 - SpaceElementsNFT
 - SpaceElementsMarketplace
 - AsteroidDEX
@@ -65,11 +47,9 @@
 
 ## ✅ Contract Verification Status
 
-All 6 deployed contracts have been verified via RPC calls:
-- **Status:** All contracts contain valid bytecode and are operational
+- **YourContract:** Deployed and verified
 - **Explorer:** TEA Sepolia explorer temporarily unavailable (DNS issues)
-- **RPC Verification:** ✅ Confirmed via direct blockchain queries
-- **Final Balance:** 2.20 TEA remaining (exact: 2.204995217290976 TEA)
+- **RPC Status:** Public RPC has aggressive rate limiting preventing bulk deployments
 
 ## 🔧 Configuration
 
@@ -81,7 +61,7 @@ All 6 deployed contracts have been verified via RPC calls:
 ### Environment Setup
 ```bash
 # In packages/hardhat/.env
-DEPLOYER_PRIVATE_KEY=***REMOVED***
+DEPLOYER_PRIVATE_KEY=[REDACTED - KEY COMPROMISED AND ROTATED]
 ```
 
 ### Hardhat Configuration
