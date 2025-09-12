@@ -11,8 +11,8 @@ export default function TermsPage() {
             <section>
               <p className="text-sm text-gray-500 mb-6">Effective Date: {new Date().toLocaleDateString()}</p>
               <p className="mb-4">
-                Welcome to Lunargistics ("we," "our," or "us"). These Terms & Conditions ("Terms") govern your use of
-                our website, services, and asteroid commodity trading platform (collectively, the "Services"). By
+                Welcome to Lunargistics (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). These Terms & Conditions (&quot;Terms&quot;) govern your use of
+                our website, services, and asteroid commodity trading platform (collectively, the &quot;Services&quot;). By
                 accessing or using our Services, you agree to be bound by these Terms.
               </p>
             </section>
@@ -121,7 +121,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-2xl font-semibold text-gray-800 mb-4">10. Disclaimers</h2>
               <p className="mb-4">
-                THE SERVICES ARE PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR
+                THE SERVICES ARE PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR
                 IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
                 AND NON-INFRINGEMENT.
               </p>
@@ -146,7 +146,7 @@ export default function TermsPage() {
               <h2 className="text-2xl font-semibold text-gray-800 mb-4">12. Indemnification</h2>
               <p>
                 You agree to indemnify, defend, and hold harmless Lunargistics and its affiliates from any claims,
-                losses, damages, liabilities, and expenses (including attorneys' fees) arising from your use of the
+                losses, damages, liabilities, and expenses (including attorneys&apos; fees) arising from your use of the
                 Services or violation of these Terms.
               </p>
             </section>

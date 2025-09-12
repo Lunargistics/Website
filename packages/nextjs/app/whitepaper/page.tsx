@@ -487,7 +487,7 @@ export default function WhitepaperPage() {
                   <div className="bg-purple-900/20 rounded-lg p-6 mt-6">
                     <h3 className="text-lg font-semibold text-purple-400 mb-3">Key Partnerships</h3>
                     <p className="text-gray-300">
-                      We're working with leading organizations including launch providers, satellite manufacturers,
+                      We&apos;re working with leading organizations including launch providers, satellite manufacturers,
                       space agencies, research institutions, and blockchain infrastructure providers to build the future
                       of space commerce.
                     </p>
@@ -500,9 +500,9 @@ export default function WhitepaperPage() {
                 <h2 className="text-3xl font-bold text-white mb-6">9. Conclusion</h2>
                 <div className="prose prose-invert max-w-none">
                   <p className="text-gray-300 leading-relaxed">
-                    Lunargistics represents more than just a platform; it's a movement to democratize space and unlock
+                    Lunargistics represents more than just a platform; it&apos;s a movement to democratize space and unlock
                     the vast potential of the space economy for everyone. By combining blockchain technology with space
-                    industry expertise, we're creating the infrastructure needed for humanity's expansion beyond Earth.
+                    industry expertise, we&apos;re creating the infrastructure needed for humanity&apos;s expansion beyond Earth.
                   </p>
 
                   <p className="text-gray-300 leading-relaxed mt-4">
@@ -515,7 +515,7 @@ export default function WhitepaperPage() {
                   <div className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-lg p-6 mt-6">
                     <h3 className="text-xl font-semibold text-white mb-3">Join the Mission</h3>
                     <p className="text-gray-300">
-                      Whether you're a space enthusiast, blockchain developer, investor, or organization looking to
+                      Whether you&apos;re a space enthusiast, blockchain developer, investor, or organization looking to
                       leverage space technology, Lunargistics provides the platform to turn your space ambitions into
                       reality.
                     </p>

@@ -28,6 +28,8 @@
     "@ethereum-attestation-service/eas-sdk": "^1.5.0",
     "@heroicons/react": "~2.1.5",
     "@nasaworldwind/worldwind": "^0.11.0",
+    "@privy-io/react-auth": "^2.24.0",
+    "@privy-io/wagmi": "^1.0.6",
     "@rainbow-me/rainbowkit": "2.2.5",
     "@react-three/drei": "^10.7.5",
     "@react-three/fiber": "^9.3.0",

@@ -4,10 +4,11 @@ import React, { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
 import { hardhat } from "viem/chains";
 import { useAccount } from "wagmi";
-import { Bars3Icon, RocketLaunchIcon, UserCircleIcon, WalletIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, RocketLaunchIcon, WalletIcon } from "@heroicons/react/24/outline";
+import { PrivyAuthButton } from "~~/components/PrivyAuthButton";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
 
@@ -30,7 +31,7 @@ export const menuLinks: HeaderMenuLink[] = [
 ];
 
 export const HeaderMenuLinks = () => {
-  const { data: session } = useSession();
+  const { authenticated } = usePrivy();
   const pathname = usePathname();
 
   return (
@@ -39,7 +40,7 @@ export const HeaderMenuLinks = () => {
         .filter(({ href }) => {
           // Always show Home link; other links require authentication
           if (href === "/") return true;
-          return session;
+          return authenticated;
         })
         .map(({ label, href, icon }) => {
           const isActive = pathname === href;
@@ -66,7 +67,7 @@ export const HeaderMenuLinks = () => {
  * Site header
  */
 export const Header = () => {
-  const { data: session } = useSession();
+  const { authenticated } = usePrivy();
   const { isConnected } = useAccount();
   const { targetNetwork } = useTargetNetwork();
   const isLocalNetwork = targetNetwork.id === hardhat.id;
@@ -112,32 +113,11 @@ export const Header = () => {
         </ul>
       </div>
       <div className="navbar-end grow mr-4 flex items-center gap-2">
-        {/* Primary auth: NextAuth sign in */}
-        {!session ? (
-          <button onClick={() => signIn()} className="btn btn-primary btn-sm flex items-center gap-2">
-            <UserCircleIcon className="w-4 h-4" />
-            Sign In
-          </button>
-        ) : (
-          <div className="dropdown dropdown-end">
-            <label tabIndex={0} className="btn btn-ghost btn-sm rounded-btn flex items-center gap-2">
-              <UserCircleIcon className="w-5 h-5" />
-              <span className="hidden sm:inline">{session.user?.email?.split("@")[0]}</span>
-            </label>
-            <ul
-              tabIndex={0}
-              className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"
-            >
-              <li className="text-sm text-base-content/60 px-2 py-1">{session.user?.email}</li>
-              <li>
-                <a onClick={() => signOut()}>Sign Out</a>
-              </li>
-            </ul>
-          </div>
-        )}
+        {/* Privy Authentication */}
+        <PrivyAuthButton />
 
-        {/* Optional: Wallet connection - available but not required */}
-        {session && (
+        {/* Optional: RainbowKit wallet connection for additional wallets */}
+        {authenticated && (
           <>
             <div className="divider divider-horizontal mx-0 h-6"></div>
             <details className="dropdown dropdown-end">

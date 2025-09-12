@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { PrivyProvider } from "@privy-io/react-auth";
+// import { PrivyWagmiProvider } from "@privy-io/wagmi";
 import { RainbowKitProvider, darkTheme, lightTheme } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -13,6 +15,7 @@ import { Header } from "~~/components/Header";
 import { ErrorBoundaryProvider } from "~~/components/errors/ErrorBoundary";
 import { OfflineIndicator } from "~~/components/errors/FallbackComponents";
 import { initSentry } from "~~/lib/monitoring/sentry";
+import { privyConfig } from "~~/services/web3/privyConfig";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 
 const queryClient = new QueryClient({
@@ -43,12 +46,23 @@ if (typeof window !== "undefined") {
 export function ScaffoldEthProviders({ children }: { children: React.ReactNode }) {
   return (
     <ErrorBoundaryProvider>
-      <QueryClientProvider client={queryClient}>
-        <WagmiProvider config={wagmiConfig}>
-          <RainbowKitProviderWrapper>{children}</RainbowKitProviderWrapper>
-        </WagmiProvider>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
+      <PrivyProvider
+        appId={privyConfig.appId}
+        config={{
+          ...privyConfig.config,
+          appearance: {
+            ...privyConfig.config.appearance,
+            theme: "light",
+          },
+        }}
+      >
+        <QueryClientProvider client={queryClient}>
+          <WagmiProvider config={wagmiConfig}>
+            <RainbowKitProviderWrapper>{children}</RainbowKitProviderWrapper>
+          </WagmiProvider>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
+      </PrivyProvider>
     </ErrorBoundaryProvider>
   );
 }
