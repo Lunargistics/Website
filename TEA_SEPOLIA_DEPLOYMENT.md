@@ -1,5 +1,12 @@
 # TEA Sepolia Deployment Summary
 
+## 🚨 SECURITY INCIDENT - RESOLVED (Sept 12, 2025)
+- Private key was accidentally exposed in git history
+- All funds have been transferred to new secure wallet
+- Contract ownership has been transferred to new wallet
+- Git history has been cleaned using BFG
+- **NEW DEPLOYER:** `0x7B870fcD9de8a32a85758B30C0889743929C9DEB`
+
 ## 🚀 Successfully Deployed Contracts
 
 ### Network Details
@@ -54,9 +61,10 @@ Due to aggressive rate limiting on the public RPC, the following contracts are p
 ## 🔧 Configuration
 
 ### Deployer Account
-- **Address:** `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`
-- **Private Key:** (Stored in .env file)
-- **Current Balance:** 2.20 TEA
+- **Address:** `0x7B870fcD9de8a32a85758B30C0889743929C9DEB` (NEW SECURE WALLET - Updated Sept 12, 2025)
+- **Private Key:** (Stored in .env file - NEVER COMMIT)
+- **Current Balance:** ~50 TEA
+- **Old Compromised Address:** `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266` (DO NOT USE)
 
 ### Environment Setup
 ```bash

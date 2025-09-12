@@ -3954,6 +3954,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@openzeppelin/contracts-upgradeable@npm:^5.4.0":
+  version: 5.4.0
+  resolution: "@openzeppelin/contracts-upgradeable@npm:5.4.0"
+  peerDependencies:
+    "@openzeppelin/contracts": 5.4.0
+  checksum: fe4123bfcec50d806ea0b37dd5b4e7426096e1e88eee8c546cf64535bf9c9aee4c5b1d5c8b194fcb9050bf23001684fce439ff13816e567097998d56af360c8d
+  languageName: node
+  linkType: hard
+
 "@openzeppelin/contracts@npm:^5.4.0":
   version: 5.4.0
   resolution: "@openzeppelin/contracts@npm:5.4.0"
@@ -20259,6 +20268,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "se-2@workspace:."
   dependencies:
+    "@openzeppelin/contracts-upgradeable": ^5.4.0
     "@types/uuid": ^10.0.0
     husky: ~9.1.6
     lint-staged: ~13.2.2
