@@ -1,7 +1,6 @@
-import { wagmiConnectors } from "./wagmiConnectors";
 import { Chain, createClient, fallback, http } from "viem";
 import { hardhat, mainnet } from "viem/chains";
-import { createConfig, createStorage } from "wagmi";
+import { createConfig } from "wagmi";
 import scaffoldConfig, { DEFAULT_ALCHEMY_API_KEY, ScaffoldConfig } from "~~/scaffold.config";
 import { getAlchemyHttpUrl } from "~~/utils/scaffold-eth";
 
@@ -12,28 +11,16 @@ export const enabledChains = targetNetworks.find((network: Chain) => network.id 
   ? targetNetworks
   : ([...targetNetworks, mainnet] as const);
 
-// Custom storage to prevent auto-reconnect on page load
-const noopStorage = {
-  getItem: (_key: string) => null,
-  setItem: (_key: string, _value: string) => {},
-  removeItem: (_key: string) => {},
-};
-
 export const wagmiConfig = createConfig({
   chains: enabledChains,
-  connectors: wagmiConnectors,
+  connectors: [], // Privy handles all wallet connections
   ssr: true,
-  syncConnectedChain: false,
-  // Use noop storage to prevent auto-reconnect
-  storage: createStorage({
-    storage: typeof window !== "undefined" ? noopStorage : undefined,
-  }),
   client({ chain }) {
     let rpcFallbacks = [];
 
     // For TEA Sepolia, use the configured RPC endpoint
     if (chain.id === 10218) {
-      const teaRpcUrl = process.env.NEXT_PUBLIC_TEA_RPC_URL || "https://tea-testnet.rpc.thirdweb.com";
+      const teaRpcUrl = process.env.NEXT_PUBLIC_TEA_RPC_URL || "https://tea-sepolia.g.alchemy.com/public";
       rpcFallbacks = [
         http(teaRpcUrl, {
           timeout: 10000,

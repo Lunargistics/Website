@@ -30,7 +30,7 @@ export const teaSepolia = defineChain({
 });
 
 export const privyConfig = {
-  appId: process.env.NEXT_PUBLIC_PRIVY_APP_ID || "",
+  appId: process.env.NEXT_PUBLIC_PRIVY_APP_ID || "clcmiq2wd0bhgxh0f0j0qb8z8", // Default test app ID - replace with your own
   config: {
     logo: "/logo.svg",
     appearance: {

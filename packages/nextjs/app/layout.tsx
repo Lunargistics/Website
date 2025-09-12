@@ -1,8 +1,7 @@
-import "@rainbow-me/rainbowkit/styles.css";
-import { Toaster } from "react-hot-toast";
+// Removed RainbowKit styles - using Privy instead
+import { ScaffoldEthApp, ScaffoldEthProviders } from "~~/app/providers";
 import AuthProvider from "~~/components/AuthProvider";
 import { MobileBottomNav } from "~~/components/MobileBottomNav";
-import { ScaffoldEthAppWithProviders } from "~~/components/ScaffoldEthAppWithProviders";
 import { ThemeProvider } from "~~/components/ThemeProvider";
 import { UserActivityProvider } from "~~/contexts/UserActivityContext";
 import "~~/styles/globals.css";
@@ -13,7 +12,7 @@ export const metadata = getMetadata({
   description: "Monitor and manage space activities",
 });
 
-const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
+const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <html suppressHydrationWarning>
       <head>
@@ -30,30 +29,19 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
       <body>
         <AuthProvider>
           <ThemeProvider enableSystem>
-            <ScaffoldEthAppWithProviders>
-              <UserActivityProvider>
-                {children}
-                <MobileBottomNav />
-              </UserActivityProvider>
-            </ScaffoldEthAppWithProviders>
+            <ScaffoldEthProviders>
+              <ScaffoldEthApp>
+                <UserActivityProvider>
+                  {children}
+                  <MobileBottomNav />
+                </UserActivityProvider>
+              </ScaffoldEthApp>
+            </ScaffoldEthProviders>
           </ThemeProvider>
         </AuthProvider>
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            duration: 3000,
-            // Можно настроить стили для темной/светлой темы, если Toaster не подхватывает их автоматически
-            // For dark theme compatibility with DaisyUI, some explicit styling might be needed
-            // if default toasts don't look good on the dark background.
-            // Example:
-            // success: { iconTheme: { primary: '#00A9E0', secondary: '#F0F0F0'}},
-            // error: { iconTheme: { primary: '#FF8863', secondary: '#F0F0F0'}},
-            // style: { background: '#1A2B41', color: '#F0F0F0', border: '1px solid #263C5A' },
-          }}
-        />
       </body>
     </html>
   );
 };
 
-export default ScaffoldEthApp;
+export default RootLayout;
