@@ -1,6 +1,22 @@
-import { sepolia, hardhat } from "viem/chains";
+import { hardhat, sepolia } from "viem/chains";
 
-type LoginMethod = "email" | "line" | "wallet" | "apple" | "discord" | "github" | "google" | "instagram" | "linkedin" | "spotify" | "twitter" | "sms" | "tiktok" | "farcaster" | "telegram" | "passkey";
+type LoginMethod =
+  | "email"
+  | "line"
+  | "wallet"
+  | "apple"
+  | "discord"
+  | "github"
+  | "google"
+  | "instagram"
+  | "linkedin"
+  | "spotify"
+  | "twitter"
+  | "sms"
+  | "tiktok"
+  | "farcaster"
+  | "telegram"
+  | "passkey";
 
 // TEA Sepolia temporarily disabled - RPC endpoints not working
 // Will re-enable when proper RPC is available
@@ -34,8 +50,11 @@ export const teaSepolia = defineChain({
 });
 */
 
+const isLocal = process.env.NEXT_PUBLIC_NETWORK === "localhost" || process.env.NODE_ENV !== "production";
+
 export const privyConfig = {
-  appId: process.env.NEXT_PUBLIC_PRIVY_APP_ID || "clcmiq2wd0bhgxh0f0j0qb8z8", // Default test app ID - replace with your own
+  // Require a real Privy App ID in prod; otherwise leave blank to skip init
+  appId: process.env.NEXT_PUBLIC_PRIVY_APP_ID || (isLocal ? "" : ""),
   config: {
     logo: "/logo.svg",
     appearance: {
@@ -43,9 +62,10 @@ export const privyConfig = {
       accentColor: "#6366F1" as `#${string}`,
       showWalletLoginFirst: false,
     },
-    loginMethods: ["email", "wallet", "google", "github", "discord", "twitter"] as LoginMethod[],
+    // Enable only the providers you have configured
+    loginMethods: ["email", "wallet", "google", "github", "linkedin", "telegram"] as LoginMethod[],
     // Disable WalletConnect to prevent Reown popup
-    // Temporarily disable Coinbase Smart Wallet due to unsupported chains error
+    // Disable Coinbase Smart Wallet entirely
     walletList: ["metamask", "embedded"],
     embeddedWallets: {
       createOnLogin: "users-without-wallets" as const,
@@ -54,11 +74,7 @@ export const privyConfig = {
     mfa: {
       noPromptOnMfaRequired: false,
     },
-  defaultChain: process.env.NEXT_PUBLIC_NETWORK === "localhost" ? hardhat : sepolia,
-  supportedChains: [
-    sepolia,
-    hardhat,
-    // teaSepolia, // Re-enable when RPC is working
-  ],
+    defaultChain: isLocal ? hardhat : sepolia,
+    supportedChains: isLocal ? [hardhat, sepolia] : [sepolia],
   },
 };
