@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
 
 // Dynamically import components to avoid SSR issues
 const SmartWalletCreator = dynamic(
@@ -45,7 +45,7 @@ const MissionPlanningDashboard = dynamic(
 );
 const ImplementSpace = dynamic(() => import("../implement-space/page"), { ssr: false });
 const CreditsManager = dynamic(() => import("~~/components/CreditsManager"), { ssr: false });
-const CreditNotifications = dynamic(() => import("~~/components/CreditNotifications"), { ssr: false });
+// const CreditNotifications = dynamic(() => import("~~/components/CreditNotifications"), { ssr: false });
 const SpaceEngineerDashboard = dynamic(
   () => import("~~/components/dashboard/SpaceEngineerDashboard").then(mod => mod.default),
   {
@@ -97,19 +97,23 @@ const menuCategories = [
 ];
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const { ready, authenticated, login } = usePrivy();
+  const _router = useRouter();
   const [activeTab, setActiveTab] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [expandedCategories, setExpandedCategories] = useState<string[]>(["Main"]);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
+    if (!ready) return;
+    if (!authenticated) {
+      // Open Privy login and stay on the page
+      try {
+        login();
+      } catch {}
     }
-  }, [status, router]);
+  }, [ready, authenticated, login]);
 
-  if (status === "loading") {
+  if (!ready) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
@@ -117,7 +121,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (!session) return null;
+  if (!authenticated) return null;
 
   const toggleCategory = (category: string) => {
     setExpandedCategories(prev => (prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]));
@@ -279,7 +283,7 @@ export default function DashboardPage() {
         <div className="p-4 border-t border-gray-700">
           <div className={`${!sidebarOpen && "hidden"} mb-2`}>
             <p className="text-xs text-gray-400">Logged in as:</p>
-            <p className="text-sm font-semibold text-white truncate">{session.user.email}</p>
+            <p className="text-sm font-semibold text-white truncate">Privy user</p>
           </div>
         </div>
       </aside>
@@ -287,8 +291,8 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="flex-1 p-8 overflow-auto bg-gray-900">{renderContent()}</main>
 
-      {/* Credit Notifications */}
-      <CreditNotifications userId={session?.user?.id} />
+      {/* Credit Notifications - optional until user IDs are wired through Privy */}
+      {/* <CreditNotifications userId={privyUserId} /> */}
     </div>
   );
 }
