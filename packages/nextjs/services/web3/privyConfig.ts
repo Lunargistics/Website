@@ -53,8 +53,8 @@ export const teaSepolia = defineChain({
 const isLocal = process.env.NEXT_PUBLIC_NETWORK === "localhost" || process.env.NODE_ENV !== "production";
 
 export const privyConfig = {
-  // Require a real Privy App ID in prod; otherwise leave blank to skip init
-  appId: process.env.NEXT_PUBLIC_PRIVY_APP_ID || (isLocal ? "" : ""),
+  // Default to your app ID; can be overridden by env var
+  appId: process.env.NEXT_PUBLIC_PRIVY_APP_ID || "cmfgwngbo00blkz0bh38m5ffc",
   config: {
     logo: "/logo.svg",
     appearance: {
