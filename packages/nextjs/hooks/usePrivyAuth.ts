@@ -21,9 +21,10 @@ export const usePrivyAuth = () => {
   } = usePrivy();
 
   const { wallets } = useWallets();
+  // Ensure we read the wagmi account before using `address`
+  const { address, isConnected } = useAccount();
   // const setActiveWallet = useSetActiveWallet();
   const activeWallet = wallets.find(w => w.address === address);
-  const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
 
   const [isLoading, setIsLoading] = useState(false);
