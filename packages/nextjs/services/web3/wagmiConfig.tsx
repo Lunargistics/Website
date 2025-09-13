@@ -18,7 +18,8 @@ export const wagmiConfig = createConfig({
   client({ chain }) {
     let rpcFallbacks = [];
 
-    // For TEA Sepolia, use the configured RPC endpoint (CORS-friendly)
+    // TEA Sepolia temporarily disabled - uncomment when RPC is working
+    /*
     if (chain.id === 10218) {
       const teaRpcUrl = process.env.NEXT_PUBLIC_TEA_RPC_URL || "https://tea-testnet.rpc.thirdweb.com";
       rpcFallbacks = [
@@ -27,6 +28,8 @@ export const wagmiConfig = createConfig({
         }),
       ];
     } else {
+    */
+    {
       const rpcOverrideUrl = (scaffoldConfig.rpcOverrides as ScaffoldConfig["rpcOverrides"])?.[chain.id];
       if (rpcOverrideUrl) {
         rpcFallbacks = [http(rpcOverrideUrl)];

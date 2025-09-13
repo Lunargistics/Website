@@ -1,6 +1,7 @@
 import React from "react";
 import { AsteroidDataFetcher } from "../../../components/AsteroidAPI";
 import { render } from "../../../tests/utils/test-utils";
+// @ts-ignore - TypeScript issue with test library exports
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 
 const mockWriteContractAsync = jest.fn();

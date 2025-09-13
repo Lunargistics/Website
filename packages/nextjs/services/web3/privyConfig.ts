@@ -1,8 +1,11 @@
 import { defineChain } from "viem";
+import { sepolia, hardhat } from "viem/chains";
 
 type LoginMethod = "email" | "line" | "wallet" | "apple" | "discord" | "github" | "google" | "instagram" | "linkedin" | "spotify" | "twitter" | "sms" | "tiktok" | "farcaster" | "telegram" | "passkey";
 
-// Define TEA Sepolia chain with CORS-friendly RPC
+// TEA Sepolia temporarily disabled - RPC endpoints not working
+// Will re-enable when proper RPC is available
+/*
 const teaRpcUrl = process.env.NEXT_PUBLIC_TEA_RPC_URL || "https://tea-testnet.rpc.thirdweb.com";
 
 export const teaSepolia = defineChain({
@@ -30,6 +33,7 @@ export const teaSepolia = defineChain({
   },
   testnet: true,
 });
+*/
 
 export const privyConfig = {
   appId: process.env.NEXT_PUBLIC_PRIVY_APP_ID || "clcmiq2wd0bhgxh0f0j0qb8z8", // Default test app ID - replace with your own
@@ -50,10 +54,11 @@ export const privyConfig = {
     mfa: {
       noPromptOnMfaRequired: false,
     },
-    defaultChain: teaSepolia,
-    supportedChains: [
-      teaSepolia,
-      // Add other chains as needed
-    ],
+  defaultChain: process.env.NEXT_PUBLIC_NETWORK === "localhost" ? hardhat : sepolia,
+  supportedChains: [
+    sepolia,
+    hardhat,
+    // teaSepolia, // Re-enable when RPC is working
+  ],
   },
 };
