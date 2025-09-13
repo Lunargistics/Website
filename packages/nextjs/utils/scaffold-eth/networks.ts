@@ -47,10 +47,7 @@ export const NETWORKS_EXTRA_DATA: Record<string, ChainAttributes> = {
   [chains.hardhat.id]: {
     color: "#b8af0c",
   },
-  // TEA Sepolia
-  [10218]: {
-    color: ["#2e7d32", "#66bb6a"],
-  },
+  // TEA Sepolia temporarily disabled
   [chains.mainnet.id]: {
     color: "#ff8b9e",
   },

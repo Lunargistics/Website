@@ -43,21 +43,28 @@ if (typeof window !== "undefined") {
 export function ScaffoldEthProviders({ children }: { children: React.ReactNode }) {
   return (
     <ErrorBoundaryProvider>
-      <PrivyProvider
-        appId={privyConfig.appId}
-        config={{
-          ...privyConfig.config,
-          appearance: {
-            ...privyConfig.config.appearance,
-            theme: "light",
-          },
-        }}
-      >
+      {privyConfig.appId ? (
+        <PrivyProvider
+          appId={privyConfig.appId}
+          config={{
+            ...privyConfig.config,
+            appearance: {
+              ...privyConfig.config.appearance,
+              theme: "light",
+            },
+          }}
+        >
         <QueryClientProvider client={queryClient}>
           <WagmiProvider config={wagmiConfig}>{children}</WagmiProvider>
           <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
-      </PrivyProvider>
+        </PrivyProvider>
+      ) : (
+        <QueryClientProvider client={queryClient}>
+          <WagmiProvider config={wagmiConfig}>{children}</WagmiProvider>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
+      )}
     </ErrorBoundaryProvider>
   );
 }

@@ -1,4 +1,3 @@
-import { defineChain } from "viem";
 import { sepolia, hardhat } from "viem/chains";
 
 type LoginMethod = "email" | "line" | "wallet" | "apple" | "discord" | "github" | "google" | "instagram" | "linkedin" | "spotify" | "twitter" | "sms" | "tiktok" | "farcaster" | "telegram" | "passkey";
@@ -46,7 +45,8 @@ export const privyConfig = {
     },
     loginMethods: ["email", "wallet", "google", "github", "discord", "twitter"] as LoginMethod[],
     // Disable WalletConnect to prevent Reown popup
-    walletList: ["metamask", "coinbase_wallet", "embedded"],
+    // Temporarily disable Coinbase Smart Wallet due to unsupported chains error
+    walletList: ["metamask", "embedded"],
     embeddedWallets: {
       createOnLogin: "users-without-wallets" as const,
       noPromptOnSignature: false,

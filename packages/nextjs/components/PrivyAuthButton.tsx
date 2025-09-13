@@ -15,7 +15,16 @@ export const PrivyAuthButton = () => {
 
   if (!authenticated) {
     return (
-      <button onClick={login} className="btn btn-sm btn-primary gap-2">
+      <button
+        onClick={() => {
+          try {
+            login();
+          } catch (e) {
+            console.error("Privy login unavailable", e);
+          }
+        }}
+        className="btn btn-sm btn-primary gap-2"
+      >
         <UserCircleIcon className="h-4 w-4" />
         Sign In
       </button>

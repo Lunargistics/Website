@@ -12,11 +12,15 @@ export default function LoginPage() {
     // If already authenticated, redirect to dashboard
     if (authenticated) {
       router.push("/dashboard");
-    } else {
-      // Open Privy login modal
-      login();
-      // Redirect to home page (Privy modal will handle auth)
-      router.push("/");
+      return;
+    }
+    // Guard: avoid calling login if Privy isn't initialized (invalid app ID)
+    try {
+      if (typeof login === "function") {
+        login();
+      }
+    } catch (e) {
+      console.error("Privy login failed or not initialized", e);
     }
   }, [authenticated, login, router]);
 
