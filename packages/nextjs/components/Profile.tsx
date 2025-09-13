@@ -339,46 +339,7 @@ export default function Profile() {
           )}
         </div>
 
-        {/* Fund Wallet Section */}
-        <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
-          <h3 className="text-xl font-semibold text-white mb-4">Fund Your Wallet</h3>
-          <p className="text-gray-300 mb-3">
-            To use onchain features, add funds to your wallet. You can send ETH to your embedded wallet address or
-            connect an external wallet like MetaMask. Learn more in Privy’s docs (
-            <a className="underline" href="https://docs.privy.io/wallets/overview" target="_blank" rel="noreferrer">
-              wallets overview
-            </a>
-            ,
-            <a
-              className="underline ml-1"
-              href="https://docs.privy.io/transaction-management/overview"
-              target="_blank"
-              rel="noreferrer"
-            >
-              transaction management
-            </a>
-            ).
-          </p>
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <WalletIcon className="w-4 h-4 text-gray-400" />
-              <code className="text-sm text-gray-200">
-                {address ? `${address.slice(0, 10)}...${address.slice(-8)}` : "Connect a wallet to see address"}
-              </code>
-              {address && (
-                <button
-                  className="ml-2 px-3 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded"
-                  onClick={() => navigator.clipboard.writeText(address)}
-                >
-                  Copy
-                </button>
-              )}
-            </div>
-            <div className="text-sm text-gray-400">
-              - Use an exchange faucet on Sepolia or bridge funds to your wallet.
-            </div>
-          </div>
-        </div>
+        {/* Gas is sponsored; wallet funding UI intentionally omitted */}
 
         {/* Following/Followers Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
