@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
+import { usePrivy } from "@privy-io/react-auth";
 import toast from "react-hot-toast";
 import { useAccount, useSignMessage } from "wagmi";
 import {
@@ -36,7 +36,7 @@ export default function Profile() {
   const [avatar, setAvatar] = useState("");
 
   const { address, isConnected } = useAccount();
-  const { openConnectModal } = useConnectModal();
+  const { login, authenticated } = usePrivy();
   const { signMessageAsync } = useSignMessage();
 
   useEffect(() => {
@@ -87,8 +87,8 @@ export default function Profile() {
   };
 
   const handleConnectWallet = async () => {
-    if (!isConnected) {
-      openConnectModal?.();
+    if (!authenticated || !isConnected) {
+      await login();
       return;
     }
 

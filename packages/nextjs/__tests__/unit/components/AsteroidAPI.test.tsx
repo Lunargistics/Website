@@ -1,7 +1,6 @@
 import React from "react";
 import { AsteroidDataFetcher } from "../../../components/AsteroidAPI";
-import { render } from "../../../tests/utils/test-utils";
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { render, fireEvent, screen, waitFor } from "../../../tests/utils/test-utils";
 
 const mockWriteContractAsync = jest.fn();
 
