@@ -50,27 +50,33 @@ export const DocumentMinter = () => {
 
       const documents = await Promise.all(
         tokenIds.map(async tokenId => {
-          const doc = (await publicClient.readContract({
-            address: documentNFTAddress,
-            abi: DOCUMENT_NFT_ABI,
-            functionName: "getDocument",
-            args: [tokenId],
-          })) as any;
+          try {
+            const doc = (await publicClient.readContract({
+              address: documentNFTAddress,
+              abi: DOCUMENT_NFT_ABI,
+              functionName: "getDocument",
+              args: [tokenId],
+            })) as any;
 
-          return {
-            tokenId: tokenId.toString(),
-            metadataURI: doc.metadataURI,
-            admin: doc.admin,
-            documentType: doc.documentType,
-            timestamp: doc.timestamp.toString(),
-            active: doc.active,
-          };
+            return {
+              tokenId: tokenId.toString(),
+              metadataURI: doc.metadataURI,
+              admin: doc.admin,
+              documentType: doc.documentType,
+              timestamp: doc.timestamp.toString(),
+              active: doc.active,
+            };
+          } catch (innerErr) {
+            console.error("Error reading document details:", innerErr);
+            return null as any;
+          }
         }),
       );
 
-      setUserDocuments(documents);
+      setUserDocuments(documents.filter(Boolean));
     } catch (error) {
       console.error("Error loading documents:", error);
+      setUserDocuments([]);
     } finally {
       setIsLoading(false);
     }

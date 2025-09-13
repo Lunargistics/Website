@@ -113,6 +113,20 @@ export default function DashboardPage() {
     }
   }, [ready, authenticated, login]);
 
+  // Persist active tab across re-renders/navigation to avoid resets
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("dashboard.activeTab");
+      if (saved) setActiveTab(saved);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("dashboard.activeTab", activeTab);
+    } catch {}
+  }, [activeTab]);
+
   if (!ready) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -289,7 +303,7 @@ export default function DashboardPage() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-8 overflow-auto bg-gray-900">{renderContent()}</main>
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto bg-gray-900">{renderContent()}</main>
 
       {/* Credit Notifications - optional until user IDs are wired through Privy */}
       {/* <CreditNotifications userId={privyUserId} /> */}

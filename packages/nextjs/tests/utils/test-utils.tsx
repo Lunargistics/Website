@@ -1,6 +1,5 @@
 import React, { ReactElement } from "react";
 import { wagmiConfig } from "../../services/web3/wagmiConfig";
-import { PrivyProvider } from "@privy-io/react-auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RenderOptions, render } from "@testing-library/react";
 import { WagmiProvider } from "wagmi";
@@ -22,18 +21,9 @@ const AllTheProviders = ({ children }: AllTheProvidersProps) => {
   const queryClient = createTestQueryClient();
 
   return (
-    <PrivyProvider
-      appId="test-app-id"
-      config={{
-        appearance: {
-          theme: "light",
-        },
-      }}
-    >
-      <WagmiProvider config={wagmiConfig}>
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-      </WagmiProvider>
-    </PrivyProvider>
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </WagmiProvider>
   );
 };
 

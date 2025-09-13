@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import { usePrivy } from "@privy-io/react-auth";
 import { FileCode, Globe, MapPin, Package, Rocket, Satellite, Save, Send, Sparkles, Users } from "lucide-react";
-import { useSession } from "next-auth/react";
 import ICDProcessor from "~~/components/ICDProcessor";
 import SpaceEquipmentSuppliers from "~~/components/SpaceEquipmentSuppliers";
 import SpaceVisualization, { OrbitalMechanics } from "~~/components/SpaceVisualization";
@@ -47,8 +47,8 @@ interface Mission {
 }
 
 export default function ImplementSpacePage() {
-  const { status } = useSession();
-  const router = useRouter();
+  const { ready, authenticated, login } = usePrivy();
+  const _router = useRouter();
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [mission, setMission] = useState<Mission | null>(null);
@@ -88,10 +88,13 @@ export default function ImplementSpacePage() {
   ];
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
+    if (!ready) return;
+    if (!authenticated) {
+      try {
+        login();
+      } catch {}
     }
-  }, [status, router]);
+  }, [ready, authenticated, login]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -178,7 +181,7 @@ Include specific numerical values and orbital mechanics calculations where relev
       setMessages(prev => [...prev, { role: "assistant", content: data.response }]);
 
       // Save the generated output to database
-      if (status === "authenticated") {
+      if (authenticated) {
         try {
           await fetch("/api/outputs", {
             method: "POST",
@@ -318,7 +321,7 @@ Include specific numerical values and orbital mechanics calculations where relev
     }
   };
 
-  if (status === "loading") {
+  if (!ready) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
@@ -326,9 +329,11 @@ Include specific numerical values and orbital mechanics calculations where relev
     );
   }
 
+  if (!authenticated) return null;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 flex items-center justify-center gap-3">
@@ -341,7 +346,7 @@ Include specific numerical values and orbital mechanics calculations where relev
         </div>
 
         {/* Main Interface */}
-        <div className="grid lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+        <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 max-w-7xl mx-auto">
           {/* Left Panel - Mission Steps */}
           <div className="lg:col-span-1">
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-purple-500/20">
@@ -473,7 +478,7 @@ Include specific numerical values and orbital mechanics calculations where relev
 
           {/* Center/Right Panel - Chat Interface */}
           <div className="lg:col-span-2">
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-purple-500/20 flex flex-col h-[600px]">
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-purple-500/20 flex flex-col h-[70vh] sm:h-[600px]">
               {/* Messages Area */}
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {messages.length === 0 ? (

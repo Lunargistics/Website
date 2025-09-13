@@ -1,18 +1,25 @@
-import nextJest from "next/jest";
 import type { Config } from "jest";
-
-const createJestConfig = nextJest({
-  dir: "./",
-});
 
 const config: Config = {
   testEnvironment: "jest-environment-jsdom",
+  setupFiles: ["<rootDir>/jest.polyfills.ts"],
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
   testMatch: ["**/__tests__/**/*.{js,jsx,ts,tsx}", "**/*.{spec,test}.{js,jsx,ts,tsx}"],
   moduleNameMapper: {
     "^~~/(.*)$": "<rootDir>/$1",
     "^@/(.*)$": "<rootDir>/$1",
     "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+  },
+  transform: {
+    "^.+\\.(t|j)sx?$": [
+      "ts-jest",
+      {
+        tsconfig: {
+          jsx: "react-jsx",
+        },
+        useESM: false,
+      },
+    ],
   },
   collectCoverageFrom: [
     "app/**/*.{js,jsx,ts,tsx}",
@@ -40,13 +47,6 @@ const config: Config = {
   transformIgnorePatterns: [
     "node_modules/(?!(wagmi|@wagmi|@rainbow-me|viem|@tanstack|@ethereum-attestation-service|@tokenbound)/)",
   ],
-  globals: {
-    "ts-jest": {
-      tsconfig: {
-        jsx: "react-jsx",
-      },
-    },
-  },
+  globals: {},
 };
-
-export default createJestConfig(config);
+export default config;

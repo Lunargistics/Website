@@ -52,6 +52,9 @@ export default function Profile() {
         setName(data.user.name || "");
         setBio(data.user.bio || "");
         setAvatar(data.user.avatar || "");
+      } else if (response.status === 401) {
+        setProfile(null);
+        toast("Please sign in to view your profile", { icon: "🔒" });
       }
     } catch (error) {
       console.error("Failed to fetch profile:", error);
@@ -153,7 +156,7 @@ export default function Profile() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-gray-900 text-gray-100 p-6">
-        <div className="text-center py-8">Profile not found</div>
+        <div className="text-center py-8">Profile not found or not authenticated</div>
       </div>
     );
   }

@@ -1,9 +1,16 @@
 import { server } from "./tests/mocks/server";
 import "@testing-library/jest-dom";
 import { TextDecoder, TextEncoder } from "util";
+import "whatwg-fetch";
 
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder as any;
+(global as any).TextEncoder = TextEncoder as any;
+(global as any).TextDecoder = TextDecoder as any;
+
+// JSDOM doesn't implement scrollIntoView
+Object.defineProperty((global as any).Element.prototype, "scrollIntoView", {
+  writable: true,
+  value: jest.fn(),
+});
 
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" });
@@ -44,7 +51,7 @@ Object.defineProperty(window, "scrollTo", {
   value: jest.fn(),
 });
 
-global.IntersectionObserver = jest.fn().mockImplementation(() => ({
+(global as any).IntersectionObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),

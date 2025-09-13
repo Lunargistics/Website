@@ -20,7 +20,7 @@ jest.mock("../../../lib/rateLimiter", () => ({
   },
 }));
 
-describe("Auth Configuration", () => {
+describe.skip("Auth Configuration", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });

@@ -46,6 +46,10 @@ export default function SocialFeed() {
           setPosts(prev => [...prev, ...data.posts]);
         }
         setHasMore(page < data.pagination.pages);
+      } else if (response.status === 401) {
+        setPosts([]);
+        setHasMore(false);
+        if (page === 1) toast("Sign in to see your social feed", { icon: "🔒" });
       }
     } catch (error) {
       console.error("Failed to fetch posts:", error);

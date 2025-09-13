@@ -16,6 +16,11 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <html suppressHydrationWarning>
       <head>
+        {/* Basic CSP header injection for GTM allowance (script-src-elem) */}
+        <meta
+          httpEquiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; connect-src 'self' https:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:; frame-src https:;"
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `

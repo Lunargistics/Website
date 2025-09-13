@@ -62,8 +62,10 @@ export const privyConfig = {
       accentColor: "#6366F1" as `#${string}`,
       showWalletLoginFirst: false,
     },
-    // Enable only the providers you have configured
-    loginMethods: ["email", "wallet", "google", "github", "linkedin", "telegram"] as LoginMethod[],
+    // Enable only the providers configured and approved
+    // Disable Google OAuth to avoid "Login with Google not allowed" errors
+    // Disable Telegram to avoid CORS issues from oauth.telegram.org
+    loginMethods: ["email", "wallet", "github", "linkedin"] as LoginMethod[],
     // Disable WalletConnect to prevent Reown popup
     // Disable Coinbase Smart Wallet entirely
     walletList: ["metamask", "embedded"],
