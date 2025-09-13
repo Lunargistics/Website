@@ -2,7 +2,9 @@ import { defineChain } from "viem";
 
 type LoginMethod = "email" | "line" | "wallet" | "apple" | "discord" | "github" | "google" | "instagram" | "linkedin" | "spotify" | "twitter" | "sms" | "tiktok" | "farcaster" | "telegram" | "passkey";
 
-// Define TEA Sepolia chain
+// Define TEA Sepolia chain with CORS-friendly RPC
+const teaRpcUrl = process.env.NEXT_PUBLIC_TEA_RPC_URL || "https://tea-testnet.rpc.thirdweb.com";
+
 export const teaSepolia = defineChain({
   id: 10218,
   name: "TEA Sepolia",
@@ -14,10 +16,10 @@ export const teaSepolia = defineChain({
   },
   rpcUrls: {
     default: {
-      http: ["https://tea-sepolia.g.alchemy.com/public"],
+      http: [teaRpcUrl],
     },
     public: {
-      http: ["https://tea-sepolia.g.alchemy.com/public"],
+      http: [teaRpcUrl],
     },
   },
   blockExplorers: {

@@ -18,9 +18,9 @@ export const wagmiConfig = createConfig({
   client({ chain }) {
     let rpcFallbacks = [];
 
-    // For TEA Sepolia, use the configured RPC endpoint
+    // For TEA Sepolia, use the configured RPC endpoint (CORS-friendly)
     if (chain.id === 10218) {
-      const teaRpcUrl = process.env.NEXT_PUBLIC_TEA_RPC_URL || "https://tea-sepolia.g.alchemy.com/public";
+      const teaRpcUrl = process.env.NEXT_PUBLIC_TEA_RPC_URL || "https://tea-testnet.rpc.thirdweb.com";
       rpcFallbacks = [
         http(teaRpcUrl, {
           timeout: 10000,
