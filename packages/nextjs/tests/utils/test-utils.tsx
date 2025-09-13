@@ -2,7 +2,7 @@ import React, { ReactElement } from "react";
 import { wagmiConfig } from "../../services/web3/wagmiConfig";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { RenderOptions, render, fireEvent, screen, waitFor } from "@testing-library/react";
+import { RenderOptions, render } from "@testing-library/react";
 import { WagmiProvider } from "wagmi";
 
 const createTestQueryClient = () =>
@@ -44,5 +44,3 @@ const customRender = (ui: ReactElement, options?: Omit<RenderOptions, "wrapper">
 export * from "@testing-library/react";
 // Override the render function with our custom one
 export { customRender as render };
-// Explicitly re-export commonly used functions
-export { fireEvent, screen, waitFor };
