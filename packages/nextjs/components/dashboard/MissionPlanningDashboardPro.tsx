@@ -19,7 +19,20 @@ import { useAccount } from "wagmi";
 import orekitService, { OrekitOrbitData, OrekitPropagationResult } from "~~/services/orekit/orekitService";
 
 // Dynamic import for WorldWind component
-const WorldWindGlobe = dynamic(() => import("~~/components/visualization/WorldWindGlobe"), { ssr: false });
+const WorldWindGlobe = dynamic(() => import("~~/components/visualization/WorldWindGlobe"), {
+  ssr: false,
+}) as React.ComponentType<{
+  satellites?: any[];
+  groundStations?: any[];
+  trajectories?: any[];
+  config?: {
+    enableAtmosphere?: boolean;
+    enableStarField?: boolean;
+    terrainExaggeration?: number;
+  };
+  onSatelliteClick?: (satellite: any) => void;
+  onLocationPick?: (lat: number, lon: number, alt: number) => void;
+}>;
 
 enum MissionType {
   EARTH_OBSERVATION = "EARTH_OBSERVATION",
@@ -369,7 +382,7 @@ export function MissionPlanningDashboardPro() {
                     terrainExaggeration: 2,
                   }}
                   onSatelliteClick={setSelectedSatellite}
-                  onLocationPick={(lat, lon, alt) => {
+                  onLocationPick={(lat: number, lon: number, alt: number) => {
                     console.log("Location picked:", { lat, lon, alt });
                   }}
                 />
