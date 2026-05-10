@@ -3415,15 +3415,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/curves@npm:1.8.2, @noble/curves@npm:~1.8.1":
-  version: 1.8.2
-  resolution: "@noble/curves@npm:1.8.2"
-  dependencies:
-    "@noble/hashes": 1.7.2
-  checksum: f26fd77b4d78fe26dba2754cbcaddee5da23a711a0c9778ee57764eb0084282d97659d9b0a760718f42493adf68665dbffdca9d6213950f03f079d09c465c096
-  languageName: node
-  linkType: hard
-
 "@noble/curves@npm:1.9.1":
   version: 1.9.1
   resolution: "@noble/curves@npm:1.9.1"
@@ -3448,6 +3439,15 @@ __metadata:
   dependencies:
     "@noble/hashes": 1.8.0
   checksum: 65acad44ac6944ab96471109087d6cfcbcaa251faad6295961be9a5ace220634f4b7c74a96d1ee2274ad3880ea953d8e8259893ed8c906c831ef29f5c04ec9cc
+  languageName: node
+  linkType: hard
+
+"@noble/curves@npm:~1.8.1":
+  version: 1.8.2
+  resolution: "@noble/curves@npm:1.8.2"
+  dependencies:
+    "@noble/hashes": 1.7.2
+  checksum: f26fd77b4d78fe26dba2754cbcaddee5da23a711a0c9778ee57764eb0084282d97659d9b0a760718f42493adf68665dbffdca9d6213950f03f079d09c465c096
   languageName: node
   linkType: hard
 
@@ -5242,6 +5242,7 @@ __metadata:
     "@types/supertest": ^6.0.3
     "@types/swagger-ui-react": ^5
     "@types/three": ^0
+    "@types/whatwg-fetch": ^0.0.33
     "@typescript-eslint/eslint-plugin": ^7.16.0
     "@uniswap/sdk-core": ~5.8.2
     "@uniswap/v2-sdk": ~4.6.1
@@ -5296,13 +5297,15 @@ __metadata:
     ts-node: ^10.9.2
     type-fest: ~4.26.1
     typescript: ~5.8.2
+    undici: ^6.25.0
     usehooks-ts: ~3.1.0
     vercel: ~39.1.3
-    viem: 2.30.0
+    viem: 2.30.6
     wagmi: 2.15.4
     web-streams-polyfill: ^4.2.0
     whatwg-fetch: ^3.6.20
     worldwind-react-globe: ^1.2.0
+    zod: ^4.4.3
     zustand: ~5.0.0
   languageName: unknown
   linkType: soft
@@ -7347,6 +7350,22 @@ __metadata:
   version: 0.5.23
   resolution: "@types/webxr@npm:0.5.23"
   checksum: 9f180da9a900336f438d946addef8736b3a1bbce955ca7c6186834031b2a1eca0a8035d950c621bb95dcb8f16e60e41c4ca70af255bc639aedb87322733f8604
+  languageName: node
+  linkType: hard
+
+"@types/whatwg-fetch@npm:^0.0.33":
+  version: 0.0.33
+  resolution: "@types/whatwg-fetch@npm:0.0.33"
+  dependencies:
+    "@types/whatwg-streams": "*"
+  checksum: 59dae90e3e22cd783c61ad57f107e36de7d4c30bde7276d3c83a3bc2f4b219c533f5f54bf8a310734ff3a71aed81d48b91c7efaf375cefdedf8879f12dd867df
+  languageName: node
+  linkType: hard
+
+"@types/whatwg-streams@npm:*":
+  version: 0.0.7
+  resolution: "@types/whatwg-streams@npm:0.0.7"
+  checksum: 324b535e0d45fc2e47c5b5132f3d10249db893f702e27c2496c927e85055ab95cd267205d01a6dfb638f1c3c46eb76a8ccace2fc7bbd099a7e4009549933f0c7
   languageName: node
   linkType: hard
 
@@ -21562,6 +21581,7 @@ __metadata:
     "@types/uuid": ^10.0.0
     husky: ~9.1.6
     lint-staged: ~13.2.2
+    zod: ^4.4.3
   languageName: unknown
   linkType: soft
 
@@ -24109,6 +24129,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"undici@npm:^6.25.0":
+  version: 6.25.0
+  resolution: "undici@npm:6.25.0"
+  checksum: aed372e1b0f16045696c878e46b03e97dfd1c6dd650fb2355d48adeecc730c990ab15ab2de5a5855dbfe04c9af403a3d4f702234d3e25e72c475d1fb3a72fcfe
+  languageName: node
+  linkType: hard
+
 "unique-filename@npm:^4.0.0":
   version: 4.0.0
   resolution: "unique-filename@npm:4.0.0"
@@ -24597,24 +24624,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:2.30.0":
-  version: 2.30.0
-  resolution: "viem@npm:2.30.0"
+"viem@npm:2.30.6":
+  version: 2.30.6
+  resolution: "viem@npm:2.30.6"
   dependencies:
-    "@noble/curves": 1.8.2
-    "@noble/hashes": 1.7.2
-    "@scure/bip32": 1.6.2
-    "@scure/bip39": 1.5.4
+    "@noble/curves": 1.9.1
+    "@noble/hashes": 1.8.0
+    "@scure/bip32": 1.7.0
+    "@scure/bip39": 1.6.0
     abitype: 1.0.8
     isows: 1.0.7
-    ox: 0.6.9
-    ws: 8.18.1
+    ox: 0.7.1
+    ws: 8.18.2
   peerDependencies:
     typescript: ">=5.0.4"
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 9aa5dc37e20ed5f018bbeebbc2cfebd844ec06e97a90a4ea6e6604fda1ea930f791c5dab71ce2acb177c0a560be4a9b6d8aa530fa6d15627accf5a661a41f14b
+  checksum: 8732bd05bd730cfe4bf34c0e740967c27f073482fadf42eccc539ee65a50a7ac9a3b1c5efaf590cdcb868eb8d09dc96def04dc776825e845eb18ba83ac2930d5
   languageName: node
   linkType: hard
 
@@ -25141,21 +25168,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:8.18.1":
-  version: 8.18.1
-  resolution: "ws@npm:8.18.1"
-  peerDependencies:
-    bufferutil: ^4.0.1
-    utf-8-validate: ">=5.0.2"
-  peerDependenciesMeta:
-    bufferutil:
-      optional: true
-    utf-8-validate:
-      optional: true
-  checksum: 4658357185d891bc45cc2d42a84f9e192d047e8476fb5cba25b604f7d75ca87ca0dd54cd0b2cc49aeee57c79045a741cb7d0b14501953ac60c790cd105c42f23
-  languageName: node
-  linkType: hard
-
 "ws@npm:8.18.2":
   version: 8.18.2
   resolution: "ws@npm:8.18.2"
@@ -25491,6 +25503,13 @@ __metadata:
   version: 3.25.76
   resolution: "zod@npm:3.25.76"
   checksum: c9a403a62b329188a5f6bd24d5d935d2bba345f7ab8151d1baa1505b5da9f227fb139354b043711490c798e91f3df75991395e40142e6510a4b16409f302b849
+  languageName: node
+  linkType: hard
+
+"zod@npm:^4.4.3":
+  version: 4.4.3
+  resolution: "zod@npm:4.4.3"
+  checksum: bf236fdee7a5a5ec645eef5bfea3aad34e7df912931c2a23bc17e5b59882482751da42392916529da52ff9bc70f584797a5d496f1fb81f2d1a4c90fdd3922d2a
   languageName: node
   linkType: hard
 

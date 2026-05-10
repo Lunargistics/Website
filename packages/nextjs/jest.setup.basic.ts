@@ -1,23 +1,21 @@
-import { server } from "./tests/mocks/server";
 import "@testing-library/jest-dom";
-import "whatwg-fetch";
+import { TextDecoder, TextEncoder } from "util";
+
+// Polyfills for Node.js environment
+(global as any).TextEncoder = TextEncoder as any;
+(global as any).TextDecoder = TextDecoder as any;
+
+// Add Response and Request polyfills for Node.js compatibility
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { Response, Request, Headers } = require("undici");
+(global as any).Response = Response;
+(global as any).Request = Request;
+(global as any).Headers = Headers;
 
 // JSDOM doesn't implement scrollIntoView
 Object.defineProperty((global as any).Element.prototype, "scrollIntoView", {
   writable: true,
   value: jest.fn(),
-});
-
-beforeAll(() => {
-  server.listen({ onUnhandledRequest: "error" });
-});
-
-afterEach(() => {
-  server.resetHandlers();
-});
-
-afterAll(() => {
-  server.close();
 });
 
 process.env.NEXT_PUBLIC_IPFS_BUILD = "false";

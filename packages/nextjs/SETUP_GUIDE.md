@@ -3,11 +3,13 @@
 ## 🔴 IMPORTANT: Current Issues & Solutions
 
 ### Issue 1: TEA Sepolia RPC Not Working
+
 The TEA Sepolia network RPC endpoints are currently not functional. We've temporarily switched to Ethereum Sepolia testnet.
 
 **Status:** TEA Sepolia has been disabled until a working RPC endpoint is available.
 
 ### Issue 2: Invalid Privy App ID
+
 The default Privy app ID is for testing only and won't work in production.
 
 ## ✅ Quick Fix Instructions
@@ -17,18 +19,15 @@ The default Privy app ID is for testing only and won't work in production.
 1. **Create a Privy Account:**
    - Go to [https://dashboard.privy.io](https://dashboard.privy.io)
    - Sign up for a free account
-   
 2. **Create a New App:**
    - Click "Create App"
    - Name it "Lunargistics" or similar
    - Select "Web" as platform
-   
 3. **Configure Your App:**
    - In the dashboard, go to "Settings"
    - Add your domains:
      - Development: `http://localhost:3000`
      - Production: `https://www.lunargistics.com`
-   
 4. **Get Your App ID:**
    - Copy the App ID from the dashboard
    - It should look like: `clxxxxxxxxxxxxxxxxxxxxx`
@@ -68,6 +67,7 @@ NEXT_PUBLIC_NETWORK=sepolia  # Using Sepolia until TEA is fixed
 ## 🎯 Testing Your Setup
 
 ### Local Testing:
+
 ```bash
 cd packages/nextjs
 yarn dev
@@ -76,6 +76,7 @@ yarn dev
 Visit http://localhost:3000 and click "Sign In" - you should see the Privy login modal.
 
 ### Production Testing:
+
 After deploying to Vercel with the environment variables set, the "Sign In" button should work on your live site.
 
 ## 🔧 Optional: Re-enable TEA Sepolia (When RPC is Fixed)
@@ -83,6 +84,7 @@ After deploying to Vercel with the environment variables set, the "Sign In" butt
 When a working TEA Sepolia RPC becomes available:
 
 1. Update `.env.local`:
+
 ```bash
 NEXT_PUBLIC_NETWORK=teaSepolia
 NEXT_PUBLIC_TEA_RPC_URL=<working_rpc_url_here>

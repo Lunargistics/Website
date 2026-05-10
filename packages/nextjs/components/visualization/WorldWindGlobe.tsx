@@ -2,6 +2,8 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import Script from "next/script";
+import ErrorBoundary from "../ErrorBoundary";
 
 // WorldWind configuration interface
 interface WorldWindConfig {
@@ -33,9 +35,10 @@ export function WorldWindGlobe({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [wwd, setWwd] = useState<any>(null);
   const [layers, setLayers] = useState<Map<string, any>>(new Map());
+  const [isWorldWindLoaded, setIsWorldWindLoaded] = useState(false);
 
   useEffect(() => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !isWorldWindLoaded) return;
 
     // Initialize WorldWind
     const WorldWind = (window as any).WorldWind;
@@ -52,7 +55,10 @@ export function WorldWindGlobe({
       // Base imagery layers
       { layer: new WorldWind.BMNGLayer(), enabled: true },
       { layer: new WorldWind.BMNGLandsatLayer(), enabled: false },
-      { layer: new WorldWind.BingAerialWithLabelsLayer(null), enabled: false },
+      // Only add Bing if key is configured to avoid runtime errors
+      ...(WorldWind.BingAerialWithLabelsLayer && WorldWind.BingMapsKey
+        ? [{ layer: new WorldWind.BingAerialWithLabelsLayer(null), enabled: false }]
+        : []),
 
       // Reference layers
       { layer: new WorldWind.CompassLayer(), enabled: config.enableCompass !== false },
@@ -123,7 +129,7 @@ export function WorldWindGlobe({
         canvas.removeEventListener("click", handlePick);
       }
     };
-  }, [config, onLocationPick, onSatelliteClick]);
+  }, [config, onLocationPick, onSatelliteClick, isWorldWindLoaded]);
 
   // Update satellites
   useEffect(() => {
@@ -231,75 +237,128 @@ export function WorldWindGlobe({
   }, [groundStations, wwd, layers]);
 
   return (
-    <div className="relative w-full h-full">
-      <canvas ref={canvasRef} className="w-full h-full" style={{ cursor: "grab" }} />
+    <ErrorBoundary
+      name="WorldWindGlobe"
+      level="component"
+      fallback={
+        <div className="relative w-full h-full bg-gray-900 rounded-lg flex items-center justify-center">
+          <div className="text-center text-white">
+            <div className="text-red-400 mb-4">🌍</div>
+            <p className="mb-2">Globe component failed to load</p>
+            <p className="text-sm text-gray-400">Check WebGL support or refresh the page</p>
+          </div>
+        </div>
+      }
+      onError={(error, errorInfo) => {
+        console.error("WorldWindGlobe Error:", {
+          error,
+          errorInfo,
+          satellites: satellites.length,
+          groundStations: groundStations.length,
+          trajectories: trajectories.length,
+          hasWebGL: typeof window !== "undefined" && !!window.WebGLRenderingContext,
+          worldWindLoaded: isWorldWindLoaded,
+        });
+      }}
+    >
+      <div className="relative w-full h-full">
+        <Script
+          src="https://files.worldwind.arc.nasa.gov/artifactory/web/0.9.0/worldwind.min.js"
+          strategy="afterInteractive"
+          onLoad={() => setIsWorldWindLoaded(true)}
+          onError={e => console.error("Failed to load WorldWind:", e)}
+        />
+        <canvas ref={canvasRef} className="w-full h-full" style={{ cursor: "grab" }} />
 
-      {/* Layer Controls */}
-      <div className="absolute top-4 right-4 bg-gray-800/90 backdrop-blur-sm rounded-lg p-4 space-y-2">
-        <h3 className="text-white font-semibold mb-2">Layers</h3>
-        <label className="flex items-center text-white">
-          <input
-            type="checkbox"
-            defaultChecked
-            onChange={e => {
-              if (layers.has("satellites")) {
-                layers.get("satellites").enabled = e.target.checked;
-                wwd?.redraw();
-              }
-            }}
-            className="mr-2"
-          />
-          Satellites ({satellites.length})
-        </label>
-        <label className="flex items-center text-white">
-          <input
-            type="checkbox"
-            defaultChecked
-            onChange={e => {
-              if (layers.has("trajectories")) {
-                layers.get("trajectories").enabled = e.target.checked;
-                wwd?.redraw();
-              }
-            }}
-            className="mr-2"
-          />
-          Trajectories ({trajectories.length})
-        </label>
-        <label className="flex items-center text-white">
-          <input
-            type="checkbox"
-            defaultChecked
-            onChange={e => {
-              if (layers.has("groundStations")) {
-                layers.get("groundStations").enabled = e.target.checked;
-                wwd?.redraw();
-              }
-            }}
-            className="mr-2"
-          />
-          Ground Stations ({groundStations.length})
-        </label>
-      </div>
+        {/* Layer Controls */}
+        <div className="absolute top-4 right-4 bg-gray-800/90 backdrop-blur-sm rounded-lg p-4 space-y-2">
+          <h3 className="text-white font-semibold mb-2">Layers</h3>
+          <label className="flex items-center text-white">
+            <input
+              type="checkbox"
+              defaultChecked
+              onChange={e => {
+                if (layers.has("satellites")) {
+                  layers.get("satellites").enabled = e.target.checked;
+                  wwd?.redraw();
+                }
+              }}
+              className="mr-2"
+            />
+            Satellites ({satellites.length})
+          </label>
+          <label className="flex items-center text-white">
+            <input
+              type="checkbox"
+              defaultChecked
+              onChange={e => {
+                if (layers.has("trajectories")) {
+                  layers.get("trajectories").enabled = e.target.checked;
+                  wwd?.redraw();
+                }
+              }}
+              className="mr-2"
+            />
+            Trajectories ({trajectories.length})
+          </label>
+          <label className="flex items-center text-white">
+            <input
+              type="checkbox"
+              defaultChecked
+              onChange={e => {
+                if (layers.has("groundStations")) {
+                  layers.get("groundStations").enabled = e.target.checked;
+                  wwd?.redraw();
+                }
+              }}
+              className="mr-2"
+            />
+            Ground Stations ({groundStations.length})
+          </label>
+        </div>
 
-      {/* View Controls */}
-      <div className="absolute bottom-4 left-4 bg-gray-800/90 backdrop-blur-sm rounded-lg p-2">
-        <button
-          onClick={() => {
-            if (wwd) {
-              wwd.navigator.lookAtLocation.latitude = 0;
-              wwd.navigator.lookAtLocation.longitude = 0;
-              wwd.navigator.range = 20000000;
-              wwd.redraw();
-            }
-          }}
-          className="text-white px-3 py-1 bg-blue-600 rounded hover:bg-blue-700 transition"
-        >
-          Reset View
-        </button>
+        {/* View Controls */}
+        <div className="absolute bottom-4 left-4 bg-gray-800/90 backdrop-blur-sm rounded-lg p-2">
+          <button
+            onClick={() => {
+              if (wwd) {
+                wwd.navigator.lookAtLocation.latitude = 0;
+                wwd.navigator.lookAtLocation.longitude = 0;
+                wwd.navigator.range = 20000000;
+                wwd.redraw();
+              }
+            }}
+            className="text-white px-3 py-1 bg-blue-600 rounded hover:bg-blue-700 transition"
+          >
+            Reset View
+          </button>
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }
 
 // Export as dynamic component for Next.js SSR compatibility
-export default dynamic(() => Promise.resolve(WorldWindGlobe), { ssr: false });
+export default dynamic(
+  () => {
+    // Ensure WorldWind is loaded before rendering component
+    return new Promise(resolve => {
+      const checkWorldWind = () => {
+        if (typeof window !== "undefined" && (window as any).WorldWind) {
+          resolve({ default: WorldWindGlobe });
+        } else {
+          setTimeout(checkWorldWind, 100);
+        }
+      };
+      checkWorldWind();
+    });
+  },
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center min-h-[400px] bg-gray-900">
+        <div className="text-white">Loading 3D Globe...</div>
+      </div>
+    ),
+  },
+);

@@ -1,524 +1,618 @@
+/**
+ * Orekit Orbital Mechanics API
+ * Professional orbital calculations with rate limiting and input validation
+ */
 import { NextRequest, NextResponse } from "next/server";
+import { withAuth } from "~~/lib/creditMiddleware";
+import { InputSanitizer, withRateLimit } from "~~/lib/rate-limit";
+import {
+  GroundStationSchema,
+  LaunchWindowRequestSchema,
+  ManeuverRequestSchema,
+  OrbitDataSchema,
+  SolarPowerRequestSchema, // TLESchema, // Future use for TLE validation
+  validateRequest,
+} from "~~/lib/validation";
+import OrekitService from "~~/services/orekit/orekitService";
 
-// import orekitService from "~~/services/orekit/orekitService"; // Will be used when Orekit server is deployed
-
-// Professional Orekit Integration API
-// High-fidelity orbital mechanics with Java-based Orekit backend
-
-interface OrbitalElements {
-  semiMajorAxis: number; // km
-  eccentricity: number;
-  inclination: number; // degrees
-  raan: number; // Right Ascension of Ascending Node - degrees
-  argumentOfPerigee: number; // degrees
-  trueAnomaly: number; // degrees
-  period: number; // minutes
-  apogee: number; // km
-  perigee: number; // km
-}
-
-interface PropagationResult {
-  position: { x: number; y: number; z: number }; // km
-  velocity: { x: number; y: number; z: number }; // km/s
-  latitude: number; // degrees
-  longitude: number; // degrees
-  altitude: number; // km
-  timestamp: string;
-}
-
-// function getPropagationData(data: any) {
-//   // Implementation would go here
-//   return NextResponse.json({ error: "Not implemented" }, { status: 501 });
-// }
-
+// POST /api/orekit - Orbital mechanics calculations
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { action, data } = body;
+  return withRateLimit(request, "orbital", async () => {
+    return withAuth(request, async _userId => {
+      try {
+        const rawBody = await request.json();
+        const body = InputSanitizer.sanitizeObject(rawBody);
 
-    switch (action) {
-      case "parseTLE":
-        return parseTLE(data);
+        if (!body.action) {
+          return NextResponse.json(
+            {
+              error: "Action is required",
+              code: "MISSING_ACTION",
+              availableActions: [
+                "propagateOrbit",
+                "analyzeOrbit",
+                "tleToKeplerian",
+                "calculateGroundPasses",
+                "calculateManeuver",
+                "calculateLaunchWindow",
+                "predictSolarPower",
+                "calculateStationKeeping",
+              ],
+            },
+            { status: 400 },
+          );
+        }
 
-      case "propagate":
-        return propagateOrbit(data);
+        const action = InputSanitizer.sanitizeString(body.action, 50);
 
-      case "calculateTransfer":
-        return calculateHohmannTransfer(data);
+        switch (action) {
+          case "propagateOrbit": {
+            if (!body.orbit) {
+              return NextResponse.json(
+                {
+                  error: "Orbit data is required",
+                },
+                { status: 400 },
+              );
+            }
 
-      case "groundTrack":
-        return calculateGroundTrack(data);
+            const validation = validateRequest(OrbitDataSchema, body.orbit);
+            if (!validation.success) {
+              return NextResponse.json(
+                {
+                  error: "Invalid orbit data",
+                  details: validation.error,
+                },
+                { status: 400 },
+              );
+            }
 
-      case "visibility":
-        return calculateVisibilityWindows(data);
+            const targetTime = body.targetTime ? new Date(body.targetTime) : new Date(Date.now() + 3600000);
+            if (!targetTime || isNaN(targetTime.getTime())) {
+              return NextResponse.json(
+                {
+                  error: "Invalid target time",
+                },
+                { status: 400 },
+              );
+            }
 
-      case "deltaV":
-        return calculateDeltaV(data);
+            const options = body.options ? InputSanitizer.sanitizeObject(body.options) : {};
 
-      case "launchWindow":
-        return calculateLaunchWindow(data);
+            const result = await OrekitService.propagateOrbit(validation.data, targetTime, options);
 
-      default:
-        return NextResponse.json({ error: "Invalid action" }, { status: 400 });
-    }
-  } catch (error) {
-    console.error("Orekit API Error:", error);
-    return NextResponse.json({ error: "Orbital calculation failed" }, { status: 500 });
-  }
-}
+            return NextResponse.json({
+              action: "propagateOrbit",
+              result,
+              metadata: {
+                targetTime: targetTime.toISOString(),
+                options,
+                calculatedAt: new Date().toISOString(),
+              },
+              success: true,
+            });
+          }
 
-// Parse Two-Line Element set to orbital elements
-function parseTLE(data: any) {
-  const { line2 } = data;
+          case "analyzeOrbit": {
+            if (!body.orbit) {
+              return NextResponse.json(
+                {
+                  error: "Orbit data is required",
+                },
+                { status: 400 },
+              );
+            }
 
-  // Simplified TLE parsing (in production, use proper TLE parser)
-  // Extract key values from TLE format
-  const inclination = parseFloat(line2.substring(8, 16));
-  const raan = parseFloat(line2.substring(17, 25));
-  const eccentricity = parseFloat("0." + line2.substring(26, 33));
-  const argPerigee = parseFloat(line2.substring(34, 42));
-  const meanAnomaly = parseFloat(line2.substring(43, 51));
-  const meanMotion = parseFloat(line2.substring(52, 63)); // revs per day
+            const validation = validateRequest(OrbitDataSchema, body.orbit);
+            if (!validation.success) {
+              return NextResponse.json(
+                {
+                  error: "Invalid orbit data",
+                  details: validation.error,
+                },
+                { status: 400 },
+              );
+            }
 
-  // Calculate semi-major axis from mean motion
-  const mu = 398600.4418; // Earth's gravitational parameter (km³/s²)
-  const n = (meanMotion * 2 * Math.PI) / 86400; // Convert to rad/s
-  const semiMajorAxis = Math.pow(mu / (n * n), 1 / 3);
+            const result = await OrekitService.analyzeOrbit(validation.data);
 
-  // Calculate apogee and perigee
-  const earthRadius = 6371; // km
-  const apogee = semiMajorAxis * (1 + eccentricity) - earthRadius;
-  const perigee = semiMajorAxis * (1 - eccentricity) - earthRadius;
-  const period = 86400 / meanMotion / 60; // minutes
+            return NextResponse.json({
+              action: "analyzeOrbit",
+              result,
+              metadata: {
+                calculatedAt: new Date().toISOString(),
+                orbitType: classifyOrbit(result),
+              },
+              success: true,
+            });
+          }
 
-  const orbitalElements: OrbitalElements = {
-    semiMajorAxis,
-    eccentricity,
-    inclination,
-    raan,
-    argumentOfPerigee: argPerigee,
-    trueAnomaly: meanAnomaly, // Simplified - should convert from mean to true
-    period,
-    apogee,
-    perigee,
-  };
+          case "tleToKeplerian": {
+            if (!body.tle || !body.tle.line1 || !body.tle.line2) {
+              return NextResponse.json(
+                {
+                  error: "TLE lines are required",
+                  expected: {
+                    tle: {
+                      line1: "69-character TLE line 1",
+                      line2: "69-character TLE line 2",
+                    },
+                  },
+                },
+                { status: 400 },
+              );
+            }
 
-  return NextResponse.json({
-    orbitalElements,
-    summary: {
-      altitude: `${perigee.toFixed(1)} x ${apogee.toFixed(1)} km`,
-      inclination: `${inclination.toFixed(2)}°`,
-      period: `${period.toFixed(1)} minutes`,
-      orbitType: getOrbitType(apogee, perigee, inclination),
-    },
-  });
-}
+            try {
+              const line1 = InputSanitizer.sanitizeString(body.tle.line1, 69);
+              const line2 = InputSanitizer.sanitizeString(body.tle.line2, 69);
 
-// Propagate orbit to future time
-function propagateOrbit(data: any) {
-  const { orbitalElements, timeMinutes = 0 } = data;
+              // Validate TLE format
+              if (line1.length !== 69 || line2.length !== 69) {
+                return NextResponse.json(
+                  {
+                    error: "TLE lines must be exactly 69 characters",
+                    received: {
+                      line1Length: line1.length,
+                      line2Length: line2.length,
+                    },
+                  },
+                  { status: 400 },
+                );
+              }
 
-  // Simplified propagation (Kepler's equation)
-  const mu = 398600.4418;
-  const a = orbitalElements.semiMajorAxis;
-  const e = orbitalElements.eccentricity;
-  const i = (orbitalElements.inclination * Math.PI) / 180;
-  const omega = (orbitalElements.raan * Math.PI) / 180;
-  const w = (orbitalElements.argumentOfPerigee * Math.PI) / 180;
+              if (!line1.startsWith("1 ") || !line2.startsWith("2 ")) {
+                return NextResponse.json(
+                  {
+                    error: "Invalid TLE format - lines must start with '1 ' and '2 '",
+                  },
+                  { status: 400 },
+                );
+              }
 
-  // Mean motion
-  const n = Math.sqrt(mu / Math.pow(a, 3));
+              const result = await OrekitService.tleToKeplerian(line1, line2);
 
-  // Propagate mean anomaly
-  const M = (orbitalElements.trueAnomaly + n * timeMinutes * 60) % (2 * Math.PI);
+              return NextResponse.json({
+                action: "tleToKeplerian",
+                result,
+                metadata: {
+                  satNumber: line1.substring(2, 7).trim(),
+                  classification: line1.substring(7, 8),
+                  epochYear: line1.substring(18, 20),
+                  epochDay: line1.substring(20, 32),
+                  calculatedAt: new Date().toISOString(),
+                },
+                success: true,
+              });
+            } catch (error) {
+              return NextResponse.json(
+                {
+                  error: "TLE parsing failed",
+                  details: error instanceof Error ? error.message : "Invalid TLE format",
+                },
+                { status: 400 },
+              );
+            }
+          }
 
-  // Solve Kepler's equation (simplified)
-  let E = M;
-  for (let iter = 0; iter < 10; iter++) {
-    E = M + e * Math.sin(E);
-  }
+          case "calculateGroundPasses": {
+            if (!body.orbit || !body.groundStation) {
+              return NextResponse.json(
+                {
+                  error: "Orbit and ground station data are required",
+                },
+                { status: 400 },
+              );
+            }
 
-  // True anomaly
-  const v = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
+            const orbitValidation = validateRequest(OrbitDataSchema, body.orbit);
+            if (!orbitValidation.success) {
+              return NextResponse.json(
+                {
+                  error: "Invalid orbit data",
+                  details: orbitValidation.error,
+                },
+                { status: 400 },
+              );
+            }
 
-  // Position in orbital frame
-  const r = a * (1 - e * Math.cos(E));
-  const x_orbital = r * Math.cos(v);
-  // const y_orbital = r * Math.sin(v); // Will be used in full implementation
+            const stationValidation = validateRequest(GroundStationSchema, body.groundStation);
+            if (!stationValidation.success) {
+              return NextResponse.json(
+                {
+                  error: "Invalid ground station data",
+                  details: stationValidation.error,
+                },
+                { status: 400 },
+              );
+            }
 
-  // Convert to Earth-Centered Inertial (ECI) coordinates
-  const cos_omega = Math.cos(omega);
-  const sin_omega = Math.sin(omega);
-  const cos_i = Math.cos(i);
-  const sin_i = Math.sin(i);
-  const cos_w = Math.cos(w + v);
-  const sin_w = Math.sin(w + v);
+            const startTime = body.startTime ? new Date(body.startTime) : new Date();
+            const endTime = body.endTime ? new Date(body.endTime) : new Date(startTime.getTime() + 86400000);
 
-  const position = {
-    x: x_orbital * (cos_omega * cos_w - sin_omega * sin_w * cos_i),
-    y: x_orbital * (sin_omega * cos_w + cos_omega * sin_w * cos_i),
-    z: x_orbital * (sin_w * sin_i),
-  };
+            if (!startTime || !endTime || isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+              return NextResponse.json(
+                {
+                  error: "Invalid start or end time",
+                },
+                { status: 400 },
+              );
+            }
 
-  // Calculate velocity (simplified)
-  const v_mag = Math.sqrt(mu * (2 / r - 1 / a));
-  const velocity = {
-    x: -v_mag * Math.sin(v),
-    y: v_mag * (e + Math.cos(v)),
-    z: 0,
-  };
+            if (startTime >= endTime) {
+              return NextResponse.json(
+                {
+                  error: "Start time must be before end time",
+                },
+                { status: 400 },
+              );
+            }
 
-  // Convert to geographic coordinates
-  const earthRotation = (Date.now() / 1000 + timeMinutes * 60) * 0.00417807; // Earth rotation rate
-  const longitude = (Math.atan2(position.y, position.x) * 180) / Math.PI - earthRotation;
-  const latitude = (Math.asin(position.z / r) * 180) / Math.PI;
-  const altitude = r - 6371;
+            // Limit calculation window to prevent excessive computation
+            const maxDuration = 7 * 24 * 60 * 60 * 1000; // 7 days
+            if (endTime.getTime() - startTime.getTime() > maxDuration) {
+              return NextResponse.json(
+                {
+                  error: "Time range too large - maximum 7 days allowed",
+                },
+                { status: 400 },
+              );
+            }
 
-  const result: PropagationResult = {
-    position,
-    velocity,
-    latitude,
-    longitude: (((longitude % 360) + 360) % 360) - 180, // Normalize to -180 to 180
-    altitude,
-    timestamp: new Date(Date.now() + timeMinutes * 60000).toISOString(),
-  };
+            const result = await OrekitService.calculateGroundPasses(
+              orbitValidation.data,
+              stationValidation.data,
+              startTime,
+              endTime,
+            );
 
-  return NextResponse.json({ propagation: result });
-}
+            return NextResponse.json({
+              action: "calculateGroundPasses",
+              result,
+              metadata: {
+                groundStation: stationValidation.data,
+                timeRange: {
+                  start: startTime.toISOString(),
+                  end: endTime.toISOString(),
+                  durationHours: (endTime.getTime() - startTime.getTime()) / 3600000,
+                },
+                calculatedAt: new Date().toISOString(),
+              },
+              success: true,
+            });
+          }
 
-// Calculate Hohmann transfer orbit
-function calculateHohmannTransfer(data: any) {
-  const { fromAltitude, toAltitude } = data;
+          case "calculateManeuver": {
+            if (!body.currentOrbit || !body.targetOrbit || !body.maneuverType) {
+              return NextResponse.json(
+                {
+                  error: "Current orbit, target orbit, and maneuver type are required",
+                },
+                { status: 400 },
+              );
+            }
 
-  const mu = 398600.4418;
-  const earthRadius = 6371;
+            const validation = validateRequest(ManeuverRequestSchema, {
+              currentOrbit: body.currentOrbit,
+              targetOrbit: body.targetOrbit,
+              maneuverType: body.maneuverType,
+            });
 
-  const r1 = earthRadius + fromAltitude;
-  const r2 = earthRadius + toAltitude;
+            if (!validation.success) {
+              return NextResponse.json(
+                {
+                  error: "Invalid maneuver data",
+                  details: validation.error,
+                },
+                { status: 400 },
+              );
+            }
 
-  // Hohmann transfer calculations
-  const a_transfer = (r1 + r2) / 2;
+            // For now, only HOHMANN transfers are implemented
+            const supportedTypes = ["HOHMANN", "BIELLIPTICAL", "PLANE_CHANGE", "COMBINED"];
+            const maneuverType = supportedTypes.includes(validation.data.maneuverType)
+              ? (validation.data.maneuverType as "HOHMANN" | "BIELLIPTICAL" | "PLANE_CHANGE" | "COMBINED")
+              : "HOHMANN";
 
-  // Delta-V requirements
-  const v1 = Math.sqrt(mu / r1);
-  const v_transfer_periapsis = Math.sqrt(mu * (2 / r1 - 1 / a_transfer));
-  const v_transfer_apoapsis = Math.sqrt(mu * (2 / r2 - 1 / a_transfer));
-  const v2 = Math.sqrt(mu / r2);
+            const result = await OrekitService.calculateManeuver(
+              validation.data.currentOrbit,
+              validation.data.targetOrbit,
+              maneuverType,
+            );
 
-  const deltaV1 = Math.abs(v_transfer_periapsis - v1);
-  const deltaV2 = Math.abs(v2 - v_transfer_apoapsis);
-  const totalDeltaV = deltaV1 + deltaV2;
+            // Calculate fuel requirements if spacecraft mass provided
+            const spacecraftMass = body.spacecraftMass
+              ? InputSanitizer.sanitizeNumber(body.spacecraftMass, 1, 100000)
+              : null;
+            const specificImpulse = body.specificImpulse
+              ? InputSanitizer.sanitizeNumber(body.specificImpulse, 100, 500)
+              : 300;
 
-  // Transfer time
-  const transferTime = (Math.PI * Math.sqrt(Math.pow(a_transfer, 3) / mu)) / 60; // minutes
+            let fuelRequirements = null;
+            if (spacecraftMass) {
+              const g0 = 9.80665;
+              const massRatio = Math.exp(result.deltaV / ((specificImpulse * g0) / 1000));
+              const propellantMass = spacecraftMass * (massRatio - 1);
 
-  return NextResponse.json({
-    transfer: {
-      deltaV1: deltaV1.toFixed(3),
-      deltaV2: deltaV2.toFixed(3),
-      totalDeltaV: totalDeltaV.toFixed(3),
-      transferTime: transferTime.toFixed(1),
-      transferOrbit: {
-        periapsis: fromAltitude,
-        apoapsis: toAltitude,
-        semiMajorAxis: a_transfer - earthRadius,
-      },
-    },
-    units: {
-      deltaV: "km/s",
-      time: "minutes",
-      altitude: "km",
-    },
-  });
-}
+              fuelRequirements = {
+                propellantMass: Math.round(propellantMass * 100) / 100,
+                massRatio: Math.round(massRatio * 1000) / 1000,
+                finalMass: Math.round((spacecraftMass - propellantMass) * 100) / 100,
+              };
+            }
 
-// Calculate ground track
-async function calculateGroundTrack(data: any) {
-  const { orbitalElements, duration = 90 } = data; // duration in minutes
+            return NextResponse.json({
+              action: "calculateManeuver",
+              result,
+              fuelRequirements,
+              metadata: {
+                spacecraftMass,
+                specificImpulse,
+                maneuverType: validation.data.maneuverType,
+                calculatedAt: new Date().toISOString(),
+              },
+              success: true,
+            });
+          }
 
-  const points = [];
-  const timeStep = 1; // minute
+          case "calculateLaunchWindow": {
+            if (!body.launchSite || !body.targetOrbit) {
+              return NextResponse.json(
+                {
+                  error: "Launch site and target orbit are required",
+                },
+                { status: 400 },
+              );
+            }
 
-  for (let t = 0; t <= duration; t += timeStep) {
-    const result = propagateOrbit({ orbitalElements, timeMinutes: t });
-    const resultData = result instanceof NextResponse ? await result.json() : result;
-    const prop = resultData.propagation;
+            // Set default search times if not provided
+            const searchStart = body.searchStart ? new Date(body.searchStart) : new Date();
+            const searchEnd = body.searchEnd
+              ? new Date(body.searchEnd)
+              : new Date(searchStart.getTime() + 30 * 86400000); // 30 days
 
-    points.push({
-      time: t,
-      latitude: prop.latitude,
-      longitude: prop.longitude,
-      altitude: prop.altitude,
+            const validation = validateRequest(LaunchWindowRequestSchema, {
+              launchSite: body.launchSite,
+              targetOrbit: body.targetOrbit,
+              searchStart: searchStart.toISOString(),
+              searchEnd: searchEnd.toISOString(),
+            });
+
+            if (!validation.success) {
+              return NextResponse.json(
+                {
+                  error: "Invalid launch window data",
+                  details: validation.error,
+                },
+                { status: 400 },
+              );
+            }
+
+            const result = await OrekitService.calculateLaunchWindow(
+              validation.data.launchSite,
+              validation.data.targetOrbit,
+              searchStart,
+              searchEnd,
+            );
+
+            return NextResponse.json({
+              action: "calculateLaunchWindow",
+              result,
+              metadata: {
+                searchDays: (searchEnd.getTime() - searchStart.getTime()) / 86400000,
+                launchConstraints: {
+                  minInclination: Math.abs(validation.data.launchSite.latitude),
+                  energyOptimal: validation.data.launchSite.latitude < validation.data.targetOrbit.inclination,
+                },
+                calculatedAt: new Date().toISOString(),
+              },
+              success: true,
+            });
+          }
+
+          case "predictSolarPower": {
+            if (!body.orbit || !body.spacecraftConfig) {
+              return NextResponse.json(
+                {
+                  error: "Orbit and spacecraft configuration are required",
+                },
+                { status: 400 },
+              );
+            }
+
+            const startTime = body.startTime ? new Date(body.startTime) : new Date();
+            const duration = body.duration ? InputSanitizer.sanitizeNumber(body.duration, 1, 168) : 24; // Max 1 week
+
+            const validation = validateRequest(SolarPowerRequestSchema, {
+              orbit: body.orbit,
+              spacecraftConfig: body.spacecraftConfig,
+              startTime: startTime.toISOString(),
+              duration,
+            });
+
+            if (!validation.success) {
+              return NextResponse.json(
+                {
+                  error: "Invalid solar power prediction data",
+                  details: validation.error,
+                },
+                { status: 400 },
+              );
+            }
+
+            const result = await OrekitService.predictSolarPower(
+              validation.data.orbit,
+              validation.data.spacecraftConfig,
+              startTime,
+              duration,
+            );
+
+            // Calculate summary statistics
+            const totalPower = result.reduce((sum, p) => sum + p.power, 0);
+            const avgPower = totalPower / result.length;
+            const maxPower = Math.max(...result.map(p => p.power));
+            const eclipseTime = result.filter(p => p.eclipsed).length;
+
+            return NextResponse.json({
+              action: "predictSolarPower",
+              result,
+              summary: {
+                averagePower: Math.round(avgPower * 100) / 100,
+                maximumPower: Math.round(maxPower * 100) / 100,
+                totalEnergy: Math.round(totalPower * 100) / 100,
+                eclipsePercentage: Math.round((eclipseTime / result.length) * 10000) / 100,
+                eclipseHoursPerDay: Math.round((eclipseTime / result.length) * 24 * 100) / 100,
+              },
+              metadata: {
+                duration,
+                dataPoints: result.length,
+                calculatedAt: new Date().toISOString(),
+              },
+              success: true,
+            });
+          }
+
+          case "calculateStationKeeping": {
+            if (!body.orbit || !body.tolerances || typeof body.duration !== "number") {
+              return NextResponse.json(
+                {
+                  error: "Orbit, tolerances, and duration are required",
+                },
+                { status: 400 },
+              );
+            }
+
+            const orbitValidation = validateRequest(OrbitDataSchema, body.orbit);
+            if (!orbitValidation.success) {
+              return NextResponse.json(
+                {
+                  error: "Invalid orbit data",
+                  details: orbitValidation.error,
+                },
+                { status: 400 },
+              );
+            }
+
+            const tolerancesData = InputSanitizer.sanitizeObject(body.tolerances);
+            const tolerances = {
+              semiMajorAxis: InputSanitizer.sanitizeNumber(tolerancesData.semiMajorAxis || 1, 0.1, 100),
+              eccentricity: InputSanitizer.sanitizeNumber(tolerancesData.eccentricity || 0.001, 0.0001, 0.1),
+              inclination: InputSanitizer.sanitizeNumber(tolerancesData.inclination || 0.1, 0.01, 10),
+            };
+            const duration = InputSanitizer.sanitizeNumber(body.duration, 1, 365); // Max 1 year
+
+            const result = await OrekitService.calculateStationKeeping(orbitValidation.data, tolerances, duration);
+
+            return NextResponse.json({
+              action: "calculateStationKeeping",
+              result,
+              metadata: {
+                duration,
+                tolerances,
+                maneuverCount: result.maneuvers.length,
+                estimatedCost: {
+                  fuelKg: result.fuelRequired,
+                  deltaVTotal: result.totalDeltaV,
+                },
+                calculatedAt: new Date().toISOString(),
+              },
+              success: true,
+            });
+          }
+
+          // Legacy action support for backward compatibility
+          case "parseTLE":
+          case "tleToKeplerian":
+            if (!body.data?.line1 || !body.data?.line2) {
+              return NextResponse.json(
+                {
+                  error: "TLE data is required",
+                  hint: "Use action 'tleToKeplerian' with tle.line1 and tle.line2",
+                },
+                { status: 400 },
+              );
+            }
+
+            const legacyResult = await OrekitService.tleToKeplerian(body.data.line1, body.data.line2);
+            return NextResponse.json({
+              action: "tleToKeplerian",
+              result: legacyResult,
+              legacy: true,
+              success: true,
+            });
+
+          default:
+            return NextResponse.json(
+              {
+                error: "Unknown action",
+                code: "UNKNOWN_ACTION",
+                received: action,
+                availableActions: [
+                  "propagateOrbit",
+                  "analyzeOrbit",
+                  "tleToKeplerian",
+                  "calculateGroundPasses",
+                  "calculateManeuver",
+                  "calculateLaunchWindow",
+                  "predictSolarPower",
+                  "calculateStationKeeping",
+                ],
+              },
+              { status: 400 },
+            );
+        }
+      } catch (error) {
+        console.error("Error in orbital calculation:", error);
+
+        // Provide more specific error information
+        if (error instanceof Error) {
+          if (error.message.includes("Invalid orbit")) {
+            return NextResponse.json(
+              {
+                error: "Invalid orbital parameters",
+                details: error.message,
+                code: "INVALID_ORBIT_DATA",
+              },
+              { status: 400 },
+            );
+          } else if (error.message.includes("Rate limit")) {
+            return NextResponse.json(
+              {
+                error: "Rate limit exceeded",
+                details: error.message,
+                code: "RATE_LIMIT_EXCEEDED",
+              },
+              { status: 429 },
+            );
+          }
+        }
+
+        return NextResponse.json(
+          {
+            error: "Orbital calculation failed",
+            code: "CALCULATION_ERROR",
+            details: error instanceof Error ? error.message : "Unknown error",
+          },
+          { status: 500 },
+        );
+      }
     });
-  }
-
-  return NextResponse.json({
-    groundTrack: points,
-    passInfo: {
-      duration,
-      maxLatitude: Math.max(...points.map(p => Math.abs(p.latitude))),
-      groundTrackRepeat: calculateRepeatCycle(orbitalElements),
-    },
   });
 }
 
-// Calculate visibility windows from ground station
-async function calculateVisibilityWindows(data: any) {
-  const {
-    orbitalElements,
-    groundStation = { latitude: 28.5, longitude: -80.6, elevation: 0 }, // Default: Cape Canaveral
-    duration = 1440, // 24 hours in minutes
-    minElevation = 10, // degrees above horizon
-  } = data;
+// Helper function to classify orbits
+function classifyOrbit(analysis: any): string {
+  const { apoapsisAltitude, periapsisAltitude, sunSynchronous } = analysis;
 
-  const windows = [];
-  let inView = false;
-  let windowStart = 0;
-
-  for (let t = 0; t <= duration; t += 1) {
-    const result = propagateOrbit({ orbitalElements, timeMinutes: t });
-    const resultData = result instanceof NextResponse ? await result.json() : result;
-    const prop = resultData.propagation;
-
-    // Calculate elevation angle from ground station
-    const elevation = calculateElevationAngle(groundStation, {
-      latitude: prop.latitude,
-      longitude: prop.longitude,
-      altitude: prop.altitude,
-    });
-
-    if (elevation >= minElevation && !inView) {
-      inView = true;
-      windowStart = t;
-    } else if (elevation < minElevation && inView) {
-      inView = false;
-      windows.push({
-        start: windowStart,
-        end: t,
-        duration: t - windowStart,
-        maxElevation: await calculateMaxElevation(orbitalElements, groundStation, windowStart, t),
-      });
-    }
+  if (periapsisAltitude < 200) return "Suborbital";
+  if (sunSynchronous) return "Sun-Synchronous";
+  if (apoapsisAltitude < 2000) return "LEO (Low Earth Orbit)";
+  if (apoapsisAltitude > 35700 && apoapsisAltitude < 35800 && periapsisAltitude > 35700) {
+    return "GEO (Geostationary)";
   }
-
-  return NextResponse.json({
-    visibilityWindows: windows,
-    summary: {
-      totalWindows: windows.length,
-      totalVisibleTime: windows.reduce((sum, w) => sum + w.duration, 0),
-      averagePassDuration: windows.length > 0 ? windows.reduce((sum, w) => sum + w.duration, 0) / windows.length : 0,
-    },
-  });
-}
-
-// Calculate delta-V for maneuvers
-function calculateDeltaV(data: any) {
-  const { maneuverType, parameters } = data;
-
-  const mu = 398600.4418;
-  const earthRadius = 6371;
-
-  let deltaV = 0;
-  let description = "";
-
-  switch (maneuverType) {
-    case "circularize":
-      const r = earthRadius + parameters.altitude;
-      const a = parameters.semiMajorAxis + earthRadius;
-      // const e = parameters.eccentricity; // Will be used in full implementation
-
-      const v_current = Math.sqrt(mu * (2 / r - 1 / a));
-      const v_circular = Math.sqrt(mu / r);
-      deltaV = Math.abs(v_circular - v_current);
-      description = `Circularization at ${parameters.altitude} km`;
-      break;
-
-    case "planeChange":
-      const v = Math.sqrt(mu / (earthRadius + parameters.altitude));
-      const deltaInclination = (parameters.deltaInclination * Math.PI) / 180;
-      deltaV = 2 * v * Math.sin(deltaInclination / 2);
-      description = `Plane change of ${parameters.deltaInclination}° at ${parameters.altitude} km`;
-      break;
-
-    case "phasing":
-      const n = Math.sqrt(mu / Math.pow(parameters.semiMajorAxis + earthRadius, 3));
-      const deltaTime = (parameters.phasingAngle * Math.PI) / 180 / n;
-      deltaV = calculatePhasingDeltaV(parameters.semiMajorAxis, deltaTime);
-      description = `Phasing maneuver for ${parameters.phasingAngle}° offset`;
-      break;
+  if (periapsisAltitude < 2000 && apoapsisAltitude > 35000) {
+    return "GTO (Geostationary Transfer)";
   }
-
-  return NextResponse.json({
-    deltaV: deltaV.toFixed(3),
-    description,
-    fuelRequired: calculateFuelRequired(deltaV, parameters.spacecraftMass || 1000, parameters.isp || 300),
-  });
-}
-
-// Calculate launch windows
-function calculateLaunchWindow(data: any) {
-  const {
-    targetOrbit,
-    launchSite = { latitude: 28.5, longitude: -80.6 }, // Cape Canaveral
-    dateRange = 30, // days
-  } = data;
-
-  const windows = [];
-  // const earthRotationRate = 360 / 86164; // degrees per second - Will be used in full implementation
-
-  for (let day = 0; day < dateRange; day++) {
-    // Calculate when orbital plane crosses launch site
-    const nodalPrecessionRate = calculateNodalPrecession(targetOrbit);
-    const targetRaan = (targetOrbit.raan + nodalPrecessionRate * day) % 360;
-
-    // Find times when launch site passes through orbital plane
-    const launchAzimuth = calculateLaunchAzimuth(launchSite.latitude, targetOrbit.inclination);
-
-    if (launchAzimuth !== null) {
-      const windowTime = calculateWindowTime(launchSite, targetRaan, launchAzimuth);
-
-      windows.push({
-        date: new Date(Date.now() + day * 86400000).toISOString().split("T")[0],
-        time: windowTime,
-        azimuth: launchAzimuth,
-        deltaV: calculateLaunchDeltaV(launchSite.latitude, targetOrbit),
-        duration: 10, // minutes - typical launch window
-      });
-    }
-  }
-
-  return NextResponse.json({
-    launchWindows: windows,
-    optimal: windows.reduce((best, current) => (current.deltaV < best.deltaV ? current : best)),
-    constraints: {
-      minInclination: Math.abs(launchSite.latitude),
-      maxDailyWindows: Math.floor(86400 / (86400 / targetOrbit.orbitalPeriod)),
-    },
-  });
-}
-
-// Helper functions
-function getOrbitType(apogee: number, perigee: number, inclination: number): string {
-  if (perigee < 200) return "Suborbital";
-  if (apogee < 2000) return "LEO (Low Earth Orbit)";
-  if (apogee > 35786 - 500 && apogee < 35786 + 500 && inclination < 5) return "GEO (Geostationary)";
-  if (apogee > 20000) return "HEO (High Earth Orbit)";
-  if (perigee < 2000 && apogee > 35786) return "GTO (Geostationary Transfer)";
+  if (apoapsisAltitude > 20000) return "HEO (High Earth Orbit)";
   return "MEO (Medium Earth Orbit)";
-}
-
-function calculateElevationAngle(groundStation: any, satellite: any): number {
-  // Simplified elevation calculation
-  const earthRadius = 6371;
-  const distance = Math.sqrt(
-    Math.pow(satellite.altitude + earthRadius, 2) +
-      Math.pow(earthRadius, 2) -
-      2 *
-        (satellite.altitude + earthRadius) *
-        earthRadius *
-        Math.cos(((satellite.latitude - groundStation.latitude) * Math.PI) / 180),
-  );
-
-  const elevation = (Math.asin(satellite.altitude / distance) * 180) / Math.PI;
-  return elevation;
-}
-
-async function calculateMaxElevation(
-  orbitalElements: any,
-  groundStation: any,
-  start: number,
-  end: number,
-): Promise<number> {
-  let maxElev = 0;
-  for (let t = start; t <= end; t += 0.1) {
-    const result = propagateOrbit({ orbitalElements, timeMinutes: t });
-    const resultData = result instanceof NextResponse ? await result.json() : result;
-    const prop = resultData.propagation;
-    const elev = calculateElevationAngle(groundStation, prop);
-    maxElev = Math.max(maxElev, elev);
-  }
-  return maxElev;
-}
-
-function calculateRepeatCycle(orbitalElements: any): number {
-  // Simplified - actual calculation would consider J2 perturbations
-  const orbitsPerDay = 86400 / (orbitalElements.period * 60);
-  // const earthRotationsPerOrbit = orbitalElements.period / 1440; // Will be used in full implementation
-  return Math.round(1 / (orbitsPerDay % 1));
-}
-
-function calculatePhasingDeltaV(semiMajorAxis: number, deltaTime: number): number {
-  // Simplified phasing maneuver calculation
-  const mu = 398600.4418;
-  const earthRadius = 6371;
-  const r = semiMajorAxis + earthRadius;
-  const v = Math.sqrt(mu / r);
-  return Math.abs((v * deltaTime) / r) * 2; // Two-burn maneuver
-}
-
-function calculateFuelRequired(deltaV: number, mass: number, isp: number): any {
-  const g0 = 9.80665 / 1000; // km/s²
-  const massRatio = Math.exp(deltaV / (isp * g0));
-  const propellantMass = mass * (massRatio - 1);
-
-  return {
-    propellantMass: propellantMass.toFixed(1),
-    massRatio: massRatio.toFixed(3),
-    finalMass: (mass - propellantMass).toFixed(1),
-    units: "kg",
-  };
-}
-
-function calculateNodalPrecession(orbit: any): number {
-  // J2 perturbation effect on RAAN
-  const J2 = 0.00108263;
-  const earthRadius = 6371;
-  const mu = 398600.4418;
-
-  const a = orbit.semiMajorAxis + earthRadius;
-  const e = orbit.eccentricity;
-  const i = (orbit.inclination * Math.PI) / 180;
-  const n = Math.sqrt(mu / Math.pow(a, 3));
-
-  const precessionRate = (-1.5 * n * J2 * Math.pow(earthRadius / a, 2) * Math.cos(i)) / Math.pow(1 - e * e, 2);
-
-  return ((precessionRate * 180) / Math.PI) * 86400; // degrees per day
-}
-
-function calculateLaunchAzimuth(latitude: number, inclination: number): number | null {
-  const lat = (latitude * Math.PI) / 180;
-  const inc = (inclination * Math.PI) / 180;
-
-  if (Math.abs(latitude) > inclination) return null;
-
-  const azimuth = Math.asin(Math.cos(inc) / Math.cos(lat));
-  return (azimuth * 180) / Math.PI;
-}
-
-function calculateWindowTime(launchSite: any, targetRaan: number, azimuth: number): string {
-  const lst = targetRaan - azimuth;
-  const ut = (lst - launchSite.longitude) / 15; // Convert to hours
-  const hours = Math.floor(((ut % 24) + 24) % 24);
-  const minutes = Math.floor((ut * 60) % 60);
-  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")} UTC`;
-}
-
-function calculateLaunchDeltaV(latitude: number, targetOrbit: any): number {
-  const earthRadius = 6371;
-  const mu = 398600.4418;
-
-  // Earth's rotational velocity at launch site
-  const vEarth = 0.465 * Math.cos((latitude * Math.PI) / 180); // km/s
-
-  // Required orbital velocity
-  const vOrbit = Math.sqrt(mu / (targetOrbit.perigee + earthRadius));
-
-  // Inclination losses
-  const inclinationLoss = vEarth * Math.sin(((targetOrbit.inclination - latitude) * Math.PI) / 180);
-
-  // Gravity and drag losses (estimated)
-  const gravityLoss = 1.5; // km/s typical
-  const dragLoss = 0.15; // km/s typical
-
-  return vOrbit - vEarth + inclinationLoss + gravityLoss + dragLoss;
 }

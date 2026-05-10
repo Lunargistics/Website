@@ -1,4 +1,7 @@
 import axios from "axios";
+import { ErrorHandlingOptions, handleAsyncOperation } from "~~/lib/async-error-handler";
+import { isIPFSConfigured } from "~~/lib/env-validation";
+import { monitoring } from "~~/lib/monitoring";
 
 /**
  * Pinata IPFS Service for Mission Planning Suite
@@ -141,6 +144,12 @@ class PinataService {
   private headers: Record<string, string>;
 
   constructor() {
+    // Validate IPFS configuration on initialization
+    if (!isIPFSConfigured()) {
+      console.error("❌ IPFS not configured - Pinata service will not work");
+      console.error("Please set PINATA_JWT or both PINATA_API_KEY and PINATA_SECRET_KEY environment variables");
+    }
+
     this.headers = {
       pinata_api_key: PINATA_API_KEY,
       pinata_secret_api_key: PINATA_SECRET_KEY,
@@ -154,29 +163,85 @@ class PinataService {
   }
 
   /**
-   * Pin JSON data to IPFS
+   * Pin JSON data to IPFS with enhanced error handling
    */
   async pinJSON(data: any, metadata: PinataMetadata): Promise<string> {
-    try {
-      const response = await axios.post(
-        "https://api.pinata.cloud/pinning/pinJSONToIPFS",
-        {
-          pinataContent: data,
-          pinataMetadata: metadata,
-        },
-        { headers: this.headers },
-      );
-      return response.data.IpfsHash;
-    } catch (error) {
-      console.error("Error pinning JSON to IPFS:", error);
-      throw error;
+    if (!isIPFSConfigured()) {
+      throw new Error("IPFS not configured - cannot pin JSON data");
     }
+
+    const errorOptions: ErrorHandlingOptions = {
+      strategy: "retry",
+      retryConfig: {
+        maxAttempts: 3,
+        baseDelay: 2000,
+        maxDelay: 10000,
+        retryableErrors: (error: any) => {
+          const retryableStatuses = [408, 429, 500, 502, 503, 504];
+          return (
+            retryableStatuses.includes(error.response?.status) ||
+            error.code === "NETWORK_ERROR" ||
+            error.message?.includes("timeout")
+          );
+        },
+      },
+      context: {
+        operation: "pinJSON",
+        dataSize: JSON.stringify(data).length,
+        metadataName: metadata.name,
+      },
+      userMessage: "Failed to store data on IPFS. Please try again.",
+    };
+
+    return handleAsyncOperation(async () => {
+      const startTime = Date.now();
+
+      try {
+        monitoring.log("info", "Starting JSON pin to IPFS", "pinata-service", {
+          metadataName: metadata.name,
+          dataSize: JSON.stringify(data).length,
+        });
+
+        const response = await axios.post(
+          "https://api.pinata.cloud/pinning/pinJSONToIPFS",
+          {
+            pinataContent: data,
+            pinataMetadata: metadata,
+          },
+          {
+            headers: this.headers,
+            timeout: 30000, // 30 second timeout
+          },
+        );
+
+        const duration = Date.now() - startTime;
+        monitoring.trackIPFSOperation("pin", duration, true, response.data.IpfsHash, JSON.stringify(data).length);
+
+        return response.data.IpfsHash;
+      } catch (error: any) {
+        const duration = Date.now() - startTime;
+        monitoring.trackIPFSOperation("pin", duration, false, undefined, JSON.stringify(data).length);
+
+        // Enhanced error information
+        if (axios.isAxiosError(error)) {
+          const statusCode = error.response?.status;
+          const errorMessage = error.response?.data?.message || error.message;
+          throw new Error(`IPFS pin failed (${statusCode}): ${errorMessage}`);
+        }
+
+        throw error;
+      }
+    }, errorOptions);
   }
 
   /**
    * Pin file to IPFS
    */
   async pinFile(file: File, metadata: PinataMetadata): Promise<string> {
+    if (!isIPFSConfigured()) {
+      throw new Error("IPFS not configured - cannot pin file data");
+    }
+
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -199,6 +264,10 @@ class PinataService {
    * Get data from IPFS
    */
   async getData(hash: string): Promise<any> {
+    if (!hash || typeof hash !== "string") {
+      throw new Error("Invalid IPFS hash provided");
+    }
+
     try {
       const response = await axios.get(`${PINATA_GATEWAY}${hash}`);
       return response.data;
@@ -325,6 +394,14 @@ class PinataService {
    * Unpin data from IPFS (cleanup)
    */
   async unpin(hash: string): Promise<boolean> {
+    if (!isIPFSConfigured()) {
+      throw new Error("IPFS not configured - cannot unpin data");
+    }
+
+    if (!hash || typeof hash !== "string") {
+      throw new Error("Invalid IPFS hash provided for unpinning");
+    }
+
     try {
       await axios.delete(`https://api.pinata.cloud/pinning/unpin/${hash}`, { headers: this.headers });
       return true;
@@ -343,6 +420,10 @@ class PinataService {
     pageLimit?: number;
     pageOffset?: number;
   }): Promise<any> {
+    if (!isIPFSConfigured()) {
+      throw new Error("IPFS not configured - cannot list pins");
+    }
+
     try {
       const params: any = {
         pageLimit: filters?.pageLimit || 10,

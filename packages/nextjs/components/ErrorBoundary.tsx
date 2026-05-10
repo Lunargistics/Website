@@ -12,6 +12,7 @@ interface Props {
   resetOnPropsChange?: boolean;
   isolate?: boolean;
   level?: "page" | "section" | "component";
+  name?: string;
 }
 
 interface State {

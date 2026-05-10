@@ -4,21 +4,9 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, withCredits } from "~~/lib/creditMiddleware";
-
-// Mock services for now
-const pinataService = {
-  uploadMissionData: async (_data?: any) => ({ cid: "mock-cid" }),
-  getMissionData: async (_cid?: string) => ({}),
-  listPins: async (_filters?: any) => ({
-    rows: [
-      { id: "1", name: "Mission Alpha", type: "Earth Observation" },
-      { id: "2", name: "Mission Beta", type: "Communication" },
-    ],
-    count: 2,
-  }),
-  pinMissionData: async (_data?: any) => "QmMockIPFSHash123",
-  unpin: async (_hash?: string) => true,
-};
+// Future expansion: import { withRateLimit } from "~~/lib/rate-limit";
+// Future expansion: import { validateRequest } from "~~/lib/validation";
+import pinataService from "~~/services/ipfs/pinataService";
 
 // Unused services - commented out for now
 // const orbitService = {
@@ -58,7 +46,13 @@ export async function GET(request: NextRequest) {
         });
 
         return NextResponse.json({
-          missions: pins.rows,
+          missions: pins.rows.map((pin: any) => ({
+            id: pin.ipfs_pin_hash,
+            name: pin.metadata?.keyvalues?.missionName || pin.metadata?.name || "Unknown Mission",
+            type: pin.metadata?.keyvalues?.missionType || "Unknown",
+            ipfsHash: pin.ipfs_pin_hash,
+            createdAt: pin.date_pinned,
+          })),
           total: pins.count,
         });
       }
@@ -70,7 +64,13 @@ export async function GET(request: NextRequest) {
       });
 
       return NextResponse.json({
-        missions: pins.rows,
+        missions: pins.rows.map((pin: any) => ({
+          id: pin.ipfs_pin_hash,
+          name: pin.metadata?.keyvalues?.missionName || pin.metadata?.name || "Unknown Mission",
+          type: pin.metadata?.keyvalues?.missionType || "Unknown",
+          ipfsHash: pin.ipfs_pin_hash,
+          createdAt: pin.date_pinned,
+        })),
         total: pins.count,
       });
     } catch (error) {

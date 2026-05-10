@@ -47,13 +47,36 @@ export const handlers = [
     });
   }),
 
-  http.get("/api/orekit", () => {
-    return HttpResponse.json({
-      propagation: {
-        position: { x: 6878137, y: 0, z: 0 },
-        velocity: { x: 0, y: 7668.63, z: 0 },
-      },
-    });
+  http.post("/api/orekit", async ({ request }) => {
+    const body = await request.json();
+    if (body && typeof body === "object" && body.action === "parseTLE") {
+      return HttpResponse.json({
+        orbitalElements: {
+          semiMajorAxis: 6800,
+          eccentricity: 0.001,
+          inclination: 51.6,
+          raan: 0,
+          argumentOfPerigee: 0,
+          trueAnomaly: 0,
+          period: 92,
+          apogee: 420,
+          perigee: 410,
+        },
+      });
+    }
+    if (body && typeof body === "object" && body.action === "propagate") {
+      return HttpResponse.json({
+        propagation: {
+          position: { x: 6800, y: 0, z: 0 },
+          velocity: { x: 0, y: 7.6, z: 0 },
+          latitude: 0,
+          longitude: 0,
+          altitude: 420,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    }
+    return HttpResponse.json({ ok: true });
   }),
 
   http.get("/api/equipment", () => {
