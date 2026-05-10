@@ -49,7 +49,7 @@ export const handlers = [
 
   http.post("/api/orekit", async ({ request }) => {
     const body = await request.json();
-    if (body.action === "parseTLE") {
+    if (body && typeof body === "object" && body.action === "parseTLE") {
       return HttpResponse.json({
         orbitalElements: {
           semiMajorAxis: 6800,
@@ -64,7 +64,7 @@ export const handlers = [
         },
       });
     }
-    if (body.action === "propagate") {
+    if (body && typeof body === "object" && body.action === "propagate") {
       return HttpResponse.json({
         propagation: {
           position: { x: 6800, y: 0, z: 0 },

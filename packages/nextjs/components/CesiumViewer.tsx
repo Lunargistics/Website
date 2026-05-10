@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
-import Script from 'next/script';
-import ErrorBoundary from './ErrorBoundary';
+import React, { useEffect, useRef, useState } from "react";
+import Script from "next/script";
+import ErrorBoundary from "./ErrorBoundary";
 
 interface CesiumViewerProps {
   satellites?: any[];
@@ -21,7 +21,7 @@ export function CesiumViewer({
   groundStations = [],
   trajectories = [],
   onEntityClick,
-  defaultView = { longitude: 0, latitude: 0, height: 20000000 }
+  defaultView = { longitude: 0, latitude: 0, height: 20000000 },
 }: CesiumViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<any>(null);
@@ -35,7 +35,7 @@ export function CesiumViewer({
     try {
       const Cesium = (window as any).Cesium;
       if (!Cesium) {
-        throw new Error('Cesium library not loaded');
+        throw new Error("Cesium library not loaded");
       }
 
       // Create Cesium viewer with professional configuration
@@ -66,11 +66,7 @@ export function CesiumViewer({
 
       // Set initial camera position
       viewer.camera.setView({
-        destination: Cesium.Cartesian3.fromDegrees(
-          defaultView.longitude,
-          defaultView.latitude,
-          defaultView.height
-        ),
+        destination: Cesium.Cartesian3.fromDegrees(defaultView.longitude, defaultView.latitude, defaultView.height),
       });
 
       // Add click handler
@@ -87,10 +83,9 @@ export function CesiumViewer({
       viewer.clock.clockStep = Cesium.ClockStep.SYSTEM_CLOCK_MULTIPLIER;
       viewer.clock.multiplier = 1;
       viewer.clock.shouldAnimate = true;
-
     } catch (error) {
-      console.error('Error initializing Cesium:', error);
-      setCesiumError(error instanceof Error ? error.message : 'Failed to initialize Cesium');
+      console.error("Error initializing Cesium:", error);
+      setCesiumError(error instanceof Error ? error.message : "Failed to initialize Cesium");
     }
 
     return () => {
@@ -108,9 +103,7 @@ export function CesiumViewer({
     const Cesium = (window as any).Cesium;
 
     // Clear existing satellites
-    const entitiesToRemove = viewer.entities.values.filter((entity: any) => 
-      entity.id.startsWith('satellite_')
-    );
+    const entitiesToRemove = viewer.entities.values.filter((entity: any) => entity.id.startsWith("satellite_"));
     entitiesToRemove.forEach((entity: any) => viewer.entities.remove(entity));
 
     // Add new satellites
@@ -119,13 +112,9 @@ export function CesiumViewer({
         const entity = viewer.entities.add({
           id: `satellite_${index}`,
           name: satellite.name,
-          position: Cesium.Cartesian3.fromDegrees(
-            satellite.longitude,
-            satellite.latitude,
-            satellite.altitude
-          ),
+          position: Cesium.Cartesian3.fromDegrees(satellite.longitude, satellite.latitude, satellite.altitude),
           billboard: {
-            image: '/satellite-icon.png',
+            image: "/satellite-icon.png",
             scale: 0.3,
             heightReference: Cesium.HeightReference.NONE,
             color: Cesium.Color.YELLOW,
@@ -134,7 +123,7 @@ export function CesiumViewer({
           },
           label: {
             text: satellite.name,
-            font: '12pt Helvetica',
+            font: "12pt Helvetica",
             fillColor: Cesium.Color.YELLOW,
             outlineColor: Cesium.Color.BLACK,
             outlineWidth: 2,
@@ -165,9 +154,7 @@ export function CesiumViewer({
     const Cesium = (window as any).Cesium;
 
     // Clear existing ground stations
-    const entitiesToRemove = viewer.entities.values.filter((entity: any) => 
-      entity.id.startsWith('ground_station_')
-    );
+    const entitiesToRemove = viewer.entities.values.filter((entity: any) => entity.id.startsWith("ground_station_"));
     entitiesToRemove.forEach((entity: any) => viewer.entities.remove(entity));
 
     // Add new ground stations
@@ -176,20 +163,16 @@ export function CesiumViewer({
         const entity = viewer.entities.add({
           id: `ground_station_${index}`,
           name: station.name,
-          position: Cesium.Cartesian3.fromDegrees(
-            station.longitude,
-            station.latitude,
-            0
-          ),
+          position: Cesium.Cartesian3.fromDegrees(station.longitude, station.latitude, 0),
           billboard: {
-            image: '/ground-station-icon.png',
+            image: "/ground-station-icon.png",
             scale: 0.4,
             heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
             color: Cesium.Color.CYAN,
           },
           label: {
             text: station.name,
-            font: '12pt Helvetica',
+            font: "12pt Helvetica",
             fillColor: Cesium.Color.CYAN,
             outlineColor: Cesium.Color.BLACK,
             outlineWidth: 2,
@@ -197,14 +180,16 @@ export function CesiumViewer({
             pixelOffset: new Cesium.Cartesian2(0, -40),
           },
           // Coverage circle
-          ellipse: station.coverageRadius ? {
-            semiMinorAxis: station.coverageRadius * 1000,
-            semiMajorAxis: station.coverageRadius * 1000,
-            material: Cesium.Color.CYAN.withAlpha(0.2),
-            outline: true,
-            outlineColor: Cesium.Color.CYAN,
-            height: 0,
-          } : undefined,
+          ellipse: station.coverageRadius
+            ? {
+                semiMinorAxis: station.coverageRadius * 1000,
+                semiMajorAxis: station.coverageRadius * 1000,
+                material: Cesium.Color.CYAN.withAlpha(0.2),
+                outline: true,
+                outlineColor: Cesium.Color.CYAN,
+                height: 0,
+              }
+            : undefined,
         });
 
         entity.groundStation = station;
@@ -222,16 +207,14 @@ export function CesiumViewer({
     const Cesium = (window as any).Cesium;
 
     // Clear existing trajectories
-    const entitiesToRemove = viewer.entities.values.filter((entity: any) => 
-      entity.id.startsWith('trajectory_')
-    );
+    const entitiesToRemove = viewer.entities.values.filter((entity: any) => entity.id.startsWith("trajectory_"));
     entitiesToRemove.forEach((entity: any) => viewer.entities.remove(entity));
 
     // Add new trajectories
     trajectories.forEach((trajectory, index) => {
       try {
         const positions = trajectory.points.map((point: any) =>
-          Cesium.Cartesian3.fromDegrees(point.longitude, point.latitude, point.altitude)
+          Cesium.Cartesian3.fromDegrees(point.longitude, point.latitude, point.altitude),
         );
 
         viewer.entities.add({
@@ -240,7 +223,7 @@ export function CesiumViewer({
           polyline: {
             positions: positions,
             width: 2,
-            material: Cesium.Color.fromCssColorString(trajectory.color || '#00FF00'),
+            material: Cesium.Color.fromCssColorString(trajectory.color || "#00FF00"),
             clampToGround: false,
           },
         });
@@ -282,41 +265,37 @@ export function CesiumViewer({
           groundStations: groundStations.length,
           trajectories: trajectories.length,
           cesiumLoaded: isCesiumLoaded,
-          hasWebGL: typeof window !== 'undefined' && !!window.WebGLRenderingContext,
+          hasWebGL: typeof window !== "undefined" && !!window.WebGLRenderingContext,
         });
       }}
     >
       <div className="relative w-full h-full">
         <Script
           src="https://cesium.com/downloads/cesiumjs/releases/1.104/Build/Cesium/Cesium.js"
-          strategy="beforeInteractive"
+          strategy="afterInteractive"
           onLoad={() => {
-            console.log('Cesium loaded successfully');
-            
+            console.log("Cesium loaded successfully");
+
             // Set Cesium Ion access token if available
             const Cesium = (window as any).Cesium;
             if (Cesium && process.env.NEXT_PUBLIC_CESIUM_ION_ACCESS_TOKEN) {
               Cesium.Ion.defaultAccessToken = process.env.NEXT_PUBLIC_CESIUM_ION_ACCESS_TOKEN;
             }
-            
+
             setIsCesiumLoaded(true);
           }}
-          onError={(e) => {
-            console.error('Failed to load Cesium:', e);
-            setCesiumError('Failed to load Cesium library');
+          onError={e => {
+            console.error("Failed to load Cesium:", e);
+            setCesiumError("Failed to load Cesium library");
           }}
         />
 
-        <link 
-          href="https://cesium.com/downloads/cesiumjs/releases/1.104/Build/Cesium/Widgets/widgets.css" 
-          rel="stylesheet" 
+        <link
+          href="https://cesium.com/downloads/cesiumjs/releases/1.104/Build/Cesium/Widgets/widgets.css"
+          rel="stylesheet"
         />
 
-        <div 
-          ref={containerRef} 
-          className="w-full h-full"
-          style={{ minHeight: '400px' }}
-        />
+        <div ref={containerRef} className="w-full h-full" style={{ minHeight: "400px" }} />
 
         {!isCesiumLoaded && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-900/90 rounded-lg">

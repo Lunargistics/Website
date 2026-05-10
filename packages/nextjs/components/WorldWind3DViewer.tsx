@@ -2,8 +2,8 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Script from "next/script";
-import * as satellite from "satellite.js";
 import ErrorBoundary from "./ErrorBoundary";
+import * as satellite from "satellite.js";
 
 interface SatelliteData {
   name: string;
@@ -245,7 +245,7 @@ export default function WorldWind3DViewer() {
   }, [isWorldWindLoaded, satellitePositions]);
 
   return (
-    <ErrorBoundary 
+    <ErrorBoundary
       name="WorldWind3DViewer"
       level="section"
       fallback={
@@ -253,16 +253,18 @@ export default function WorldWind3DViewer() {
           <div className="text-center text-white">
             <div className="text-red-400 mb-4">⚠️</div>
             <p>3D Globe visualization failed to load</p>
-            <p className="text-sm text-gray-400 mt-2">Please refresh the page or check your browser support for WebGL</p>
+            <p className="text-sm text-gray-400 mt-2">
+              Please refresh the page or check your browser support for WebGL
+            </p>
           </div>
         </div>
       }
       onError={(error, errorInfo) => {
-        console.error("WorldWind3DViewer Error:", { 
-          error, 
+        console.error("WorldWind3DViewer Error:", {
+          error,
           errorInfo,
           hasWebGL: !!window.WebGLRenderingContext,
-          worldWindLoaded: isWorldWindLoaded
+          worldWindLoaded: isWorldWindLoaded,
         });
       }}
     >

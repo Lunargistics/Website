@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+// Future expansion: import { NextRequest } from "next/server";
 
 export interface MetricEvent {
   name: string;
@@ -9,7 +9,7 @@ export interface MetricEvent {
 }
 
 export interface LogEvent {
-  level: 'debug' | 'info' | 'warn' | 'error' | 'critical';
+  level: "debug" | "info" | "warn" | "error" | "critical";
   message: string;
   timestamp: string;
   component: string;
@@ -37,7 +37,7 @@ class MonitoringService {
 
   constructor() {
     // Start periodic flush in browser environment
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       this.startPeriodicFlush();
     }
   }
@@ -55,8 +55,8 @@ class MonitoringService {
       value,
       timestamp: new Date().toISOString(),
       tags: {
-        environment: process.env.NODE_ENV || 'development',
-        version: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
+        environment: process.env.NODE_ENV || "development",
+        version: process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0",
         ...tags,
       },
       metadata,
@@ -66,13 +66,13 @@ class MonitoringService {
     this.checkBuffer();
 
     // Console log in development
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       console.log(`[METRIC] ${name}: ${value}`, tags);
     }
   }
 
   // Structured logging
-  log(level: LogEvent['level'], message: string, component: string, data?: Record<string, any>, userId?: string) {
+  log(level: LogEvent["level"], message: string, component: string, data?: Record<string, any>, userId?: string) {
     const logEvent: LogEvent = {
       level,
       message,
@@ -87,11 +87,11 @@ class MonitoringService {
     this.checkBuffer();
 
     // Console output with proper formatting
-    if (process.env.NODE_ENV === 'development') {
-      const logMethod = level === 'error' || level === 'critical' ? console.error :
-                       level === 'warn' ? console.warn : console.log;
-      
-      logMethod(`[${level.toUpperCase()}] ${component}: ${message}`, data || '');
+    if (process.env.NODE_ENV === "development") {
+      const logMethod =
+        level === "error" || level === "critical" ? console.error : level === "warn" ? console.warn : console.log;
+
+      logMethod(`[${level.toUpperCase()}] ${component}: ${message}`, data || "");
     }
   }
 
@@ -99,29 +99,29 @@ class MonitoringService {
   recordPerformance(operation: string, metrics: PerformanceMetrics, tags: Record<string, string> = {}) {
     // Record individual metrics
     this.recordMetric(`${operation}.response_time`, metrics.apiResponseTime, tags);
-    
+
     if (metrics.databaseQueryTime) {
       this.recordMetric(`${operation}.db_query_time`, metrics.databaseQueryTime, tags);
     }
-    
+
     if (metrics.externalApiTime) {
       this.recordMetric(`${operation}.external_api_time`, metrics.externalApiTime, tags);
     }
-    
+
     if (metrics.memoryUsage) {
-      this.recordMetric('system.memory_usage', metrics.memoryUsage, tags);
+      this.recordMetric("system.memory_usage", metrics.memoryUsage, tags);
     }
-    
+
     if (metrics.errorRate) {
       this.recordMetric(`${operation}.error_rate`, metrics.errorRate, tags);
     }
-    
+
     if (metrics.requestCount) {
       this.recordMetric(`${operation}.request_count`, metrics.requestCount, tags);
     }
 
     // Log performance summary
-    this.log('info', `Performance metrics for ${operation}`, 'monitoring', {
+    this.log("info", `Performance metrics for ${operation}`, "monitoring", {
       operation,
       responseTime: `${metrics.apiResponseTime}ms`,
       ...metrics,
@@ -129,67 +129,71 @@ class MonitoringService {
   }
 
   // API endpoint monitoring wrapper
-  async monitorApiCall<T>(
-    operation: string,
-    apiCall: () => Promise<T>,
-    tags: Record<string, string> = {}
-  ): Promise<T> {
+  async monitorApiCall<T>(operation: string, apiCall: () => Promise<T>, tags: Record<string, string> = {}): Promise<T> {
     const startTime = Date.now();
-    let success = true;
+    const _success = true;
     let error: Error | null = null;
 
     try {
       const result = await apiCall();
       const responseTime = Date.now() - startTime;
-      
-      this.recordPerformance(operation, { 
-        apiResponseTime: responseTime,
-        requestCount: 1,
-        errorRate: 0
-      }, { ...tags, status: 'success' });
-      
+
+      this.recordPerformance(
+        operation,
+        {
+          apiResponseTime: responseTime,
+          requestCount: 1,
+          errorRate: 0,
+        },
+        { ...tags, status: "success" },
+      );
+
       return result;
     } catch (err) {
-      success = false;
+      const _success = false;
       error = err instanceof Error ? err : new Error(String(err));
       const responseTime = Date.now() - startTime;
-      
-      this.recordPerformance(operation, { 
-        apiResponseTime: responseTime,
-        requestCount: 1,
-        errorRate: 1
-      }, { ...tags, status: 'error' });
-      
-      this.log('error', `API call failed: ${operation}`, 'api', {
+
+      this.recordPerformance(
+        operation,
+        {
+          apiResponseTime: responseTime,
+          requestCount: 1,
+          errorRate: 1,
+        },
+        { ...tags, status: "error" },
+      );
+
+      this.log("error", `API call failed: ${operation}`, "api", {
         error: error.message,
         stack: error.stack,
         responseTime,
       });
-      
+
       throw error;
     }
   }
 
   // Track user actions
   trackUserAction(action: string, userId: string, metadata?: Record<string, any>) {
-    this.recordMetric('user.action', 1, { action, userId }, metadata);
-    this.log('info', `User action: ${action}`, 'user-tracking', { userId, ...metadata }, userId);
+    this.recordMetric("user.action", 1, { action, userId }, metadata);
+    this.log("info", `User action: ${action}`, "user-tracking", { userId, ...metadata }, userId);
   }
 
   // Track business metrics
   trackBusinessMetric(metric: string, value: number, metadata?: Record<string, any>) {
-    this.recordMetric(`business.${metric}`, value, { type: 'business' }, metadata);
+    this.recordMetric(`business.${metric}`, value, { type: "business" }, metadata);
   }
 
   // System health checks
   recordHealthCheck(service: string, isHealthy: boolean, responseTime?: number, details?: Record<string, any>) {
-    this.recordMetric(`health.${service}`, isHealthy ? 1 : 0, { service, status: isHealthy ? 'healthy' : 'unhealthy' });
-    
+    this.recordMetric(`health.${service}`, isHealthy ? 1 : 0, { service, status: isHealthy ? "healthy" : "unhealthy" });
+
     if (responseTime) {
       this.recordMetric(`health.${service}.response_time`, responseTime, { service });
     }
-    
-    this.log(isHealthy ? 'info' : 'error', `Health check for ${service}: ${isHealthy ? 'PASS' : 'FAIL'}`, 'health', {
+
+    this.log(isHealthy ? "info" : "error", `Health check for ${service}: ${isHealthy ? "PASS" : "FAIL"}`, "health", {
       service,
       isHealthy,
       responseTime,
@@ -198,14 +202,19 @@ class MonitoringService {
   }
 
   // Orbital mechanics specific metrics
-  trackOrbitalCalculation(calculationType: string, processingTime: number, accuracy?: number, params?: Record<string, any>) {
-    this.recordMetric('orbital.calculation_time', processingTime, { type: calculationType });
-    
+  trackOrbitalCalculation(
+    calculationType: string,
+    processingTime: number,
+    accuracy?: number,
+    params?: Record<string, any>,
+  ) {
+    this.recordMetric("orbital.calculation_time", processingTime, { type: calculationType });
+
     if (accuracy) {
-      this.recordMetric('orbital.accuracy', accuracy, { type: calculationType });
+      this.recordMetric("orbital.accuracy", accuracy, { type: calculationType });
     }
-    
-    this.log('info', `Orbital calculation: ${calculationType}`, 'orbital-mechanics', {
+
+    this.log("info", `Orbital calculation: ${calculationType}`, "orbital-mechanics", {
       processingTime: `${processingTime}ms`,
       accuracy,
       ...params,
@@ -214,14 +223,14 @@ class MonitoringService {
 
   // IPFS operations tracking
   trackIPFSOperation(operation: string, duration: number, success: boolean, hash?: string, size?: number) {
-    this.recordMetric('ipfs.operation_time', duration, { operation, status: success ? 'success' : 'failure' });
-    this.recordMetric('ipfs.operations', 1, { operation, status: success ? 'success' : 'failure' });
-    
+    this.recordMetric("ipfs.operation_time", duration, { operation, status: success ? "success" : "failure" });
+    this.recordMetric("ipfs.operations", 1, { operation, status: success ? "success" : "failure" });
+
     if (size) {
-      this.recordMetric('ipfs.data_size', size, { operation });
+      this.recordMetric("ipfs.data_size", size, { operation });
     }
-    
-    this.log(success ? 'info' : 'error', `IPFS ${operation}: ${success ? 'SUCCESS' : 'FAILED'}`, 'ipfs', {
+
+    this.log(success ? "info" : "error", `IPFS ${operation}: ${success ? "SUCCESS" : "FAILED"}`, "ipfs", {
       operation,
       duration: `${duration}ms`,
       hash,
@@ -231,17 +240,17 @@ class MonitoringService {
 
   // WebGL/3D performance tracking
   trackVisualizationPerformance(renderer: string, fps: number, memoryUsage?: number, drawCalls?: number) {
-    this.recordMetric('visualization.fps', fps, { renderer });
-    
+    this.recordMetric("visualization.fps", fps, { renderer });
+
     if (memoryUsage) {
-      this.recordMetric('visualization.memory', memoryUsage, { renderer });
+      this.recordMetric("visualization.memory", memoryUsage, { renderer });
     }
-    
+
     if (drawCalls) {
-      this.recordMetric('visualization.draw_calls', drawCalls, { renderer });
+      this.recordMetric("visualization.draw_calls", drawCalls, { renderer });
     }
-    
-    this.log('debug', `Visualization performance: ${renderer}`, 'visualization', {
+
+    this.log("debug", `Visualization performance: ${renderer}`, "visualization", {
       fps,
       memoryUsage,
       drawCalls,
@@ -261,7 +270,7 @@ class MonitoringService {
 
     const metricsToFlush = [...this.metricsBuffer];
     const logsToFlush = [...this.logsBuffer];
-    
+
     this.metricsBuffer = [];
     this.logsBuffer = [];
 
@@ -270,12 +279,12 @@ class MonitoringService {
       if (metricsToFlush.length > 0) {
         await this.sendMetrics(metricsToFlush);
       }
-      
+
       if (logsToFlush.length > 0) {
         await this.sendLogs(logsToFlush);
       }
     } catch (error) {
-      console.error('Failed to flush monitoring data:', error);
+      console.error("Failed to flush monitoring data:", error);
       // Re-add to buffer on failure (with size limit)
       this.metricsBuffer.unshift(...metricsToFlush.slice(0, this.bufferSize / 2));
       this.logsBuffer.unshift(...logsToFlush.slice(0, this.bufferSize / 2));
@@ -283,31 +292,31 @@ class MonitoringService {
   }
 
   private async sendMetrics(metrics: MetricEvent[]) {
-    if (typeof window === 'undefined') return; // Server-side skip
-    
+    if (typeof window === "undefined") return; // Server-side skip
+
     try {
-      await fetch('/api/monitoring/metrics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("/api/monitoring/metrics", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ metrics }),
       });
     } catch (error) {
-      console.error('Failed to send metrics:', error);
+      console.error("Failed to send metrics:", error);
       throw error;
     }
   }
 
   private async sendLogs(logs: LogEvent[]) {
-    if (typeof window === 'undefined') return; // Server-side skip
-    
+    if (typeof window === "undefined") return; // Server-side skip
+
     try {
-      await fetch('/api/monitoring/logs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("/api/monitoring/logs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ logs }),
       });
     } catch (error) {
-      console.error('Failed to send logs:', error);
+      console.error("Failed to send logs:", error);
       throw error;
     }
   }
@@ -327,41 +336,41 @@ class MonitoringService {
 
 // Request monitoring middleware
 export function withMonitoring(operation: string) {
-  return function<T extends (...args: any[]) => Promise<any>>(
+  return function <T extends (...args: any[]) => Promise<any>>(
     target: any,
     propertyKey: string,
-    descriptor: TypedPropertyDescriptor<T>
+    descriptor: TypedPropertyDescriptor<T>,
   ) {
     const originalMethod = descriptor.value;
-    
-    descriptor.value = async function(this: any, ...args: any[]) {
+
+    descriptor.value = async function (this: any, ...args: any[]) {
       const startTime = Date.now();
-      
+
       try {
         const result = await originalMethod!.apply(this, args);
         const duration = Date.now() - startTime;
-        
+
         monitoring.recordPerformance(operation, {
           apiResponseTime: duration,
           requestCount: 1,
-          errorRate: 0
+          errorRate: 0,
         });
-        
+
         return result;
       } catch (error) {
         const duration = Date.now() - startTime;
-        
+
         monitoring.recordPerformance(operation, {
           apiResponseTime: duration,
           requestCount: 1,
-          errorRate: 1
+          errorRate: 1,
         });
-        
-        monitoring.log('error', `Operation failed: ${operation}`, 'api', {
+
+        monitoring.log("error", `Operation failed: ${operation}`, "api", {
           error: error instanceof Error ? error.message : String(error),
           duration,
         });
-        
+
         throw error;
       }
     } as T;
@@ -372,8 +381,8 @@ export function withMonitoring(operation: string) {
 export const monitoring = new MonitoringService();
 
 // Auto-cleanup on page unload
-if (typeof window !== 'undefined') {
-  window.addEventListener('beforeunload', () => {
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeunload", () => {
     monitoring.destroy();
   });
 }

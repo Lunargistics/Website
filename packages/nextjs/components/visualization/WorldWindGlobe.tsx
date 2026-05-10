@@ -256,8 +256,8 @@ export function WorldWindGlobe({
           satellites: satellites.length,
           groundStations: groundStations.length,
           trajectories: trajectories.length,
-          hasWebGL: typeof window !== 'undefined' && !!window.WebGLRenderingContext,
-          worldWindLoaded: isWorldWindLoaded
+          hasWebGL: typeof window !== "undefined" && !!window.WebGLRenderingContext,
+          worldWindLoaded: isWorldWindLoaded,
         });
       }}
     >
@@ -342,9 +342,9 @@ export function WorldWindGlobe({
 export default dynamic(
   () => {
     // Ensure WorldWind is loaded before rendering component
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const checkWorldWind = () => {
-        if (typeof window !== 'undefined' && (window as any).WorldWind) {
+        if (typeof window !== "undefined" && (window as any).WorldWind) {
           resolve({ default: WorldWindGlobe });
         } else {
           setTimeout(checkWorldWind, 100);
@@ -353,12 +353,12 @@ export default dynamic(
       checkWorldWind();
     });
   },
-  { 
+  {
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center min-h-[400px] bg-gray-900">
         <div className="text-white">Loading 3D Globe...</div>
       </div>
-    )
-  }
+    ),
+  },
 );

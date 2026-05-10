@@ -6,7 +6,8 @@ import { TextDecoder, TextEncoder } from "util";
 (global as any).TextDecoder = TextDecoder as any;
 
 // Add Response and Request polyfills for Node.js compatibility
-const { Response, Request, Headers } = require('undici');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { Response, Request, Headers } = require("undici");
 (global as any).Response = Response;
 (global as any).Request = Request;
 (global as any).Headers = Headers;

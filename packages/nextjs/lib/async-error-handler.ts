@@ -2,12 +2,21 @@
  * Professional Async Error Handling System
  * Provides comprehensive error handling patterns for async operations
  */
-
-import { monitoring } from './monitoring';
+import { monitoring } from "./monitoring";
 
 // Error classification types
-export type ErrorSeverity = 'low' | 'medium' | 'high' | 'critical';
-export type ErrorCategory = 'network' | 'validation' | 'authentication' | 'authorization' | 'rate-limit' | 'external-api' | 'database' | 'system' | 'business-logic' | 'unknown';
+export type ErrorSeverity = "low" | "medium" | "high" | "critical";
+export type ErrorCategory =
+  | "network"
+  | "validation"
+  | "authentication"
+  | "authorization"
+  | "rate-limit"
+  | "external-api"
+  | "database"
+  | "system"
+  | "business-logic"
+  | "unknown";
 
 // Enhanced error interface
 export interface EnhancedError extends Error {
@@ -36,9 +45,9 @@ export interface RetryConfig {
 
 // Circuit breaker state
 enum CircuitState {
-  CLOSED = 'CLOSED',
-  OPEN = 'OPEN',
-  HALF_OPEN = 'HALF_OPEN'
+  CLOSED = "CLOSED",
+  OPEN = "OPEN",
+  HALF_OPEN = "HALF_OPEN",
 }
 
 // Circuit breaker configuration
@@ -50,7 +59,7 @@ export interface CircuitBreakerConfig {
 }
 
 // Error recovery strategies
-export type RecoveryStrategy = 'retry' | 'fallback' | 'circuit-breaker' | 'fail-fast' | 'ignore';
+export type RecoveryStrategy = "retry" | "fallback" | "circuit-breaker" | "fail-fast" | "ignore";
 
 export interface ErrorHandlingOptions {
   strategy: RecoveryStrategy;
@@ -71,20 +80,20 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
   maxDelay: 30000,
   exponentialBase: 2,
   jitter: true,
-  retryableErrors: (error) => {
-    const retryableCodes = ['NETWORK_ERROR', 'TIMEOUT', 'RATE_LIMIT', 'TEMPORARY_FAILURE'];
+  retryableErrors: error => {
+    const retryableCodes = ["NETWORK_ERROR", "TIMEOUT", "RATE_LIMIT", "TEMPORARY_FAILURE"];
     return retryableCodes.some(code => error.message?.includes(code) || (error as any).code === code);
-  }
+  },
 };
 
 const DEFAULT_CIRCUIT_BREAKER_CONFIG: CircuitBreakerConfig = {
   failureThreshold: 5,
   resetTimeout: 60000, // 1 minute
   monitoringPeriod: 10000, // 10 seconds
-  expectedErrors: (error) => {
-    const expectedCodes = ['VALIDATION_ERROR', 'AUTHENTICATION_ERROR'];
+  expectedErrors: error => {
+    const expectedCodes = ["VALIDATION_ERROR", "AUTHENTICATION_ERROR"];
     return expectedCodes.some(code => error.message?.includes(code));
-  }
+  },
 };
 
 // Circuit breaker registry
@@ -105,7 +114,7 @@ class CircuitBreakerState {
   failureCount: number = 0;
   lastFailureTime: number = 0;
   successCount: number = 0;
-  
+
   constructor(private config: CircuitBreakerConfig = DEFAULT_CIRCUIT_BREAKER_CONFIG) {}
 
   canExecute(): boolean {
@@ -124,7 +133,7 @@ class CircuitBreakerState {
   onSuccess(): void {
     this.failureCount = 0;
     this.successCount++;
-    
+
     if (this.state === CircuitState.HALF_OPEN) {
       this.state = CircuitState.CLOSED;
       this.successCount = 0;
@@ -157,55 +166,56 @@ const circuitRegistry = new CircuitBreakerRegistry();
 
 // Error classification utilities
 export function classifyError(error: Error): { category: ErrorCategory; severity: ErrorSeverity } {
-  const message = error.message?.toLowerCase() || '';
-  const code = (error as any).code || '';
+  const message = error.message?.toLowerCase() || "";
+  const code = (error as any).code || "";
   const statusCode = (error as any).statusCode || 0;
 
   // Network errors
-  if (message.includes('network') || message.includes('fetch') || message.includes('timeout') || code === 'NETWORK_ERROR') {
-    return { category: 'network', severity: 'medium' };
+  if (
+    message.includes("network") ||
+    message.includes("fetch") ||
+    message.includes("timeout") ||
+    code === "NETWORK_ERROR"
+  ) {
+    return { category: "network", severity: "medium" };
   }
 
   // Authentication/Authorization
-  if (statusCode === 401 || message.includes('unauthorized') || message.includes('authentication')) {
-    return { category: 'authentication', severity: 'medium' };
+  if (statusCode === 401 || message.includes("unauthorized") || message.includes("authentication")) {
+    return { category: "authentication", severity: "medium" };
   }
 
-  if (statusCode === 403 || message.includes('forbidden') || message.includes('authorization')) {
-    return { category: 'authorization', severity: 'medium' };
+  if (statusCode === 403 || message.includes("forbidden") || message.includes("authorization")) {
+    return { category: "authorization", severity: "medium" };
   }
 
   // Rate limiting
-  if (statusCode === 429 || message.includes('rate limit') || message.includes('too many requests')) {
-    return { category: 'rate-limit', severity: 'low' };
+  if (statusCode === 429 || message.includes("rate limit") || message.includes("too many requests")) {
+    return { category: "rate-limit", severity: "low" };
   }
 
   // Validation errors
-  if (statusCode >= 400 && statusCode < 500 || message.includes('validation') || message.includes('invalid')) {
-    return { category: 'validation', severity: 'low' };
+  if ((statusCode >= 400 && statusCode < 500) || message.includes("validation") || message.includes("invalid")) {
+    return { category: "validation", severity: "low" };
   }
 
   // External API errors
-  if (message.includes('api') || message.includes('external') || statusCode >= 500) {
-    return { category: 'external-api', severity: 'high' };
+  if (message.includes("api") || message.includes("external") || statusCode >= 500) {
+    return { category: "external-api", severity: "high" };
   }
 
   // System errors
-  if (message.includes('memory') || message.includes('disk') || message.includes('cpu')) {
-    return { category: 'system', severity: 'critical' };
+  if (message.includes("memory") || message.includes("disk") || message.includes("cpu")) {
+    return { category: "system", severity: "critical" };
   }
 
-  return { category: 'unknown', severity: 'medium' };
+  return { category: "unknown", severity: "medium" };
 }
 
 // Create enhanced error with context
-export function createEnhancedError(
-  error: Error,
-  context?: Record<string, any>,
-  userMessage?: string
-): EnhancedError {
+export function createEnhancedError(error: Error, context?: Record<string, any>, userMessage?: string): EnhancedError {
   const { category, severity } = classifyError(error);
-  
+
   const enhancedError: EnhancedError = Object.assign(error, {
     category,
     severity,
@@ -214,7 +224,7 @@ export function createEnhancedError(
     userMessage: userMessage || getDefaultUserMessage(category),
     originalError: error,
     timestamp: new Date(),
-    correlationId: generateCorrelationId()
+    correlationId: generateCorrelationId(),
   });
 
   return enhancedError;
@@ -222,22 +232,22 @@ export function createEnhancedError(
 
 function isRetryableError(error: Error): boolean {
   const { category } = classifyError(error);
-  const retryableCategories: ErrorCategory[] = ['network', 'rate-limit', 'external-api'];
+  const retryableCategories: ErrorCategory[] = ["network", "rate-limit", "external-api"];
   return retryableCategories.includes(category);
 }
 
 function getDefaultUserMessage(category: ErrorCategory): string {
   const messages: Record<ErrorCategory, string> = {
-    'network': 'Connection issue. Please check your internet connection and try again.',
-    'validation': 'Please check your input and try again.',
-    'authentication': 'Please sign in to continue.',
-    'authorization': 'You don\'t have permission to perform this action.',
-    'rate-limit': 'Too many requests. Please wait a moment and try again.',
-    'external-api': 'Service temporarily unavailable. Please try again later.',
-    'database': 'Data access issue. Please try again later.',
-    'system': 'System error. Our team has been notified.',
-    'business-logic': 'Unable to complete the requested operation.',
-    'unknown': 'An unexpected error occurred. Please try again.'
+    network: "Connection issue. Please check your internet connection and try again.",
+    validation: "Please check your input and try again.",
+    authentication: "Please sign in to continue.",
+    authorization: "You don't have permission to perform this action.",
+    "rate-limit": "Too many requests. Please wait a moment and try again.",
+    "external-api": "Service temporarily unavailable. Please try again later.",
+    database: "Data access issue. Please try again later.",
+    system: "System error. Our team has been notified.",
+    "business-logic": "Unable to complete the requested operation.",
+    unknown: "An unexpected error occurred. Please try again.",
   };
 
   return messages[category] || messages.unknown;
@@ -248,10 +258,7 @@ function generateCorrelationId(): string {
 }
 
 // Async error handling wrapper
-export async function handleAsyncOperation<T>(
-  operation: () => Promise<T>,
-  options: ErrorHandlingOptions
-): Promise<T> {
+export async function handleAsyncOperation<T>(operation: () => Promise<T>, options: ErrorHandlingOptions): Promise<T> {
   const startTime = Date.now();
   let lastError: Error;
 
@@ -259,20 +266,23 @@ export async function handleAsyncOperation<T>(
     // Apply timeout if specified
     if (options.timeout) {
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Operation timeout')), options.timeout);
+        setTimeout(() => reject(new Error("Operation timeout")), options.timeout);
       });
-      
+
       return await Promise.race([operation(), timeoutPromise]);
     }
 
     switch (options.strategy) {
-      case 'retry':
+      case "retry":
         return await executeWithRetry(operation, options.retryConfig || {});
-      
-      case 'circuit-breaker':
-        return await executeWithCircuitBreaker(operation, options.circuitBreakerConfig || DEFAULT_CIRCUIT_BREAKER_CONFIG);
-      
-      case 'fallback':
+
+      case "circuit-breaker":
+        return await executeWithCircuitBreaker(
+          operation,
+          options.circuitBreakerConfig || DEFAULT_CIRCUIT_BREAKER_CONFIG,
+        );
+
+      case "fallback":
         try {
           return await operation();
         } catch (error) {
@@ -281,42 +291,42 @@ export async function handleAsyncOperation<T>(
           }
           return options.fallbackValue;
         }
-      
-      case 'fail-fast':
+
+      case "fail-fast":
         return await operation();
-      
-      case 'ignore':
+
+      case "ignore":
         try {
           return await operation();
         } catch (error) {
           if (!options.silent) {
-            console.warn('Ignored error:', error);
+            console.warn("Ignored error:", error);
           }
           return undefined as T;
         }
-      
+
       default:
         return await operation();
     }
   } catch (error) {
     lastError = error instanceof Error ? error : new Error(String(error));
-    
+
     // Create enhanced error
     const enhancedError = createEnhancedError(
       lastError,
       {
         ...options.context,
         strategy: options.strategy,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       },
-      options.userMessage
+      options.userMessage,
     );
 
     // Log error with monitoring
-    monitoring.log('error', `Async operation failed: ${enhancedError.message}`, 'async-handler', {
+    monitoring.log("error", `Async operation failed: ${enhancedError.message}`, "async-handler", {
       error: enhancedError,
       strategy: options.strategy,
-      duration: Date.now() - startTime
+      duration: Date.now() - startTime,
     });
 
     throw enhancedError;
@@ -324,10 +334,7 @@ export async function handleAsyncOperation<T>(
 }
 
 // Retry implementation with exponential backoff
-async function executeWithRetry<T>(
-  operation: () => Promise<T>,
-  retryConfig: Partial<RetryConfig>
-): Promise<T> {
+async function executeWithRetry<T>(operation: () => Promise<T>, retryConfig: Partial<RetryConfig>): Promise<T> {
   const config = { ...DEFAULT_RETRY_CONFIG, ...retryConfig };
   let attempt = 0;
   let lastError: Error;
@@ -336,22 +343,22 @@ async function executeWithRetry<T>(
     try {
       const result = await operation();
       if (attempt > 0) {
-        monitoring.recordMetric('retry.success', 1, { attempts: attempt.toString() });
+        monitoring.recordMetric("retry.success", 1, { attempts: attempt.toString() });
       }
       return result;
     } catch (error) {
       attempt++;
       lastError = error instanceof Error ? error : new Error(String(error));
-      
+
       if (attempt >= config.maxAttempts || !config.retryableErrors(lastError)) {
-        monitoring.recordMetric('retry.failed', 1, { attempts: attempt.toString() });
+        monitoring.recordMetric("retry.failed", 1, { attempts: attempt.toString() });
         throw lastError;
       }
 
       const delay = calculateDelay(attempt, config);
       config.onRetry?.(lastError, attempt);
-      
-      monitoring.recordMetric('retry.attempt', 1, { attempt: attempt.toString() });
+
+      monitoring.recordMetric("retry.attempt", 1, { attempt: attempt.toString() });
       await sleep(delay);
     }
   }
@@ -362,11 +369,11 @@ async function executeWithRetry<T>(
 function calculateDelay(attempt: number, config: RetryConfig): number {
   let delay = config.baseDelay * Math.pow(config.exponentialBase, attempt - 1);
   delay = Math.min(delay, config.maxDelay);
-  
+
   if (config.jitter) {
     delay = delay * (0.5 + Math.random() * 0.5); // Add jitter
   }
-  
+
   return Math.floor(delay);
 }
 
@@ -374,24 +381,24 @@ function calculateDelay(attempt: number, config: RetryConfig): number {
 async function executeWithCircuitBreaker<T>(
   operation: () => Promise<T>,
   config: CircuitBreakerConfig,
-  key: string = 'default'
+  key: string = "default",
 ): Promise<T> {
   const state = circuitRegistry.getState(key);
-  
+
   if (!state.canExecute()) {
-    monitoring.recordMetric('circuit_breaker.rejected', 1, { key });
+    monitoring.recordMetric("circuit_breaker.rejected", 1, { key });
     throw new Error(`Circuit breaker is OPEN for ${key}`);
   }
 
   try {
     const result = await operation();
     state.onSuccess();
-    monitoring.recordMetric('circuit_breaker.success', 1, { key, state: state.state });
+    monitoring.recordMetric("circuit_breaker.success", 1, { key, state: state.state });
     return result;
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
     state.onFailure(err);
-    monitoring.recordMetric('circuit_breaker.failure', 1, { key, state: state.state });
+    monitoring.recordMetric("circuit_breaker.failure", 1, { key, state: state.state });
     throw error;
   } finally {
     circuitRegistry.setState(key, state);
@@ -410,27 +417,27 @@ export async function handleBatchOperations<T>(
     maxConcurrency?: number;
     failFast?: boolean;
     collectErrors?: boolean;
-  } = {}
+  } = {},
 ): Promise<{ results: (T | null)[]; errors: Error[] }> {
   const { maxConcurrency = 5, failFast = false, collectErrors = true } = options;
   const results: (T | null)[] = new Array(operations.length).fill(null);
   const errors: Error[] = [];
-  
+
   const semaphore = new Semaphore(maxConcurrency);
-  
+
   const promises = operations.map(async (operation, index) => {
     await semaphore.acquire();
-    
+
     try {
       const result = await operation();
       results[index] = result;
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
-      
+
       if (collectErrors) {
         errors.push(err);
       }
-      
+
       if (failFast) {
         throw err;
       }
@@ -438,13 +445,13 @@ export async function handleBatchOperations<T>(
       semaphore.release();
     }
   });
-  
+
   if (failFast) {
     await Promise.all(promises);
   } else {
     await Promise.allSettled(promises);
   }
-  
+
   return { results, errors };
 }
 
@@ -480,25 +487,22 @@ class Semaphore {
 
 // Decorator for automatic error handling
 export function withErrorHandling(options: ErrorHandlingOptions) {
-  return function<T extends (...args: any[]) => Promise<any>>(
+  return function <T extends (...args: any[]) => Promise<any>>(
     target: any,
     propertyKey: string,
-    descriptor: TypedPropertyDescriptor<T>
+    descriptor: TypedPropertyDescriptor<T>,
   ) {
     const originalMethod = descriptor.value;
-    
-    descriptor.value = async function(this: any, ...args: any[]) {
-      return handleAsyncOperation(
-        () => originalMethod!.apply(this, args),
-        {
-          ...options,
-          context: {
-            ...options.context,
-            method: propertyKey,
-            args: args.length
-          }
-        }
-      );
+
+    descriptor.value = async function (this: any, ...args: any[]) {
+      return handleAsyncOperation(() => originalMethod!.apply(this, args), {
+        ...options,
+        context: {
+          ...options.context,
+          method: propertyKey,
+          args: args.length,
+        },
+      });
     } as T;
   };
 }
@@ -506,10 +510,12 @@ export function withErrorHandling(options: ErrorHandlingOptions) {
 // Export utilities
 export { CircuitState, circuitRegistry };
 
-export default {
+const asyncErrorHandler = {
   handleAsyncOperation,
   handleBatchOperations,
   withErrorHandling,
   classifyError,
-  createEnhancedError
+  createEnhancedError,
 };
+
+export default asyncErrorHandler;

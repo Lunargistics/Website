@@ -1,13 +1,12 @@
 // Critical polyfills for MSW and Jest environment - order matters!
 // ALL polyfills must be set up BEFORE requiring undici
-
 // FIRST: Set up TextEncoder/TextDecoder before any imports that might need them
 import { TextDecoder, TextEncoder } from "util";
-(global as any).TextEncoder = TextEncoder as any;
-(global as any).TextDecoder = TextDecoder as any;
-
 // SECOND: Set up streams before any imports that might need them
 import * as streams from "web-streams-polyfill/dist/ponyfill.js";
+
+(global as any).TextEncoder = TextEncoder as any;
+(global as any).TextDecoder = TextDecoder as any;
 
 // Set up streams polyfills BEFORE importing undici
 if (streams) {
@@ -27,38 +26,38 @@ if (typeof (global as any).MessageChannel === "undefined") {
   class MessagePort {
     onmessage: ((this: MessagePort, ev: MessageEvent) => any) | null = null;
     onmessageerror: ((this: MessagePort, ev: MessageEvent) => any) | null = null;
-    
+
     postMessage(_message: any, _transfer?: any) {
       // No-op for testing
     }
-    
+
     addEventListener(_type: string, _listener: any, _options?: any) {
       // No-op for testing
     }
-    
+
     removeEventListener(_type: string, _listener: any, _options?: any) {
       // No-op for testing
     }
-    
+
     start() {
       // No-op for testing
     }
-    
+
     close() {
       // No-op for testing
     }
   }
-  
+
   class MessageChannel {
     port1: MessagePort;
     port2: MessagePort;
-    
+
     constructor() {
       this.port1 = new MessagePort();
       this.port2 = new MessagePort();
     }
   }
-  
+
   (global as any).MessageChannel = MessageChannel;
   (global as any).MessagePort = MessagePort;
 }
@@ -68,25 +67,25 @@ if (typeof (global as any).AbortController === "undefined") {
   class AbortSignal {
     aborted: boolean = false;
     onabort: ((this: AbortSignal, ev: Event) => any) | null = null;
-    
+
     addEventListener(_type: string, _listener: any, _options?: any) {
       // No-op for testing
     }
-    
+
     removeEventListener(_type: string, _listener: any, _options?: any) {
       // No-op for testing
     }
-    
+
     dispatchEvent(_event: Event): boolean {
       return true;
     }
-    
-    static abort(reason?: any): AbortSignal {
+
+    static abort(_reason?: any): AbortSignal {
       const signal = new AbortSignal();
       signal.aborted = true;
       return signal;
     }
-    
+
     static timeout(milliseconds: number): AbortSignal {
       const signal = new AbortSignal();
       setTimeout(() => {
@@ -95,33 +94,35 @@ if (typeof (global as any).AbortController === "undefined") {
       return signal;
     }
   }
-  
+
   class AbortController {
     signal: AbortSignal;
-    
+
     constructor() {
       this.signal = new AbortSignal();
     }
-    
-    abort(reason?: any) {
+
+    abort(_reason?: any) {
       this.signal.aborted = true;
     }
   }
-  
+
   (global as any).AbortController = AbortController;
   (global as any).AbortSignal = AbortSignal;
 }
 
 // URL and URLSearchParams polyfills (usually available in Node.js but just in case)
 if (typeof (global as any).URL === "undefined") {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { URL, URLSearchParams } = require("url");
   (global as any).URL = URL;
   (global as any).URLSearchParams = URLSearchParams;
 }
 
 // FINALLY: Set up fetch polyfills - this should work now that all dependencies are in place
-if (typeof global.Response === 'undefined') {
-  const { Response, Request, Headers, FormData } = require('undici');
+if (typeof global.Response === "undefined") {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { Response, Request, Headers, FormData } = require("undici");
   (global as any).Response = Response;
   (global as any).Request = Request;
   (global as any).Headers = Headers;
@@ -129,8 +130,9 @@ if (typeof global.Response === 'undefined') {
 }
 
 // Set fetch globally for MSW interceptors
-if (typeof global.fetch === 'undefined') {
-  const { fetch } = require('undici');
+if (typeof global.fetch === "undefined") {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { fetch } = require("undici");
   (global as any).fetch = fetch;
 }
 
@@ -140,27 +142,26 @@ if (typeof (global as any).BroadcastChannel === "undefined") {
     name: string;
     onmessage: ((this: BroadcastChannel, ev: MessageEvent) => any) | null = null;
     onmessageerror: ((this: BroadcastChannel, ev: MessageEvent) => any) | null = null;
-    
+
     constructor(name: string) {
       this.name = name;
     }
-    
+
     postMessage(_msg: any) {
       // No-op for testing
     }
-    
+
     addEventListener(_type: string, _listener: any, _options?: any) {
       // No-op for testing
     }
-    
+
     removeEventListener(_type: string, _listener: any, _options?: any) {
       // No-op for testing
     }
-    
+
     close() {
       // No-op for testing
     }
   }
   (global as any).BroadcastChannel = BroadcastChannel as any;
 }
-

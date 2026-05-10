@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { withRateLimit } from '~~/lib/rate-limit';
+import { NextRequest, NextResponse } from "next/server";
+import { withRateLimit } from "~~/lib/rate-limit";
 
 interface MetricEvent {
   name: string;
@@ -10,20 +10,17 @@ interface MetricEvent {
 }
 
 export async function POST(request: NextRequest) {
-  return withRateLimit(request, 'api', async () => {
+  return withRateLimit(request, "api", async () => {
     try {
       const { metrics }: { metrics: MetricEvent[] } = await request.json();
 
       if (!Array.isArray(metrics)) {
-        return NextResponse.json(
-          { error: 'Metrics must be an array' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: "Metrics must be an array" }, { status: 400 });
       }
 
       // Process metrics in development
-      if (process.env.NODE_ENV === 'development') {
-        console.log('📊 Received Metrics:', {
+      if (process.env.NODE_ENV === "development") {
+        console.log("📊 Received Metrics:", {
           count: metrics.length,
           timeRange: {
             start: metrics[0]?.timestamp,
@@ -34,24 +31,20 @@ export async function POST(request: NextRequest) {
       }
 
       // In production, forward to monitoring service
-      if (process.env.NODE_ENV === 'production') {
+      if (process.env.NODE_ENV === "production") {
         await processProductionMetrics(metrics);
       }
 
       // Store aggregated metrics
       await storeMetrics(metrics);
 
-      return NextResponse.json({ 
-        success: true, 
-        processed: metrics.length 
+      return NextResponse.json({
+        success: true,
+        processed: metrics.length,
       });
-
     } catch (error) {
-      console.error('Error processing metrics:', error);
-      return NextResponse.json(
-        { error: 'Failed to process metrics' },
-        { status: 500 }
-      );
+      console.error("Error processing metrics:", error);
+      return NextResponse.json({ error: "Failed to process metrics" }, { status: 500 });
     }
   });
 }
@@ -62,7 +55,7 @@ async function processProductionMetrics(metrics: MetricEvent[]): Promise<void> {
     try {
       await sendToDataDog(metrics);
     } catch (error) {
-      console.error('Failed to send metrics to DataDog:', error);
+      console.error("Failed to send metrics to DataDog:", error);
     }
   }
 
@@ -71,7 +64,7 @@ async function processProductionMetrics(metrics: MetricEvent[]): Promise<void> {
     try {
       await sendToCloudWatch(metrics);
     } catch (error) {
-      console.error('Failed to send metrics to CloudWatch:', error);
+      console.error("Failed to send metrics to CloudWatch:", error);
     }
   }
 }
@@ -85,11 +78,11 @@ async function sendToDataDog(metrics: MetricEvent[]): Promise<void> {
     metadata: metric.metadata,
   }));
 
-  await fetch('https://api.datadoghq.com/api/v1/series', {
-    method: 'POST',
+  await fetch("https://api.datadoghq.com/api/v1/series", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'DD-API-KEY': apiKey!,
+      "Content-Type": "application/json",
+      "DD-API-KEY": apiKey!,
     },
     body: JSON.stringify({ series }),
   });
@@ -97,7 +90,7 @@ async function sendToDataDog(metrics: MetricEvent[]): Promise<void> {
 
 async function sendToCloudWatch(metrics: MetricEvent[]): Promise<void> {
   // AWS CloudWatch implementation would go here
-  console.log('Would send to CloudWatch:', metrics.length, 'metrics');
+  console.log("Would send to CloudWatch:", metrics.length, "metrics");
 }
 
 async function storeMetrics(metrics: MetricEvent[]): Promise<void> {
@@ -124,7 +117,7 @@ async function storeMetrics(metrics: MetricEvent[]): Promise<void> {
   });
 
   // In a real application, store in database
-  console.log('Stored metric aggregations:', aggregations.size, 'unique metrics');
+  console.log("Stored metric aggregations:", aggregations.size, "unique metrics");
 
   // Alert on critical metrics
   checkCriticalMetrics(metrics);
@@ -133,8 +126,8 @@ async function storeMetrics(metrics: MetricEvent[]): Promise<void> {
 function checkCriticalMetrics(metrics: MetricEvent[]): void {
   metrics.forEach(metric => {
     // Check for high error rates
-    if (metric.name.includes('error_rate') && metric.value > 0.1) {
-      console.error('🚨 HIGH ERROR RATE ALERT:', {
+    if (metric.name.includes("error_rate") && metric.value > 0.1) {
+      console.error("🚨 HIGH ERROR RATE ALERT:", {
         metric: metric.name,
         value: metric.value,
         tags: metric.tags,
@@ -143,8 +136,8 @@ function checkCriticalMetrics(metrics: MetricEvent[]): void {
     }
 
     // Check for slow response times
-    if (metric.name.includes('response_time') && metric.value > 5000) {
-      console.warn('⚠️ SLOW RESPONSE TIME:', {
+    if (metric.name.includes("response_time") && metric.value > 5000) {
+      console.warn("⚠️ SLOW RESPONSE TIME:", {
         metric: metric.name,
         value: `${metric.value}ms`,
         tags: metric.tags,
@@ -152,8 +145,9 @@ function checkCriticalMetrics(metrics: MetricEvent[]): void {
     }
 
     // Check for memory usage
-    if (metric.name.includes('memory') && metric.value > 1000000000) { // 1GB
-      console.warn('⚠️ HIGH MEMORY USAGE:', {
+    if (metric.name.includes("memory") && metric.value > 1000000000) {
+      // 1GB
+      console.warn("⚠️ HIGH MEMORY USAGE:", {
         metric: metric.name,
         value: `${Math.round(metric.value / 1024 / 1024)}MB`,
         tags: metric.tags,
@@ -161,8 +155,8 @@ function checkCriticalMetrics(metrics: MetricEvent[]): void {
     }
 
     // Check for orbital calculation performance
-    if (metric.name.includes('orbital.calculation_time') && metric.value > 10000) {
-      console.warn('⚠️ SLOW ORBITAL CALCULATION:', {
+    if (metric.name.includes("orbital.calculation_time") && metric.value > 10000) {
+      console.warn("⚠️ SLOW ORBITAL CALCULATION:", {
         metric: metric.name,
         value: `${metric.value}ms`,
         tags: metric.tags,
