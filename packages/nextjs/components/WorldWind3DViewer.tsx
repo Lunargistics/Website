@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import * as satellite from "satellite.js";
+import ErrorBoundary from "./ErrorBoundary";
 
 interface SatelliteData {
   name: string;
@@ -91,7 +92,10 @@ export default function WorldWind3DViewer() {
         // Add layers
         wwd.addLayer(new WorldWind.BMNGOneImageLayer());
         wwd.addLayer(new WorldWind.BMNGLandsatLayer());
-        wwd.addLayer(new WorldWind.BingAerialWithLabelsLayer());
+        // Only add Bing layer if key exists to avoid errors
+        if (WorldWind.BingAerialWithLabelsLayer && WorldWind.BingMapsKey) {
+          wwd.addLayer(new WorldWind.BingAerialWithLabelsLayer());
+        }
 
         // Add atmosphere layer for better visualization
         const atmosphereLayer = new WorldWind.AtmosphereLayer();
@@ -241,52 +245,74 @@ export default function WorldWind3DViewer() {
   }, [isWorldWindLoaded, satellitePositions]);
 
   return (
-    <div className="worldwind-container relative h-[600px] w-full rounded-lg overflow-hidden bg-black">
-      <Script
-        src="https://files.worldwind.arc.nasa.gov/artifactory/web/0.9.0/worldwind.min.js"
-        strategy="afterInteractive"
-        onLoad={() => {
-          console.log("WorldWind loaded successfully");
-          setIsWorldWindLoaded(true);
-        }}
-        onError={e => {
-          console.error("Failed to load WorldWind:", e);
-        }}
-      />
-
-      <canvas ref={canvasRef} className="w-full h-full" style={{ cursor: "grab" }} />
-
-      {!isWorldWindLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-          <div className="text-center">
-            <div className="loading loading-spinner loading-lg text-purple-500 mb-4"></div>
-            <p className="text-white">Loading NASA WorldWind...</p>
+    <ErrorBoundary 
+      name="WorldWind3DViewer"
+      level="section"
+      fallback={
+        <div className="h-[600px] w-full bg-gray-900 rounded-lg flex items-center justify-center">
+          <div className="text-center text-white">
+            <div className="text-red-400 mb-4">⚠️</div>
+            <p>3D Globe visualization failed to load</p>
+            <p className="text-sm text-gray-400 mt-2">Please refresh the page or check your browser support for WebGL</p>
           </div>
         </div>
-      )}
+      }
+      onError={(error, errorInfo) => {
+        console.error("WorldWind3DViewer Error:", { 
+          error, 
+          errorInfo,
+          hasWebGL: !!window.WebGLRenderingContext,
+          worldWindLoaded: isWorldWindLoaded
+        });
+      }}
+    >
+      <div className="worldwind-container relative h-[600px] w-full rounded-lg overflow-hidden bg-black">
+        <Script
+          src="https://files.worldwind.arc.nasa.gov/artifactory/web/0.9.0/worldwind.min.js"
+          strategy="afterInteractive"
+          onLoad={() => {
+            console.log("WorldWind loaded successfully");
+            setIsWorldWindLoaded(true);
+          }}
+          onError={e => {
+            console.error("Failed to load WorldWind:", e);
+          }}
+        />
 
-      <div className="absolute bottom-4 left-4 bg-black/70 text-white p-3 rounded-lg text-sm">
-        <p className="font-bold mb-1">Controls:</p>
-        <p>• Left click + drag: Rotate globe</p>
-        <p>• Right click + drag: Tilt view</p>
-        <p>• Scroll: Zoom in/out</p>
-        <p>• Click satellites for info</p>
-      </div>
+        <canvas ref={canvasRef} className="w-full h-full" style={{ cursor: "grab" }} />
 
-      <div className="absolute top-4 right-4 bg-black/70 text-white p-3 rounded-lg text-sm max-w-xs">
-        <p className="font-bold mb-1">Live Tracking:</p>
-        {satellitePositions.map((sat, idx) => (
-          <div key={idx} className="mt-1">
-            <span className="text-yellow-400">{sat.name}:</span>
-            {sat.position && (
-              <span className="text-xs ml-1">
-                {sat.position.latitude.toFixed(1)}°, {sat.position.longitude.toFixed(1)}°,{" "}
-                {Math.round(sat.position.altitude / 1000)}km
-              </span>
-            )}
+        {!isWorldWindLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+            <div className="text-center">
+              <div className="loading loading-spinner loading-lg text-purple-500 mb-4"></div>
+              <p className="text-white">Loading NASA WorldWind...</p>
+            </div>
           </div>
-        ))}
+        )}
+
+        <div className="absolute bottom-4 left-4 bg-black/70 text-white p-3 rounded-lg text-sm">
+          <p className="font-bold mb-1">Controls:</p>
+          <p>• Left click + drag: Rotate globe</p>
+          <p>• Right click + drag: Tilt view</p>
+          <p>• Scroll: Zoom in/out</p>
+          <p>• Click satellites for info</p>
+        </div>
+
+        <div className="absolute top-4 right-4 bg-black/70 text-white p-3 rounded-lg text-sm max-w-xs">
+          <p className="font-bold mb-1">Live Tracking:</p>
+          {satellitePositions.map((sat, idx) => (
+            <div key={idx} className="mt-1">
+              <span className="text-yellow-400">{sat.name}:</span>
+              {sat.position && (
+                <span className="text-xs ml-1">
+                  {sat.position.latitude.toFixed(1)}°, {sat.position.longitude.toFixed(1)}°,{" "}
+                  {Math.round(sat.position.altitude / 1000)}km
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }

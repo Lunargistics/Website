@@ -59,6 +59,7 @@
     "node": ">=20.18.3"
   },
   "dependencies": {
-    "@openzeppelin/contracts-upgradeable": "^5.4.0"
+    "@openzeppelin/contracts-upgradeable": "^5.4.0",
+    "zod": "^4.4.3"
   }
 }
