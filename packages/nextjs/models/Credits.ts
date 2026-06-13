@@ -1,4 +1,8 @@
-import mongoose, { Document, Schema } from "mongoose";
+// Credit domain types. Migrated from Mongoose to Prisma + Postgres.
+// The Prisma models (CreditBalance, CreditTransaction, CreditPackage,
+// CreditUsageAnalytics) live in prisma/schema.prisma. This file now only
+// exports shared enums, constants, and plain TS interfaces used by the
+// credits/stripe services.
 
 // Credit Transaction Types
 export enum TransactionType {
@@ -22,8 +26,8 @@ export const API_CREDIT_COSTS = {
   "/api/drivers/generate": 12, // Driver generation
 } as const;
 
-// Credit Balance Schema
-export interface ICreditBalance extends Document {
+// Credit Balance
+export interface ICreditBalance {
   userId: string;
   balance: number;
   totalPurchased: number;
@@ -32,43 +36,8 @@ export interface ICreditBalance extends Document {
   createdAt: Date;
 }
 
-const CreditBalanceSchema = new Schema<ICreditBalance>({
-  userId: {
-    type: String,
-    required: true,
-    unique: true,
-    index: true,
-  },
-  balance: {
-    type: Number,
-    required: true,
-    default: 0,
-    min: 0,
-  },
-  totalPurchased: {
-    type: Number,
-    required: true,
-    default: 0,
-    min: 0,
-  },
-  totalUsed: {
-    type: Number,
-    required: true,
-    default: 0,
-    min: 0,
-  },
-  lastUpdated: {
-    type: Date,
-    default: Date.now,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-// Credit Transaction Schema
-export interface ICreditTransaction extends Document {
+// Credit Transaction
+export interface ICreditTransaction {
   userId: string;
   type: TransactionType;
   amount: number;
@@ -81,57 +50,8 @@ export interface ICreditTransaction extends Document {
   createdAt: Date;
 }
 
-const CreditTransactionSchema = new Schema<ICreditTransaction>({
-  userId: {
-    type: String,
-    required: true,
-    index: true,
-  },
-  type: {
-    type: String,
-    required: true,
-    enum: Object.values(TransactionType),
-  },
-  amount: {
-    type: Number,
-    required: true,
-  },
-  balanceBefore: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
-  balanceAfter: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
-  description: {
-    type: String,
-    required: true,
-  },
-  apiEndpoint: {
-    type: String,
-    required: false,
-  },
-  stripePaymentIntentId: {
-    type: String,
-    required: false,
-    index: true,
-  },
-  metadata: {
-    type: Schema.Types.Mixed,
-    required: false,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-    index: true,
-  },
-});
-
-// Credit Package Schema (for Stripe products)
-export interface ICreditPackage extends Document {
+// Credit Package (for Stripe products)
+export interface ICreditPackage {
   name: string;
   credits: number;
   price: number; // in cents
@@ -145,110 +65,11 @@ export interface ICreditPackage extends Document {
   updatedAt: Date;
 }
 
-const CreditPackageSchema = new Schema<ICreditPackage>({
-  name: {
-    type: String,
-    required: true,
-  },
-  credits: {
-    type: Number,
-    required: true,
-    min: 1,
-  },
-  price: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
-  stripePriceId: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  stripeProductId: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-    required: false,
-  },
-  popular: {
-    type: Boolean,
-    default: false,
-  },
-  bonusCredits: {
-    type: Number,
-    default: 0,
-    min: 0,
-  },
-  isActive: {
-    type: Boolean,
-    default: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-// Update timestamp on save
-CreditPackageSchema.pre("save", function (next) {
-  this.updatedAt = new Date();
-  next();
-});
-
-// Credit Usage Analytics Schema
-export interface ICreditUsageAnalytics extends Document {
+// Credit Usage Analytics
+export interface ICreditUsageAnalytics {
   userId: string;
   date: Date; // Daily aggregation
   totalUsed: number;
   usageByEndpoint: Record<string, number>;
   createdAt: Date;
 }
-
-const CreditUsageAnalyticsSchema = new Schema<ICreditUsageAnalytics>({
-  userId: {
-    type: String,
-    required: true,
-    index: true,
-  },
-  date: {
-    type: Date,
-    required: true,
-    index: true,
-  },
-  totalUsed: {
-    type: Number,
-    required: true,
-    default: 0,
-    min: 0,
-  },
-  usageByEndpoint: {
-    type: Schema.Types.Mixed,
-    required: true,
-    default: {},
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-// Compound index for user + date uniqueness
-CreditUsageAnalyticsSchema.index({ userId: 1, date: 1 }, { unique: true });
-
-// Export models
-export const CreditBalance =
-  mongoose.models.CreditBalance || mongoose.model<ICreditBalance>("CreditBalance", CreditBalanceSchema);
-export const CreditTransaction =
-  mongoose.models.CreditTransaction || mongoose.model<ICreditTransaction>("CreditTransaction", CreditTransactionSchema);
-export const CreditPackage =
-  mongoose.models.CreditPackage || mongoose.model<ICreditPackage>("CreditPackage", CreditPackageSchema);
-export const CreditUsageAnalytics =
-  mongoose.models.CreditUsageAnalytics ||
-  mongoose.model<ICreditUsageAnalytics>("CreditUsageAnalytics", CreditUsageAnalyticsSchema);

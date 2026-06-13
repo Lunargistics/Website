@@ -1,6 +1,10 @@
 import { authOptions } from "../../../lib/auth";
 import { loginRateLimiter } from "../../../lib/rateLimiter";
-import User from "../../../models/User";
+// Legacy Mongoose-based suite (skipped). After the Prisma migration models/User
+// has no default export; resolve the jest-mocked module loosely so this compiles.
+import * as UserModule from "../../../models/User";
+
+const User: any = (UserModule as any).default;
 
 jest.mock("../../../lib/database/mongodb", () => ({
   connectDB: jest.fn(),

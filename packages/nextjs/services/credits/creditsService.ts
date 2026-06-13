@@ -1,30 +1,28 @@
-import {
-  API_CREDIT_COSTS,
-  CreditBalance,
-  CreditTransaction,
-  CreditUsageAnalytics,
-  ICreditBalance,
-  ICreditTransaction,
-  TransactionType,
-} from "../../models/Credits";
+import { Prisma } from "@prisma/client";
 import { startOfDay } from "date-fns";
+import { prisma } from "~~/lib/prisma";
+import { API_CREDIT_COSTS, ICreditBalance, ICreditTransaction, TransactionType } from "~~/models/Credits";
+
+// Prisma transaction client type (the `tx` handed to $transaction callbacks).
+type Tx = Prisma.TransactionClient;
 
 export class CreditsService {
   /**
    * Get user's current credit balance
    */
   static async getUserBalance(userId: string): Promise<ICreditBalance> {
-    let balance = await CreditBalance.findOne({ userId });
+    let balance = await prisma.creditBalance.findUnique({ where: { userId } });
 
     if (!balance) {
       // Create initial balance for new user with starter credits
-      balance = new CreditBalance({
-        userId,
-        balance: 100, // 100 free starter credits
-        totalPurchased: 100,
-        totalUsed: 0,
+      balance = await prisma.creditBalance.create({
+        data: {
+          userId,
+          balance: 100, // 100 free starter credits
+          totalPurchased: 100,
+          totalUsed: 0,
+        },
       });
-      await balance.save();
 
       // Record the initial credit transaction
       await this.recordTransaction({
@@ -77,23 +75,17 @@ export class CreditsService {
       };
     }
 
-    // Use MongoDB transaction to ensure atomicity
-    const session = await CreditBalance.startSession();
-
     try {
-      await session.withTransaction(async () => {
+      // Use a Prisma transaction to ensure atomicity
+      await prisma.$transaction(async tx => {
         // Update balance
-        const updatedBalance = await CreditBalance.findOneAndUpdate(
-          { userId },
-          {
-            $inc: {
-              balance: -creditsToConsume,
-              totalUsed: creditsToConsume,
-            },
-            $set: { lastUpdated: new Date() },
+        const updatedBalance = await tx.creditBalance.update({
+          where: { userId },
+          data: {
+            balance: { decrement: creditsToConsume },
+            totalUsed: { increment: creditsToConsume },
           },
-          { new: true, session },
-        );
+        });
 
         if (!updatedBalance) {
           throw new Error("Failed to update balance");
@@ -110,14 +102,12 @@ export class CreditsService {
             description: `API usage: ${endpoint}`,
             apiEndpoint: endpoint,
           },
-          session,
+          tx,
         );
 
         // Update daily analytics
-        await this.updateDailyAnalytics(userId, endpoint, creditsToConsume, session);
+        await this.updateDailyAnalytics(userId, endpoint, creditsToConsume, tx);
       });
-
-      await session.endSession();
 
       return {
         success: true,
@@ -125,7 +115,6 @@ export class CreditsService {
         message: "Credits consumed successfully",
       };
     } catch (error) {
-      await session.endSession();
       console.error("Error consuming credits:", error);
       return {
         success: false,
@@ -146,22 +135,16 @@ export class CreditsService {
   ): Promise<{ success: boolean; newBalance: number }> {
     const balance = await this.getUserBalance(userId);
 
-    const session = await CreditBalance.startSession();
-
     try {
-      await session.withTransaction(async () => {
+      await prisma.$transaction(async tx => {
         // Update balance
-        const updatedBalance = await CreditBalance.findOneAndUpdate(
-          { userId },
-          {
-            $inc: {
-              balance: amount,
-              totalPurchased: amount,
-            },
-            $set: { lastUpdated: new Date() },
+        const updatedBalance = await tx.creditBalance.update({
+          where: { userId },
+          data: {
+            balance: { increment: amount },
+            totalPurchased: { increment: amount },
           },
-          { new: true, session },
-        );
+        });
 
         if (!updatedBalance) {
           throw new Error("Failed to update balance");
@@ -178,18 +161,15 @@ export class CreditsService {
             description,
             stripePaymentIntentId,
           },
-          session,
+          tx,
         );
       });
-
-      await session.endSession();
 
       return {
         success: true,
         newBalance: balance.balance + amount,
       };
     } catch (error) {
-      await session.endSession();
       console.error("Error adding credits:", error);
       return {
         success: false,
@@ -206,7 +186,12 @@ export class CreditsService {
     limit: number = 50,
     offset: number = 0,
   ): Promise<ICreditTransaction[]> {
-    return await CreditTransaction.find({ userId }).sort({ createdAt: -1 }).limit(limit).skip(offset).exec();
+    return (await prisma.creditTransaction.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: offset,
+    })) as unknown as ICreditTransaction[];
   }
 
   /**
@@ -216,12 +201,13 @@ export class CreditsService {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
-    const analytics = await CreditUsageAnalytics.find({
-      userId,
-      date: { $gte: startOfDay(startDate) },
-    })
-      .sort({ date: 1 })
-      .exec();
+    const analytics = await prisma.creditUsageAnalytics.findMany({
+      where: {
+        userId,
+        date: { gte: startOfDay(startDate) },
+      },
+      orderBy: { date: "asc" },
+    });
 
     const totalUsed = analytics.reduce((sum, day) => sum + day.totalUsed, 0);
     const avgDaily = analytics.length > 0 ? totalUsed / analytics.length : 0;
@@ -229,7 +215,8 @@ export class CreditsService {
     // Aggregate endpoint usage
     const endpointUsage: Record<string, number> = {};
     analytics.forEach(day => {
-      Object.entries(day.usageByEndpoint).forEach(([endpoint, count]) => {
+      const byEndpoint = (day.usageByEndpoint as Record<string, number>) || {};
+      Object.entries(byEndpoint).forEach(([endpoint, count]) => {
         endpointUsage[endpoint] = (endpointUsage[endpoint] || 0) + (count as number);
       });
     });
@@ -257,18 +244,23 @@ export class CreditsService {
       stripePaymentIntentId?: string;
       metadata?: Record<string, any>;
     },
-    session?: any,
+    tx?: Tx,
   ): Promise<void> {
-    const newTransaction = new CreditTransaction({
-      ...transaction,
-      createdAt: new Date(),
-    });
+    const client = tx ?? prisma;
 
-    if (session) {
-      await newTransaction.save({ session });
-    } else {
-      await newTransaction.save();
-    }
+    await client.creditTransaction.create({
+      data: {
+        userId: transaction.userId,
+        type: transaction.type,
+        amount: transaction.amount,
+        balanceBefore: transaction.balanceBefore,
+        balanceAfter: transaction.balanceAfter,
+        description: transaction.description,
+        apiEndpoint: transaction.apiEndpoint,
+        stripePaymentIntentId: transaction.stripePaymentIntentId,
+        metadata: (transaction.metadata ?? undefined) as Prisma.InputJsonValue | undefined,
+      },
+    });
   }
 
   /**
@@ -278,27 +270,34 @@ export class CreditsService {
     userId: string,
     endpoint: string,
     creditsUsed: number,
-    session?: any,
+    tx?: Tx,
   ): Promise<void> {
+    const client = tx ?? prisma;
     const today = startOfDay(new Date());
 
-    const updateQuery = {
-      $inc: {
-        totalUsed: creditsUsed,
-        [`usageByEndpoint.${endpoint}`]: creditsUsed,
+    // Read-modify-write the per-endpoint usage map so we can merge JSON.
+    const existing = await client.creditUsageAnalytics.findUnique({
+      where: { userId_date: { userId, date: today } },
+    });
+
+    const mergedUsageByEndpoint: Record<string, number> = {
+      ...((existing?.usageByEndpoint as Record<string, number>) || {}),
+    };
+    mergedUsageByEndpoint[endpoint] = (mergedUsageByEndpoint[endpoint] || 0) + creditsUsed;
+
+    await client.creditUsageAnalytics.upsert({
+      where: { userId_date: { userId, date: today } },
+      update: {
+        totalUsed: { increment: creditsUsed },
+        usageByEndpoint: mergedUsageByEndpoint as Prisma.InputJsonValue,
       },
-      $setOnInsert: {
+      create: {
         userId,
         date: today,
-        createdAt: new Date(),
+        totalUsed: creditsUsed,
+        usageByEndpoint: { [endpoint]: creditsUsed } as Prisma.InputJsonValue,
       },
-    };
-
-    if (session) {
-      await CreditUsageAnalytics.findOneAndUpdate({ userId, date: today }, updateQuery, { upsert: true, session });
-    } else {
-      await CreditUsageAnalytics.findOneAndUpdate({ userId, date: today }, updateQuery, { upsert: true });
-    }
+    });
   }
 
   /**
@@ -338,18 +337,14 @@ export class CreditsService {
       };
     }
 
-    const session = await CreditBalance.startSession();
-
     try {
-      await session.withTransaction(async () => {
-        const updatedBalance = await CreditBalance.findOneAndUpdate(
-          { userId },
-          {
-            $inc: { balance: amount },
-            $set: { lastUpdated: new Date() },
+      await prisma.$transaction(async tx => {
+        const updatedBalance = await tx.creditBalance.update({
+          where: { userId },
+          data: {
+            balance: { increment: amount },
           },
-          { new: true, session },
-        );
+        });
 
         if (!updatedBalance) {
           throw new Error("Failed to update balance");
@@ -365,18 +360,15 @@ export class CreditsService {
             description: `Admin adjustment: ${reason}`,
             metadata: { adminId, reason },
           },
-          session,
+          tx,
         );
       });
-
-      await session.endSession();
 
       return {
         success: true,
         newBalance: balance.balance + amount,
       };
     } catch (error) {
-      await session.endSession();
       console.error("Error adjusting credits:", error);
       return {
         success: false,

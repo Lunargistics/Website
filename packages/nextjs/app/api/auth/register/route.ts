@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
+import { generateUserId, hashPassword } from "~~/lib/db/userHelpers";
 import { AuthErrorHandler, handleAuthError } from "~~/lib/errorHandler";
 import dbConnect from "~~/lib/mongodb";
+import { prisma } from "~~/lib/prisma";
 import { getClientIP, registerRateLimiter } from "~~/lib/rateLimiter";
-import User from "~~/models/User";
 
 function validateEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -78,32 +79,35 @@ export async function POST(request: Request) {
     await dbConnect();
 
     // Check if email already exists (case-insensitive)
-    const existingUser = await User.findOne({
-      email: email.toLowerCase(),
+    const existingUser = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
     });
 
     if (existingUser) {
       return AuthErrorHandler.createResponse(AuthErrorHandler.createError("EMAIL_EXISTS"));
     }
 
-    // Create user with email verification token
-    const userId = `USER-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const user = new User({
-      userId,
-      email,
-      password,
-      name: name || email.split("@")[0],
-      emailVerified: false,
-    });
+    // Create user with email verification token. The former pre-save hook no
+    // longer runs, so hash the password and generate the userId explicitly.
+    const userId = generateUserId();
+    const hashedPassword = await hashPassword(password);
 
     // TODO: Implement email verification token generation
     // Generate email verification token
     // const verificationToken = user.createEmailVerificationToken();
-    // await user.save();
 
     // Temporary: Generate a simple token
     const verificationToken = Math.random().toString(36).substring(2, 15);
-    await user.save();
+
+    const user = await prisma.user.create({
+      data: {
+        userId,
+        email: email.toLowerCase(),
+        password: hashedPassword,
+        name: name || email.split("@")[0],
+        emailVerified: false,
+      },
+    });
 
     // In production, send verification email here
     // For now, we'll return the verification URL for development
@@ -113,7 +117,7 @@ export async function POST(request: Request) {
       {
         verificationUrl: `${process.env.NEXTAUTH_URL}/verify-email?token=${verificationToken}`,
         user: {
-          id: (user as any)._id.toString(),
+          id: user.id,
           email: user.email,
           name: user.name,
         },

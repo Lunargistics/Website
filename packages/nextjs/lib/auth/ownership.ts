@@ -1,8 +1,14 @@
 /**
  * Mission Ownership Verification System
- * Manages ownership, delegation, and access control for missions
+ * Manages ownership, delegation, and access control for missions.
+ *
+ * Migrated from Mongoose to Prisma + Postgres: ownership records are upserted via
+ * `prisma.missionOwnership.upsert` and read via `prisma.missionOwnership.find*`.
+ * `delegatedTo`/`sharedWith`/`transferHistory` are stored as Json columns.
  */
 import { Permission, Role, User, rbacManager } from "./rbac";
+import { Prisma } from "@prisma/client";
+import { prisma } from "~~/lib/prisma";
 
 export interface MissionOwnership {
   missionId: string;
@@ -331,27 +337,54 @@ export class MissionOwnershipManager {
   /**
    * Get all missions owned by a user
    */
-  async getMissionsOwnedBy(_userId: string): Promise<string[]> {
-    // This would query your database
-    // For now, returning empty array as placeholder
-    return [];
+  async getMissionsOwnedBy(userId: string): Promise<string[]> {
+    if (!this.isDbAvailable()) return [];
+
+    const docs = await prisma.missionOwnership.findMany({
+      where: { ownerId: userId },
+      select: { missionId: true },
+    });
+    return docs.map(d => d.missionId);
   }
 
   /**
-   * Get all missions accessible to a user
+   * Get all missions accessible to a user (owned, delegated, or shared).
    */
   async getAccessibleMissions(user: User): Promise<string[]> {
+    if (!this.isDbAvailable()) return [];
+
     const missions: Set<string> = new Set();
 
-    // Get owned missions
     const owned = await this.getMissionsOwnedBy(user.id);
     owned.forEach(m => missions.add(m));
 
-    // Get delegated missions
-    // This would query your database for all delegations to this user
+    // delegatedTo/sharedWith are Json arrays, so the former nested-field /
+    // $elemMatch queries can't be expressed as Prisma `where` clauses; load the
+    // candidate rows and filter in JS.
+    // TODO: optimize with JSONB query
+    const rows = await prisma.missionOwnership.findMany({
+      select: { missionId: true, delegatedTo: true, sharedWith: true },
+    });
 
-    // Get shared missions
-    // This would query your database for all shares to this user/org/dept
+    for (const row of rows) {
+      const delegatedTo = (row.delegatedTo as any[]) ?? [];
+      if (delegatedTo.some(d => d.userId === user.id)) {
+        missions.add(row.missionId);
+        continue;
+      }
+
+      const sharedWith = (row.sharedWith as any[]) ?? [];
+      const hasShare = sharedWith.some(s => {
+        if (s.type === "public") return true;
+        if (s.type === "user" && s.entityId === user.id) return true;
+        if (s.type === "organization" && user.organizationId && s.entityId === user.organizationId) return true;
+        if (s.type === "department" && user.departmentId && s.entityId === user.departmentId) return true;
+        return false;
+      });
+      if (hasShare) {
+        missions.add(row.missionId);
+      }
+    }
 
     return Array.from(missions);
   }
@@ -435,20 +468,65 @@ export class MissionOwnershipManager {
   }
 
   /**
-   * Save ownership to database (placeholder - implement based on your database)
+   * Whether durable storage (Prisma/Postgres) is usable in this context.
+   *
+   * Returns false in the browser or when no DATABASE_URL is configured, so non-DB
+   * contexts fall back to the in-memory cache.
    */
-  private async saveOwnership(_ownership: MissionOwnership): Promise<void> {
-    // TODO: Implement database save
-    // This would save to MongoDB, PostgreSQL, etc.
+  private isDbAvailable(): boolean {
+    return typeof window === "undefined" && !!process.env.DATABASE_URL;
   }
 
   /**
-   * Load ownership from database (placeholder - implement based on your database)
+   * Persist an ownership record (full upsert keyed by missionId).
    */
-  private async loadOwnership(_missionId: string): Promise<MissionOwnership | null> {
-    // TODO: Implement database load
-    // This would load from MongoDB, PostgreSQL, etc.
-    return null;
+  private async saveOwnership(ownership: MissionOwnership): Promise<void> {
+    if (!this.isDbAvailable()) return;
+
+    const delegatedTo = ownership.delegatedTo as unknown as Prisma.InputJsonValue;
+    const sharedWith = ownership.sharedWith as unknown as Prisma.InputJsonValue;
+    const transferHistory = ownership.transferHistory as unknown as Prisma.InputJsonValue;
+
+    await prisma.missionOwnership.upsert({
+      where: { missionId: ownership.missionId },
+      update: {
+        ownerId: ownership.ownerId,
+        organizationId: ownership.organizationId,
+        createdAt: ownership.createdAt,
+        delegatedTo,
+        sharedWith,
+        transferHistory,
+      },
+      create: {
+        missionId: ownership.missionId,
+        ownerId: ownership.ownerId,
+        organizationId: ownership.organizationId,
+        createdAt: ownership.createdAt,
+        delegatedTo,
+        sharedWith,
+        transferHistory,
+      },
+    });
+  }
+
+  /**
+   * Load an ownership record from the database.
+   */
+  private async loadOwnership(missionId: string): Promise<MissionOwnership | null> {
+    if (!this.isDbAvailable()) return null;
+
+    const doc = await prisma.missionOwnership.findUnique({ where: { missionId } });
+    if (!doc) return null;
+
+    return {
+      missionId: doc.missionId,
+      ownerId: doc.ownerId,
+      organizationId: doc.organizationId as string,
+      createdAt: doc.createdAt,
+      delegatedTo: (doc.delegatedTo as any[]) || [],
+      sharedWith: (doc.sharedWith as any[]) || [],
+      transferHistory: (doc.transferHistory as any[]) || [],
+    };
   }
 
   /**

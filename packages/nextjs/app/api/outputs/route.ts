@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~~/lib/auth";
 import dbConnect from "~~/lib/mongodb";
-import GeneratedOutput from "~~/models/GeneratedOutput";
+import { prisma } from "~~/lib/prisma";
 
 // GET /api/outputs - Get all outputs for authenticated user
 export async function GET(request: NextRequest) {
@@ -20,14 +21,19 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "20");
     const skip = parseInt(searchParams.get("skip") || "0");
 
-    const query: any = { userId: session.user.email };
+    const where: any = { userId: session.user.email };
     if (type) {
-      query.type = type;
+      where.type = type;
     }
 
-    const outputs = await GeneratedOutput.find(query).sort({ createdAt: -1 }).limit(limit).skip(skip).lean();
+    const outputs = await prisma.generatedOutput.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip,
+    });
 
-    const total = await GeneratedOutput.countDocuments(query);
+    const total = await prisma.generatedOutput.count({ where });
 
     return NextResponse.json({
       outputs,
@@ -90,15 +96,17 @@ export async function POST(request: NextRequest) {
     await dbConnect();
 
     console.log("Creating output for user:", session.user.email, "type:", type);
-    const generatedOutput = await GeneratedOutput.create({
-      userId: session.user.email,
-      type,
-      prompt,
-      output,
-      metadata: metadata || {},
+    const generatedOutput = await prisma.generatedOutput.create({
+      data: {
+        userId: session.user.email,
+        type,
+        prompt,
+        output,
+        metadata: (metadata || {}) as Prisma.InputJsonValue,
+      },
     });
 
-    console.log("Output created successfully:", generatedOutput._id);
+    console.log("Output created successfully:", generatedOutput.id);
     return NextResponse.json(generatedOutput, { status: 201 });
   } catch (error: any) {
     console.error("Error creating output:", error);

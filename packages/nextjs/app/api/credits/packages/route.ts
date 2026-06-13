@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       }
 
       const formattedPackages = packages.map(pkg => ({
-        id: pkg._id,
+        id: (pkg as any).id,
         name: pkg.name,
         credits: pkg.credits,
         bonusCredits: pkg.bonusCredits || 0,

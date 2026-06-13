@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnect from "~~/lib/mongodb";
+import { prisma } from "~~/lib/prisma";
 import { getClientIP, resetRateLimiter } from "~~/lib/rateLimiter";
-import User from "~~/models/User";
 
 export async function POST(request: Request) {
   try {
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
     await dbConnect();
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
 
     // Always return success message to prevent email enumeration
     if (!user) {

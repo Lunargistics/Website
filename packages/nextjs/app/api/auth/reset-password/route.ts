@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
+import { hashPassword } from "~~/lib/db/userHelpers";
 import dbConnect from "~~/lib/mongodb";
+import { prisma } from "~~/lib/prisma";
 import { getClientIP, resetRateLimiter } from "~~/lib/rateLimiter";
-import User from "~~/models/User";
 
 function validatePassword(password: string): { valid: boolean; message?: string } {
   if (password.length < 12) {
@@ -69,21 +70,29 @@ export async function POST(request: Request) {
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     // Find user with valid reset token
-    const user = await User.findOne({
-      passwordResetToken: hashedToken,
-      passwordResetExpires: { $gt: Date.now() },
+    const user = await prisma.user.findFirst({
+      where: {
+        passwordResetToken: hashedToken,
+        passwordResetExpires: { gt: new Date() },
+      },
     });
 
     if (!user) {
       return NextResponse.json({ error: "Invalid or expired reset token" }, { status: 400 });
     }
 
-    // Update password and clear reset token
-    user.password = password;
-    // TODO: Implement password reset token clearing
-    // user.passwordResetToken = undefined;
-    // user.passwordResetExpires = undefined;
-    await user.save();
+    // Update password and clear reset token. The former pre-save hook no longer
+    // runs, so hash the new password explicitly before persisting.
+    const hashedPassword = await hashPassword(password);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        // TODO: Implement password reset token clearing
+        // passwordResetToken: null,
+        // passwordResetExpires: null,
+      },
+    });
 
     return NextResponse.json(
       { message: "Password has been reset successfully. You can now login with your new password." },

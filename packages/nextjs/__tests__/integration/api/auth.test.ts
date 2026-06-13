@@ -29,7 +29,7 @@ let request: any;
 
 describeIntegration("Authentication API Integration Tests", () => {
   beforeAll(async () => {
-    User = (await import("../../../models/User")).default;
+    User = ((await import("../../../models/User")) as any).default;
     ({ setupTestDatabase, teardownTestDatabase, clearTestDatabase } = await import(
       "../../../tests/utils/db-test-utils"
     ));
