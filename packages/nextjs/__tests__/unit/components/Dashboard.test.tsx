@@ -24,9 +24,11 @@ jest.mock("~~/components/dashboard/MissionPlanningDashboard", () => ({
 }));
 
 describe("Dashboard Tabs", () => {
-  it("renders default overview tab", () => {
+  it("renders default overview tab", async () => {
     render(<DashboardPage />);
-    expect(screen.getByText(/Space Engineer Dashboard/i)).toBeInTheDocument();
+    // The overview content is a next/dynamic({ ssr: false }) component, so it
+    // resolves asynchronously — query with findByText rather than synchronously.
+    expect(await screen.findByText(/Space Engineer Dashboard/i)).toBeInTheDocument();
   });
 
   it("renders Social Feed and Profile tabs", () => {

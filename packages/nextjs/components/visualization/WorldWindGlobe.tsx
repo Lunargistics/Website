@@ -339,10 +339,10 @@ export function WorldWindGlobe({
 }
 
 // Export as dynamic component for Next.js SSR compatibility
-export default dynamic(
+export default dynamic<WorldWindGlobeProps>(
   () => {
     // Ensure WorldWind is loaded before rendering component
-    return new Promise(resolve => {
+    return new Promise<{ default: typeof WorldWindGlobe }>(resolve => {
       const checkWorldWind = () => {
         if (typeof window !== "undefined" && (window as any).WorldWind) {
           resolve({ default: WorldWindGlobe });

@@ -527,7 +527,10 @@ export class OrekitService {
 
         // Convert to lat/lon/alt
         const earthRotation = (targetTime.getTime() - currentTime.getTime()) * 0.00417807; // degrees
-        const longitude = (Math.atan2(y, x) * 180) / Math.PI - earthRotation;
+        const rawLongitude = (Math.atan2(y, x) * 180) / Math.PI - earthRotation;
+        // Earth rotation accumulates without bound over long propagations, so wrap
+        // the sub-satellite longitude into the valid [-180, 180) ground-track range.
+        const longitude = ((((rawLongitude + 180) % 360) + 360) % 360) - 180;
         const latitude = (Math.asin(z / r) * 180) / Math.PI;
         const altitude = r - EARTH_RADIUS;
 
@@ -538,7 +541,7 @@ export class OrekitService {
               position: { x, y, z },
               velocity: { vx, vy, vz },
               latitude,
-              longitude: longitude > 180 ? longitude - 360 : longitude,
+              longitude,
               altitude,
             },
           ],

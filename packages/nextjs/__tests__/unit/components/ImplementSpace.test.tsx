@@ -18,13 +18,18 @@ global.fetch = jest.fn().mockResolvedValue({
 describe("Implement Space Page", () => {
   it("renders and can toggle Space Tracking and ICD Processor", () => {
     render(<ImplementSpacePage />);
-    const trackingBtn = screen.getByRole("button", { name: /Space Tracking/i });
+
+    // The sidebar nav also contains "Space Tracking"/"ICD Processing" items, so
+    // target the dedicated toggle buttons by their full "Show …" label.
+    const trackingBtn = screen.getByRole("button", { name: /Show Space Tracking/i });
     fireEvent.click(trackingBtn);
     expect(screen.getByText(/Real-Time Space Tracking/i)).toBeInTheDocument();
+    // After toggling on, the button flips to the "Hide" label.
+    expect(screen.getByRole("button", { name: /Hide Space Tracking/i })).toBeInTheDocument();
 
-    const icdBtn = screen.getByRole("button", { name: /ICD Processor/i });
+    const icdBtn = screen.getByRole("button", { name: /Show ICD Processor/i });
     fireEvent.click(icdBtn);
-    expect(icdBtn).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Hide ICD Processor/i })).toBeInTheDocument();
   });
 
   it("submits a prompt and shows assistant response", async () => {

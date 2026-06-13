@@ -15,6 +15,25 @@ node_modules
 # misc
 .DS_Store
 
+# secrets / local env (never commit real env files)
+.env
+.env.local
+.env.*.local
+*.local
+cookies.txt
+
+# build output
+.next
+out
+packages/nextjs/.next
+packages/nextjs/out
+
+# test artifacts
+coverage
+packages/nextjs/coverage
+playwright-report
+test-results
+
 # IDE
 .vscode
 .idea
