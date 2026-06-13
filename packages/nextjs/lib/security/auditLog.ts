@@ -1,8 +1,14 @@
 /**
  * Audit Logging Service
- * Tracks all critical operations for compliance and security
+ * Tracks all critical operations for compliance and security.
+ *
+ * Migrated from Mongoose to Prisma + Postgres: buffered entries are batch-inserted
+ * via `prisma.auditLog.createMany` and queried via `prisma.auditLog.findMany`.
+ * The in-memory buffering API/behavior is unchanged.
  */
 import { encryptionService } from "./encryption";
+import { Prisma } from "@prisma/client";
+import { prisma } from "~~/lib/prisma";
 
 export enum AuditEventType {
   // Authentication events
@@ -168,22 +174,50 @@ export class AuditLogger {
   }
 
   /**
-   * Query audit logs
+   * Query audit logs from durable storage.
+   *
+   * Flushes the in-memory buffer first so the most recent events are included,
+   * then reads from MongoDB so callers see the full persisted history rather
+   * than just whatever happens to still be in this process's buffer.
    */
   async query(filter: AuditLogFilter): Promise<AuditLogEntry[]> {
-    // In production, this would query from database
-    // For now, filter in-memory logs
-    return this.logs.filter(log => {
-      if (filter.startDate && log.timestamp < filter.startDate) return false;
-      if (filter.endDate && log.timestamp > filter.endDate) return false;
-      if (filter.userId && log.userId !== filter.userId) return false;
-      if (filter.eventType && log.eventType !== filter.eventType) return false;
-      if (filter.severity && log.severity !== filter.severity) return false;
-      if (filter.resourceType && log.resourceType !== filter.resourceType) return false;
-      if (filter.resourceId && log.resourceId !== filter.resourceId) return false;
-      if (filter.result && log.result !== filter.result) return false;
-      return true;
-    });
+    await this.flush();
+
+    if (!this.isDbAvailable()) {
+      // No database configured (e.g. unit context) — fall back to the buffer.
+      return this.logs.filter(log => this.matchesFilter(log, filter));
+    }
+
+    const where: Prisma.AuditLogWhereInput = {};
+    if (filter.startDate || filter.endDate) {
+      where.timestamp = {};
+      if (filter.startDate) where.timestamp.gte = filter.startDate;
+      if (filter.endDate) where.timestamp.lte = filter.endDate;
+    }
+    if (filter.userId) where.userId = filter.userId;
+    if (filter.eventType) where.eventType = filter.eventType;
+    if (filter.severity) where.severity = filter.severity;
+    if (filter.resourceType) where.resourceType = filter.resourceType;
+    if (filter.resourceId) where.resourceId = filter.resourceId;
+    if (filter.result) where.result = filter.result;
+
+    const docs = await prisma.auditLog.findMany({ where, orderBy: { timestamp: "desc" } });
+    return docs.map((doc: any) => this.fromDocument(doc));
+  }
+
+  /**
+   * Pure filter predicate, shared by the DB-less fallback path.
+   */
+  private matchesFilter(log: AuditLogEntry, filter: AuditLogFilter): boolean {
+    if (filter.startDate && log.timestamp < filter.startDate) return false;
+    if (filter.endDate && log.timestamp > filter.endDate) return false;
+    if (filter.userId && log.userId !== filter.userId) return false;
+    if (filter.eventType && log.eventType !== filter.eventType) return false;
+    if (filter.severity && log.severity !== filter.severity) return false;
+    if (filter.resourceType && log.resourceType !== filter.resourceType) return false;
+    if (filter.resourceId && log.resourceId !== filter.resourceId) return false;
+    if (filter.result && log.result !== filter.result) return false;
+    return true;
   }
 
   /**
@@ -273,31 +307,94 @@ export class AuditLogger {
   }
 
   /**
-   * Flush logs to persistent storage
+   * Flush buffered logs to durable storage (MongoDB).
+   *
+   * On failure the batch is returned to the front of the buffer so it is
+   * retried on the next flush instead of being lost.
    */
   private async flush(): Promise<void> {
     if (this.logs.length === 0) return;
 
-    const logsToFlush = [...this.logs];
-    this.logs = [];
-
-    try {
-      // In production, this would write to database
-      // For now, we'll just log that we would flush
-      console.log(`[Audit] Flushing ${logsToFlush.length} audit logs to storage`);
-
-      // TODO: Implement actual database storage
-      // await this.persistToDatabase(logsToFlush);
-
-      // Keep last N logs in memory for quick access
+    if (!this.isDbAvailable()) {
+      // No database configured: cap the buffer so memory stays bounded.
       if (this.logs.length > this.maxInMemoryLogs) {
         this.logs = this.logs.slice(-this.maxInMemoryLogs);
       }
-    } catch (error) {
-      console.error("[Audit] Failed to flush logs:", error);
-      // Re-add logs to buffer
-      this.logs = [...logsToFlush, ...this.logs];
+      return;
     }
+
+    const logsToFlush = this.logs;
+    this.logs = [];
+
+    try {
+      await prisma.auditLog.createMany({
+        data: logsToFlush.map(entry => this.toDocument(entry)),
+        skipDuplicates: true,
+      });
+    } catch (error) {
+      // Requeue the batch (front of buffer) for the next flush attempt.
+      this.logs = [...logsToFlush, ...this.logs];
+      throw error;
+    }
+  }
+
+  /**
+   * Whether durable storage (Prisma/Postgres) is usable in this context.
+   *
+   * Returns false in the browser or when no DATABASE_URL is configured, so
+   * non-DB contexts (e.g. unit tests) degrade gracefully to the in-memory buffer.
+   */
+  private isDbAvailable(): boolean {
+    return typeof window === "undefined" && !!process.env.DATABASE_URL;
+  }
+
+  /**
+   * Map an in-memory entry to the persisted row shape (id -> auditId).
+   */
+  private toDocument(entry: AuditLogEntry): Prisma.AuditLogCreateManyInput {
+    return {
+      auditId: entry.id,
+      timestamp: entry.timestamp,
+      eventType: entry.eventType,
+      severity: entry.severity,
+      userId: entry.userId,
+      userEmail: entry.userEmail,
+      ipAddress: entry.ipAddress,
+      userAgent: entry.userAgent,
+      action: entry.action,
+      resourceType: entry.resourceType,
+      resourceId: entry.resourceId,
+      metadata: (entry.metadata ?? undefined) as Prisma.InputJsonValue | undefined,
+      result: entry.result,
+      errorMessage: entry.errorMessage,
+      duration: entry.duration,
+      signature: entry.signature,
+      environment: process.env.NODE_ENV,
+    };
+  }
+
+  /**
+   * Map a persisted document back to the in-memory entry shape.
+   */
+  private fromDocument(doc: any): AuditLogEntry {
+    return {
+      id: doc.auditId,
+      timestamp: doc.timestamp,
+      eventType: doc.eventType,
+      severity: doc.severity,
+      userId: doc.userId,
+      userEmail: doc.userEmail,
+      ipAddress: doc.ipAddress,
+      userAgent: doc.userAgent,
+      action: doc.action,
+      resourceType: doc.resourceType,
+      resourceId: doc.resourceId,
+      metadata: doc.metadata,
+      result: doc.result,
+      errorMessage: doc.errorMessage,
+      duration: doc.duration,
+      signature: doc.signature,
+    };
   }
 
   /**

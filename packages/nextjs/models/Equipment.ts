@@ -1,8 +1,11 @@
 /**
- * Equipment Model
- * MongoDB schema for space equipment and components
+ * Equipment domain types.
+ *
+ * Migrated from Mongoose to Prisma + Postgres. This file no longer defines a
+ * Mongoose schema/model; it only exports the shared enums and plain data shapes.
+ * Persistence goes through the shared Prisma client (`prisma.equipment`), and the
+ * former instance/static methods now live in `services/database/dataService.ts`.
  */
-import mongoose, { Document, Model, Schema } from "mongoose";
 
 export enum EquipmentCategory {
   SATELLITE_BUS = "SATELLITE_BUS",
@@ -56,7 +59,8 @@ export interface InterfaceSpec {
   dataFormat?: string;
 }
 
-export interface IEquipment extends Document {
+export interface IEquipment {
+  id: string;
   equipmentId: string;
   name: string;
   description: string;
@@ -93,239 +97,17 @@ export interface IEquipment extends Document {
   contractAddress?: string;
   ipfsHash?: string;
 
-  // Relationships
-  compatibleWith: mongoose.Types.ObjectId[];
-  incompatibleWith: mongoose.Types.ObjectId[];
-  missions: mongoose.Types.ObjectId[];
+  // Relationships (plain id references)
+  compatibleWith: string[];
+  incompatibleWith: string[];
+  missions: string[];
 
   // Metadata
   tags: string[];
   notes?: string;
-  createdBy: mongoose.Types.ObjectId;
+  createdBy: string;
   organization?: string;
 
   createdAt: Date;
   updatedAt: Date;
 }
-
-const EquipmentSchema = new Schema<IEquipment>(
-  {
-    equipmentId: {
-      type: String,
-      required: true,
-      unique: true,
-      index: true,
-    },
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-      maxlength: 200,
-    },
-    description: {
-      type: String,
-      required: true,
-      maxlength: 2000,
-    },
-    category: {
-      type: String,
-      enum: Object.values(EquipmentCategory),
-      required: true,
-      index: true,
-    },
-    status: {
-      type: String,
-      enum: Object.values(EquipmentStatus),
-      default: EquipmentStatus.AVAILABLE,
-      required: true,
-    },
-    manufacturer: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    modelName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    serialNumber: {
-      type: String,
-      sparse: true,
-      index: true,
-    },
-
-    // Technical specs
-    specifications: {
-      type: Schema.Types.Mixed,
-      default: {},
-    },
-    interfaces: [
-      {
-        name: String,
-        type: String,
-        protocol: String,
-        connector: String,
-        pinout: [String],
-        dataFormat: String,
-      },
-    ],
-
-    // Standards
-    standards: [String],
-    certifications: [String],
-    heritage: String,
-    trl: {
-      type: Number,
-      min: 1,
-      max: 9,
-    },
-
-    // Cost
-    unitCost: Number,
-    leadTime: Number,
-    quantity: {
-      type: Number,
-      default: 1,
-    },
-    supplier: String,
-
-    // Documentation
-    datasheet: String,
-    manuals: [String],
-    testReports: [String],
-    images: [String],
-
-    // Blockchain
-    nftTokenId: String,
-    contractAddress: String,
-    ipfsHash: String,
-
-    // Relationships
-    compatibleWith: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Equipment",
-      },
-    ],
-    incompatibleWith: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Equipment",
-      },
-    ],
-    missions: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Mission",
-      },
-    ],
-
-    // Metadata
-    tags: [String],
-    notes: String,
-    createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    organization: String,
-  },
-  {
-    timestamps: true,
-    collection: "equipment",
-  },
-);
-
-// Indexes
-EquipmentSchema.index({ manufacturer: 1, modelName: 1 });
-EquipmentSchema.index({ tags: 1 });
-EquipmentSchema.index({ status: 1, category: 1 });
-EquipmentSchema.index({ trl: 1 });
-EquipmentSchema.index({ createdAt: -1 });
-
-// Virtual for compatibility check
-EquipmentSchema.virtual("isCompatibleWith").get(function (this: IEquipment) {
-  return (equipmentId: mongoose.Types.ObjectId) => {
-    return this.compatibleWith.includes(equipmentId) && !this.incompatibleWith.includes(equipmentId);
-  };
-});
-
-// Methods
-EquipmentSchema.methods.checkCompatibility = function (otherEquipment: IEquipment): {
-  compatible: boolean;
-  reason?: string;
-} {
-  if (this.incompatibleWith.includes(otherEquipment._id)) {
-    return { compatible: false, reason: "Explicitly marked as incompatible" };
-  }
-
-  // Check interface compatibility
-  const commonInterfaces = this.interfaces.filter((i1: InterfaceSpec) =>
-    otherEquipment.interfaces.some((i2: InterfaceSpec) => i1.type === i2.type && i1.protocol === i2.protocol),
-  );
-
-  if (commonInterfaces.length === 0) {
-    return { compatible: false, reason: "No compatible interfaces found" };
-  }
-
-  return { compatible: true };
-};
-
-EquipmentSchema.methods.assignToMission = async function (missionId: mongoose.Types.ObjectId) {
-  if (!this.missions.includes(missionId)) {
-    this.missions.push(missionId);
-    this.status = EquipmentStatus.IN_USE;
-    await this.save();
-  }
-};
-
-EquipmentSchema.methods.removeFromMission = async function (missionId: mongoose.Types.ObjectId) {
-  this.missions = this.missions.filter((m: mongoose.Types.ObjectId) => m.toString() !== missionId.toString());
-  if (this.missions.length === 0) {
-    this.status = EquipmentStatus.AVAILABLE;
-  }
-  await this.save();
-};
-
-// Static methods
-EquipmentSchema.statics.findByCategory = function (category: EquipmentCategory) {
-  return this.find({ category, status: EquipmentStatus.AVAILABLE });
-};
-
-EquipmentSchema.statics.findCompatible = async function (equipmentId: mongoose.Types.ObjectId) {
-  const equipment = await this.findById(equipmentId);
-  if (!equipment) return [];
-
-  return this.find({
-    _id: { $in: equipment.compatibleWith },
-    status: EquipmentStatus.AVAILABLE,
-  });
-};
-
-EquipmentSchema.statics.searchBySpecs = function (specs: Partial<TechnicalSpecs>) {
-  const query: any = {};
-
-  if (specs.mass) {
-    query["specifications.mass"] = { $lte: specs.mass };
-  }
-  if (specs.power) {
-    query["specifications.power"] = { $lte: specs.power };
-  }
-
-  return this.find(query);
-};
-
-// Pre-save middleware
-EquipmentSchema.pre("save", function (next) {
-  if (!this.equipmentId) {
-    this.equipmentId = `EQP-${this.category}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  }
-  next();
-});
-
-// Export the model
-const Equipment: Model<IEquipment> =
-  mongoose.models.Equipment || mongoose.model<IEquipment>("Equipment", EquipmentSchema);
-
-export default Equipment;

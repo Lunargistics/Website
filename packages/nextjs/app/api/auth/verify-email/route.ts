@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import dbConnect from "~~/lib/mongodb";
-import User from "~~/models/User";
+import { prisma } from "~~/lib/prisma";
 
 export async function POST(request: Request) {
   try {
@@ -17,26 +17,32 @@ export async function POST(request: Request) {
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     // Find user with valid verification token
-    const user = await User.findOne({
-      emailVerificationToken: hashedToken,
-      emailVerificationExpires: { $gt: Date.now() },
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        emailVerificationToken: hashedToken,
+        emailVerificationExpires: { gt: new Date() },
+      },
     });
 
-    if (!user) {
+    if (!existingUser) {
       return NextResponse.json({ error: "Invalid or expired verification token" }, { status: 400 });
     }
 
     // Update user as verified and clear verification token
-    user.emailVerified = true;
-    user.emailVerificationToken = undefined;
-    user.emailVerificationExpires = undefined;
-    await user.save({ validateBeforeSave: false });
+    const user = await prisma.user.update({
+      where: { id: existingUser.id },
+      data: {
+        emailVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
+      },
+    });
 
     return NextResponse.json(
       {
         message: "Email verified successfully!",
         user: {
-          id: (user as any)._id.toString(),
+          id: user.id,
           email: user.email,
           name: user.name,
           emailVerified: user.emailVerified,

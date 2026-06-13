@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~~/lib/auth";
 import dbConnect from "~~/lib/mongodb";
-import User from "~~/models/User";
+import { prisma } from "~~/lib/prisma";
+
+// Projection used when "populating" follower/following user ids.
+const FOLLOW_SELECT = { id: true, username: true, name: true, avatar: true } as const;
 
 // GET current user profile
 export async function GET() {
@@ -15,16 +18,22 @@ export async function GET() {
 
     await dbConnect();
 
-    const user = await User.findById(session.user.id)
-      .select("-password")
-      .populate("followers", "username name avatar")
-      .populate("following", "username name avatar");
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      omit: { password: true },
+    });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ user });
+    // Replace follower/following id arrays with the populated user shape.
+    const [followers, following] = await Promise.all([
+      prisma.user.findMany({ where: { id: { in: user.followers } }, select: FOLLOW_SELECT }),
+      prisma.user.findMany({ where: { id: { in: user.following } }, select: FOLLOW_SELECT }),
+    ]);
+
+    return NextResponse.json({ user: { ...user, followers, following } as any });
   } catch (error) {
     console.error("Profile fetch error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -46,9 +55,11 @@ export async function PUT(request: Request) {
 
     // Check if wallet address is already taken by another user
     if (walletAddress) {
-      const existingWallet = await User.findOne({
-        walletAddress,
-        _id: { $ne: session.user.id },
+      const existingWallet = await prisma.user.findFirst({
+        where: {
+          walletAddress,
+          id: { not: session.user.id },
+        },
       });
 
       if (existingWallet) {
@@ -56,20 +67,16 @@ export async function PUT(request: Request) {
       }
     }
 
-    const user = await User.findByIdAndUpdate(
-      session.user.id,
-      {
+    const user = await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
         ...(name !== undefined && { name }),
         ...(bio !== undefined && { bio }),
         ...(avatar !== undefined && { avatar }),
         ...(walletAddress !== undefined && { walletAddress }),
       },
-      { new: true, runValidators: true },
-    ).select("-password");
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
+      omit: { password: true },
+    });
 
     return NextResponse.json({
       message: "Profile updated successfully",
@@ -78,8 +85,14 @@ export async function PUT(request: Request) {
   } catch (error: any) {
     console.error("Profile update error:", error);
 
-    if (error.code === 11000 && error.keyPattern?.walletAddress) {
+    // Prisma unique-constraint violation on walletAddress (P2002).
+    if (error?.code === "P2002" && (error?.meta?.target as string[] | undefined)?.includes("walletAddress")) {
       return NextResponse.json({ error: "Wallet address already connected to another account" }, { status: 400 });
+    }
+
+    // Record not found (e.g. stale session id) — preserve the 404 behavior.
+    if (error?.code === "P2025") {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

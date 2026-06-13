@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~~/lib/auth";
 import dbConnect from "~~/lib/mongodb";
-import User from "~~/models/User";
+import { prisma } from "~~/lib/prisma";
 
 // POST follow user
 export async function POST(request: Request, { params }: { params: Promise<{ username: string }> }) {
@@ -17,38 +17,41 @@ export async function POST(request: Request, { params }: { params: Promise<{ use
     await dbConnect();
 
     // Find target user
-    const targetUser = await User.findOne({
-      usernameLower: username.toLowerCase(),
+    const targetUser = await prisma.user.findUnique({
+      where: { usernameLower: username.toLowerCase() },
     });
 
     if (!targetUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if ((targetUser as any)._id.toString() === session.user.id) {
+    if (targetUser.id === session.user.id) {
       return NextResponse.json({ error: "You cannot follow yourself" }, { status: 400 });
     }
 
     // Add to following list of current user
-    const currentUser = await User.findById(session.user.id);
+    const currentUser = await prisma.user.findUnique({ where: { id: session.user.id } });
 
     if (!currentUser) {
       return NextResponse.json({ error: "Current user not found" }, { status: 404 });
     }
 
     // Check if already following
-    const isFollowing = currentUser.following.includes((targetUser as any)._id);
+    const isFollowing = currentUser.following.includes(targetUser.id);
 
     if (isFollowing) {
       return NextResponse.json({ error: "Already following this user" }, { status: 400 });
     }
 
     // Update both users
-    currentUser.following.push((targetUser as any)._id);
-    targetUser.followers.push((currentUser as any)._id);
-
-    await currentUser.save();
-    await targetUser.save();
+    await prisma.user.update({
+      where: { id: currentUser.id },
+      data: { following: { push: targetUser.id } },
+    });
+    await prisma.user.update({
+      where: { id: targetUser.id },
+      data: { followers: { push: currentUser.id } },
+    });
 
     return NextResponse.json({
       message: "Successfully followed user",
@@ -74,8 +77,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ u
     await dbConnect();
 
     // Find target user
-    const targetUser = await User.findOne({
-      usernameLower: username.toLowerCase(),
+    const targetUser = await prisma.user.findUnique({
+      where: { usernameLower: username.toLowerCase() },
     });
 
     if (!targetUser) {
@@ -83,28 +86,31 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ u
     }
 
     // Remove from following list of current user
-    const currentUser = await User.findById(session.user.id);
+    const currentUser = await prisma.user.findUnique({ where: { id: session.user.id } });
 
     if (!currentUser) {
       return NextResponse.json({ error: "Current user not found" }, { status: 404 });
     }
 
     // Check if following
-    const followingIndex = currentUser.following.indexOf((targetUser as any)._id);
+    const followingIndex = currentUser.following.indexOf(targetUser.id);
 
     if (followingIndex === -1) {
       return NextResponse.json({ error: "Not following this user" }, { status: 400 });
     }
 
-    // Update both users
-    currentUser.following.splice(followingIndex, 1);
-    const followerIndex = targetUser.followers.indexOf((currentUser as any)._id);
-    if (followerIndex > -1) {
-      targetUser.followers.splice(followerIndex, 1);
-    }
+    // Update both users (no relations — rewrite the filtered arrays)
+    const updatedFollowing = currentUser.following.filter(id => id !== targetUser.id);
+    const updatedFollowers = targetUser.followers.filter(id => id !== currentUser.id);
 
-    await currentUser.save();
-    await targetUser.save();
+    await prisma.user.update({
+      where: { id: currentUser.id },
+      data: { following: updatedFollowing },
+    });
+    await prisma.user.update({
+      where: { id: targetUser.id },
+      data: { followers: updatedFollowers },
+    });
 
     return NextResponse.json({
       message: "Successfully unfollowed user",

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~~/lib/auth";
 import dbConnect from "~~/lib/mongodb";
-import GeneratedOutput from "~~/models/GeneratedOutput";
+import { prisma } from "~~/lib/prisma";
 
 // GET /api/outputs/[id] - Get specific output for authenticated user
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -16,9 +16,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     await dbConnect();
     const resolvedParams = await params;
 
-    const output = await GeneratedOutput.findOne({
-      _id: resolvedParams.id,
-      userId: session.user.email,
+    const output = await prisma.generatedOutput.findFirst({
+      where: {
+        id: resolvedParams.id,
+        userId: session.user.email,
+      },
     });
 
     if (!output) {
@@ -44,12 +46,14 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     await dbConnect();
     const resolvedParams = await params;
 
-    const result = await GeneratedOutput.deleteOne({
-      _id: resolvedParams.id,
-      userId: session.user.email,
+    const result = await prisma.generatedOutput.deleteMany({
+      where: {
+        id: resolvedParams.id,
+        userId: session.user.email,
+      },
     });
 
-    if (result.deletedCount === 0) {
+    if (result.count === 0) {
       return NextResponse.json({ error: "Output not found" }, { status: 404 });
     }
 

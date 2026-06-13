@@ -1,6 +1,7 @@
-import { CreditPackage, ICreditPackage } from "../../models/Credits";
 import { CreditsService } from "../credits/creditsService";
 import Stripe from "stripe";
+import { prisma } from "~~/lib/prisma";
+import { ICreditPackage } from "~~/models/Credits";
 
 // Initialize Stripe (handle build-time absence of env vars)
 const stripeKey = process.env.STRIPE_SECRET_KEY || "sk_test_dummy_key_for_build";
@@ -77,9 +78,9 @@ export class StripeService {
     for (const pkg of packages) {
       try {
         // Check if package already exists
-        const existing = await CreditPackage.findOne({ name: pkg.name });
+        const existing = await prisma.creditPackage.findFirst({ where: { name: pkg.name } });
         if (existing) {
-          createdPackages.push(existing);
+          createdPackages.push(existing as unknown as ICreditPackage);
           continue;
         }
 
@@ -118,20 +119,21 @@ export class StripeService {
         }
 
         // Save to database
-        const creditPackage = new CreditPackage({
-          name: pkg.name,
-          credits: pkg.credits,
-          price: pkg.price,
-          stripePriceId,
-          stripeProductId,
-          description: pkg.description,
-          popular: pkg.popular,
-          bonusCredits: pkg.bonusCredits,
-          isActive: true,
+        const creditPackage = await prisma.creditPackage.create({
+          data: {
+            name: pkg.name,
+            credits: pkg.credits,
+            price: pkg.price,
+            stripePriceId,
+            stripeProductId,
+            description: pkg.description,
+            popular: pkg.popular,
+            bonusCredits: pkg.bonusCredits,
+            isActive: true,
+          },
         });
 
-        await creditPackage.save();
-        createdPackages.push(creditPackage);
+        createdPackages.push(creditPackage as unknown as ICreditPackage);
       } catch (error) {
         console.error(`Error creating credit package ${pkg.name}:`, error);
       }
@@ -144,7 +146,10 @@ export class StripeService {
    * Get all active credit packages
    */
   static async getCreditPackages(): Promise<ICreditPackage[]> {
-    return await CreditPackage.find({ isActive: true }).sort({ price: 1 });
+    return (await prisma.creditPackage.findMany({
+      where: { isActive: true },
+      orderBy: { price: "asc" },
+    })) as unknown as ICreditPackage[];
   }
 
   /**
@@ -156,7 +161,7 @@ export class StripeService {
   }> {
     this.ensureStripeConfigured();
 
-    const creditPackage = await CreditPackage.findById(params.packageId);
+    const creditPackage = await prisma.creditPackage.findUnique({ where: { id: params.packageId } });
     if (!creditPackage) {
       throw new Error("Credit package not found");
     }
@@ -195,7 +200,7 @@ export class StripeService {
     clientSecret: string;
     amount: number;
   }> {
-    const creditPackage = await CreditPackage.findById(params.packageId);
+    const creditPackage = await prisma.creditPackage.findUnique({ where: { id: params.packageId } });
     if (!creditPackage) {
       throw new Error("Credit package not found");
     }

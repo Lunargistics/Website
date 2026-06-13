@@ -4,7 +4,8 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
-import User from "~~/models/User";
+import { comparePassword, generateUserId, hashPassword } from "~~/lib/db/userHelpers";
+import { prisma } from "~~/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -35,13 +36,15 @@ export const authOptions: NextAuthOptions = {
 
         await connectDB();
 
-        const user = await User.findOne({ email: credentials.email.toLowerCase() }).select("+password");
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email.toLowerCase() },
+        });
 
         if (!user) {
           throw new Error("Invalid email or password");
         }
 
-        const isPasswordValid = await user.comparePassword(credentials.password);
+        const isPasswordValid = await comparePassword(credentials.password, user.password);
 
         if (!isPasswordValid) {
           throw new Error("Invalid email or password");
@@ -52,7 +55,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         return {
-          id: (user as any)._id.toString(),
+          id: user.id,
           email: user.email,
           name: user.name || user.email,
           emailVerified: user.emailVerified,
@@ -98,16 +101,20 @@ export const authOptions: NextAuthOptions = {
           await connectDB();
 
           // Check if user already exists
-          const existingUser = await User.findOne({ email: user.email.toLowerCase() });
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email.toLowerCase() },
+          });
 
           if (existingUser) {
             // Update user info if needed
             if (!existingUser.name && user.name) {
-              existingUser.name = user.name;
-              await existingUser.save();
+              await prisma.user.update({
+                where: { id: existingUser.id },
+                data: { name: user.name },
+              });
             }
             // Store the user ID for immediate session creation
-            user.id = (existingUser as any)._id.toString();
+            user.id = existingUser.id;
             console.log(`OAuth login successful for existing user: ${user.email}`);
             return true;
           }
@@ -121,21 +128,28 @@ export const authOptions: NextAuthOptions = {
           let counter = 1;
 
           // Ensure unique username
-          while (await User.findOne({ name: username.toLowerCase() })) {
+          while (await prisma.user.findUnique({ where: { usernameLower: username.toLowerCase() } })) {
             username = `${baseUsername}${counter}`;
             counter++;
           }
 
-          const newUser = new User({
-            email: user.email,
-            name: user.name || user.email.split("@")[0],
-            emailVerified: true, // Social logins are pre-verified
-            password: Math.random().toString(36), // Dummy password for social users
+          // Dummy password for social users (hashed since the pre-save hook is gone)
+          const dummyPassword = await hashPassword(Math.random().toString(36));
+
+          const newUser = await prisma.user.create({
+            data: {
+              userId: generateUserId(),
+              email: user.email.toLowerCase(),
+              name: user.name || user.email.split("@")[0],
+              username,
+              usernameLower: username.toLowerCase(),
+              emailVerified: true, // Social logins are pre-verified
+              password: dummyPassword,
+            },
           });
 
-          await newUser.save();
           // Store the user ID for immediate session creation
-          user.id = (newUser as any)._id.toString();
+          user.id = newUser.id;
           console.log(`OAuth login successful - new user created: ${user.email}`);
           return true;
         } catch (error) {

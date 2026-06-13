@@ -1,0 +1,361 @@
+// Prisma schema — Postgres (Railway). Migrated from MongoDB/Mongoose.
+// Pragmatic-hybrid modeling:
+//   - Embedded sub-documents (apiKeys, preferences, reviews, phases, orbit, ...) -> Json columns
+//   - Simple scalar lists (tags, roles, followers, likes, ...) -> Postgres String[] arrays
+//   - References (owner, author, mission, ...) -> scalar string ids (no FK relations);
+//     former Mongoose .populate() is replaced by explicit follow-up fetches in app code.
+//   - Former Mongoose enums are stored as String; the app's TS enums still constrain values.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                       String    @id @default(cuid())
+  userId                   String?   @unique
+  email                    String    @unique
+  password                 String?
+  name                     String
+  roles                    String[]  @default([])
+
+  // Profile
+  avatar                   String?
+  bio                      String?
+  organization             String?
+  department               String?
+  jobTitle                 String?
+  phone                    String?
+  location                 String?
+  timezone                 String?   @default("UTC")
+
+  // Username (used by social/follow routes + post author projection)
+  username                 String?   @unique
+  usernameLower            String?   @unique
+
+  // Authentication
+  emailVerified            Boolean   @default(false)
+  emailVerificationToken   String?
+  emailVerificationExpires DateTime?
+  passwordResetToken       String?
+  passwordResetExpires     DateTime?
+  twoFactorEnabled         Boolean   @default(false)
+  twoFactorSecret          String?
+  lastLogin                DateTime?
+  loginAttempts            Int       @default(0)
+  lockUntil                DateTime?
+
+  // Web3
+  walletAddress            String?   @unique
+  walletNonce              String?
+
+  // Embedded JSON
+  apiKeys                  Json      @default("[]")
+  preferences              Json?
+  subscription             Json?
+
+  // Social (scalar id lists)
+  following                String[]  @default([])
+  followers                String[]  @default([])
+  followingCount           Int       @default(0)
+  followerCount            Int       @default(0)
+
+  // Metadata
+  permissions              String[]  @default([])
+  credits                  Int       @default(100)
+
+  deletedAt                DateTime?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  @@index([organization])
+  @@index([createdAt])
+}
+
+model Mission {
+  id               String    @id @default(cuid())
+  missionId        String    @unique
+  name             String
+  description      String
+  type             String
+  status           String    @default("DRAFT")
+
+  owner            String
+  collaborators    String[]  @default([])
+  organization     String?
+
+  launchDate       DateTime?
+  endDate          DateTime?
+
+  phases           Json      @default("[]")
+  orbit            Json?
+  tle              String[]  @default([])
+  groundStations   Json      @default("[]")
+
+  equipment        String[]  @default([])
+  requirements     String[]  @default([])
+  standards        String[]  @default([])
+  documents        String[]  @default([])
+
+  ipfsHash         String?
+  contractAddress  String?
+  tags             String[]  @default([])
+  budget           Float?
+  riskLevel        String?
+  complianceStatus String?
+  aitPlan          String?
+  lastModifiedBy   String?
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([owner, status])
+  @@index([type, status])
+  @@index([launchDate])
+  @@index([createdAt])
+}
+
+model Document {
+  id               String    @id @default(cuid())
+  documentId       String    @unique
+  title            String
+  description      String?
+  type             String
+  status           String    @default("DRAFT")
+  version          String    @default("1.0.0")
+
+  mission          String
+  equipment        String[]  @default([])
+
+  content          String?
+  fileUrl          String?
+  ipfsHash         String?
+  s3Key            String?
+  metadata         Json?
+
+  tags             String[]  @default([])
+  category         String?
+  confidentiality  String    @default("INTERNAL")
+
+  authors          String[]  @default([])
+  reviewers        String[]  @default([])
+  approvers        String[]  @default([])
+  reviews          Json      @default("[]")
+
+  previousVersion  String?
+  nextVersion      String?
+  changeLog        String?
+
+  standards        String[]  @default([])
+  complianceChecks Json      @default("[]")
+
+  nftTokenId       String?
+  contractAddress  String?
+  transactionHash  String?
+
+  owner            String
+  sharedWith       String[]  @default([])
+  publicAccess     Boolean   @default(false)
+
+  publishedAt      DateTime?
+  expiresAt        DateTime?
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([mission, type])
+  @@index([status, type])
+  @@index([owner, status])
+  @@index([createdAt])
+  @@index([publishedAt])
+}
+
+model Equipment {
+  id               String    @id @default(cuid())
+  equipmentId      String    @unique
+  name             String
+  description      String
+  category         String
+  status           String    @default("AVAILABLE")
+  manufacturer     String
+  modelName        String
+  serialNumber     String?
+
+  specifications   Json?
+  interfaces       Json      @default("[]")
+
+  standards        String[]  @default([])
+  certifications   String[]  @default([])
+  heritage         String?
+  trl              Int?
+  unitCost         Float?
+  leadTime         Int?
+  quantity         Int       @default(1)
+  supplier         String?
+  datasheet        String?
+  manuals          String[]  @default([])
+  testReports      String[]  @default([])
+  images           String[]  @default([])
+
+  nftTokenId       String?
+  contractAddress  String?
+  ipfsHash         String?
+
+  compatibleWith   String[]  @default([])
+  incompatibleWith String[]  @default([])
+  missions         String[]  @default([])
+  tags             String[]  @default([])
+  notes            String?
+
+  createdBy        String
+  organization     String?
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([manufacturer, modelName])
+  @@index([status, category])
+  @@index([trl])
+  @@index([createdAt])
+}
+
+model GeneratedOutput {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  prompt    String
+  output    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([userId, type, createdAt])
+}
+
+model Post {
+  id           String   @id @default(cuid())
+  author       String
+  content      String
+  images       String[] @default([])
+  likes        String[] @default([])
+  likeCount    Int      @default(0)
+  shares       String[] @default([])
+  shareCount   Int      @default(0)
+  comments     Json     @default("[]")
+  commentCount Int      @default(0)
+  tags         String[] @default([])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([author, createdAt])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id                 String   @id @default(cuid())
+  auditId            String   @unique
+  timestamp          DateTime @default(now())
+  eventType          String
+  severity           String
+  userId             String?
+  userEmail          String?
+  ipAddress          String?
+  userAgent          String?
+  action             String
+  resourceType       String?
+  resourceId         String?
+  missionId          String?
+  metadata           Json?
+  result             String
+  errorMessage       String?
+  duration           Int?
+  signature          String?
+  complianceStandard String?
+  complianceStatus   String?
+  sessionId          String?
+  requestId          String?
+  environment        String?
+  apiVersion         String?
+  clientVersion      String?
+
+  @@index([timestamp])
+  @@index([userId, timestamp])
+  @@index([eventType, timestamp])
+  @@index([severity, timestamp])
+  @@index([resourceType, resourceId])
+  @@index([result, timestamp])
+  @@index([missionId, timestamp])
+}
+
+model MissionOwnership {
+  id              String   @id @default(cuid())
+  missionId       String   @unique
+  ownerId         String
+  organizationId  String?
+  createdAt       DateTime @default(now())
+  delegatedTo     Json     @default("[]")
+  sharedWith      Json     @default("[]")
+  transferHistory Json     @default("[]")
+
+  @@index([ownerId])
+  @@index([organizationId])
+}
+
+model CreditBalance {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  balance        Int      @default(0)
+  totalPurchased Int      @default(0)
+  totalUsed      Int      @default(0)
+  lastUpdated    DateTime @default(now()) @updatedAt
+  createdAt      DateTime @default(now())
+}
+
+model CreditTransaction {
+  id                    String   @id @default(cuid())
+  userId                String
+  type                  String
+  amount                Int
+  balanceBefore         Int
+  balanceAfter          Int
+  description           String
+  apiEndpoint           String?
+  stripePaymentIntentId String?
+  metadata              Json?
+  createdAt             DateTime @default(now())
+
+  @@index([userId])
+  @@index([stripePaymentIntentId])
+  @@index([createdAt])
+}
+
+model CreditPackage {
+  id              String   @id @default(cuid())
+  name            String
+  credits         Int
+  price           Int
+  stripePriceId   String   @unique
+  stripeProductId String
+  description     String?
+  popular         Boolean  @default(false)
+  bonusCredits    Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model CreditUsageAnalytics {
+  id              String   @id @default(cuid())
+  userId          String
+  date            DateTime
+  totalUsed       Int      @default(0)
+  usageByEndpoint Json     @default("{}")
+  createdAt       DateTime @default(now())
+
+  @@unique([userId, date])
+}
