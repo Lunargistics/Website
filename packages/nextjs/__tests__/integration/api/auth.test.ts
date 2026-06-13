@@ -1,12 +1,40 @@
-import User from "../../../models/User";
-import { clearTestDatabase, setupTestDatabase, teardownTestDatabase } from "../../../tests/utils/db-test-utils";
-import bcrypt from "bcryptjs";
-import request from "supertest";
+/**
+ * Black-box auth API integration tests.
+ *
+ * These are true end-to-end tests: they drive the real HTTP endpoints via
+ * supertest and seed/inspect data through Mongoose. They therefore require a
+ * running Next.js server (API_BASE_URL) wired to the SAME database the tests
+ * seed. That infrastructure is not part of the default jsdom unit run, so the
+ * suite is gated behind RUN_INTEGRATION_TESTS to keep the unit run green and
+ * honest (it does not pretend these pass when no server is up). Heavy modules
+ * (mongoose/supertest) are imported lazily so the file never loads — and never
+ * crashes the unit run on Mongoose's ESM — when the suite is skipped.
+ *
+ * To run: start the app + DB, then
+ *   RUN_INTEGRATION_TESTS=1 API_BASE_URL=http://localhost:3000 yarn jest __tests__/integration
+ */
+const RUN_INTEGRATION = process.env.RUN_INTEGRATION_TESTS === "1" || process.env.RUN_INTEGRATION_TESTS === "true";
+const describeIntegration = RUN_INTEGRATION ? describe : describe.skip;
 
 const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3000";
 
-describe("Authentication API Integration Tests", () => {
+// Lazily-bound modules — only loaded when the gated suite actually runs.
+let User: any;
+let setupTestDatabase: () => Promise<void>;
+let teardownTestDatabase: () => Promise<void>;
+let clearTestDatabase: () => Promise<void>;
+// Typed loosely since both are bound lazily (dynamic import) inside the gated suite.
+let bcrypt: typeof import("bcryptjs").default;
+let request: any;
+
+describeIntegration("Authentication API Integration Tests", () => {
   beforeAll(async () => {
+    User = (await import("../../../models/User")).default;
+    ({ setupTestDatabase, teardownTestDatabase, clearTestDatabase } = await import(
+      "../../../tests/utils/db-test-utils"
+    ));
+    bcrypt = (await import("bcryptjs")).default;
+    request = ((await import("supertest")) as any).default;
     await setupTestDatabase();
   });
 

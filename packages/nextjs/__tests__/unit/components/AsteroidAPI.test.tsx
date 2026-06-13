@@ -31,13 +31,22 @@ describe("AsteroidDataFetcher", () => {
     expect(screen.getByRole("button", { name: /Refresh Data/i })).toBeInTheDocument();
   });
 
-  it("displays loading state when fetching data", async () => {
+  it("auto-fetches on mount and leaves the refresh button enabled (not stuck loading)", async () => {
     render(<AsteroidDataFetcher />);
 
-    const fetchButton = screen.getByRole("button", { name: /Refresh Data/i });
-    fireEvent.click(fetchButton);
+    // The mock data source resolves synchronously, so once mount settles the
+    // button must be back in its idle "Refresh Data" state — never wedged on "Loading...".
+    const fetchButton = await screen.findByRole("button", { name: /Refresh Data/i });
+    expect(fetchButton).toBeEnabled();
+    expect(screen.queryByText(/Loading.../i)).not.toBeInTheDocument();
 
-    expect(screen.getByText(/Loading.../i)).toBeInTheDocument();
+    // Auto-fetch on mount should already have populated the table.
+    await waitFor(() => expect(screen.getByText("16 Psyche")).toBeInTheDocument());
+
+    // A manual refresh keeps the data and returns to the idle state.
+    fireEvent.click(fetchButton);
+    await waitFor(() => expect(screen.getByText("16 Psyche")).toBeInTheDocument());
+    expect(screen.getByRole("button", { name: /Refresh Data/i })).toBeEnabled();
   });
 
   it("displays asteroid data after successful fetch", async () => {
