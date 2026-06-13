@@ -41,4 +41,12 @@ export default defineConfig([
       ],
     },
   },
+  {
+    // Plain .js files in this package are CommonJS Node scripts run via
+    // `node`/`hardhat run`, so `require()` is the correct module syntax.
+    files: ["**/*.js"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
 ]);

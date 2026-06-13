@@ -1,6 +1,5 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-import { Contract } from "ethers";
 
 /**
  * Deploy Mission Planning Suite contracts
@@ -40,7 +39,6 @@ const deployMissionPlanning: DeployFunction = async function (hre: HardhatRuntim
   console.log("✅ StandardsCompliance deployed at:", standardsCompliance.address);
 
   // Get contract instances for initialization
-  const missionRegistryContract = await hre.ethers.getContractAt("MissionRegistry", missionRegistry.address);
   const equipmentContract = await hre.ethers.getContractAt("SpaceEquipmentNFT", spaceEquipmentNFT.address);
   const standardsContract = await hre.ethers.getContractAt("StandardsCompliance", standardsCompliance.address);
 
@@ -95,7 +93,7 @@ const deployMissionPlanning: DeployFunction = async function (hre: HardhatRuntim
         standard.hash,
       );
       console.log(`  ✅ Added standard: ${standard.code}`);
-    } catch (error) {
+    } catch {
       console.log(`  ⚠️  Standard ${standard.code} may already exist`);
     }
   }
