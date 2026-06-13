@@ -34,7 +34,7 @@ jobs:
           cache: 'yarn'
       
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
         working-directory: packages/nextjs
       
       - name: Run linter
@@ -78,7 +78,7 @@ jobs:
           cache: 'yarn'
       
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
         working-directory: packages/nextjs
       
       - name: Install Playwright browsers
@@ -126,7 +126,7 @@ jobs:
           cache: 'yarn'
       
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
         working-directory: packages/nextjs
       
       - name: Generate coverage report

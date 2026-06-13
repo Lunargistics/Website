@@ -1,4 +1,5 @@
 import { ethers } from "hardhat";
+import fs from "fs";
 
 async function main() {
   console.log("Deploying Mission Planning contracts to TEA Sepolia...\n");
@@ -51,7 +52,6 @@ async function main() {
     console.log(JSON.stringify(deploymentInfo, null, 2));
 
     // Save to file
-    const fs = require("fs");
     fs.writeFileSync("deployments/teaSepolia/missionContracts.json", JSON.stringify(deploymentInfo, null, 2));
 
     console.log("\n✅ All Mission Planning contracts deployed successfully!");
